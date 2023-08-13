@@ -7,7 +7,7 @@ import {
   type DownloadResult,
   type FSInfoResult,
   type FileOptions,
-  type MkdirOptions,
+  type MkdirOptionsT,
   type NativeDownloadFileOptions,
   type NativeReadDirResItemT,
   type ReadDirAssetsResItemT,
@@ -198,7 +198,10 @@ export const getFSInfo: () => Promise<FSInfoResult> = RNFS.getFSInfo;
 export const isResumable: (jobId: number) => Promise<boolean> =
   RNFS.isResumable;
 
-export function mkdir(path: string, options: MkdirOptions = {}): Promise<void> {
+export function mkdir(
+  path: string,
+  options: MkdirOptionsT = {},
+): Promise<void> {
   return RNFS.mkdir(normalizeFilePath(path), options);
 }
 
@@ -523,7 +526,7 @@ const {
 
 export {
   type EncodingT,
-  type MkdirOptions,
+  type MkdirOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirItem,
   type WriteFileOptionsT,

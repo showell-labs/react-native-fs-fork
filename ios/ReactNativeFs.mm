@@ -209,7 +209,7 @@ RCT_EXPORT_METHOD(unlink:(NSString*)filepath
 }
 
 RCT_EXPORT_METHOD(mkdir:(NSString *)filepath
-                  options:(JS::NativeReactNativeFs::MkdirOptions &)options
+                  options:(JS::NativeReactNativeFs::MkdirOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {

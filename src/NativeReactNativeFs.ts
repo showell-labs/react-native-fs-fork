@@ -84,7 +84,7 @@ export type FSInfoResult = {
 export type Headers = { [name: string]: string };
 export type Fields = { [name: string]: string };
 
-export type MkdirOptions = {
+export type MkdirOptionsT = {
   // iOS-specific.
   NSURLIsExcludedFromBackupKey?: boolean;
   NSFileProtectionKey?: string;
@@ -269,7 +269,7 @@ export interface Spec extends TurboModule {
   exists(path: string): Promise<boolean>;
   getFSInfo(): Promise<FSInfoResult>;
   hash(path: string, algorithm: string): Promise<string>;
-  mkdir(path: string, options: MkdirOptions): Promise<void>;
+  mkdir(path: string, options: MkdirOptionsT): Promise<void>;
   moveFile(from: string, to: string, options: FileOptions): Promise<void>;
 
   read(path: string, length: number, position: number): Promise<string>;

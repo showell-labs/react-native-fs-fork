@@ -262,7 +262,7 @@ RNFS.uploadFiles({
 and return its contents.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
-  - [MkdirOptions] &mdash; Extra options for [mkdir()].
+  - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
@@ -424,7 +424,7 @@ folder.
 ### mkdir()
 [mkdir()]: #mkdir
 ```ts
-function mkdir(path: string, options?: MkdirOptions): Promise<void>;
+function mkdir(path: string, options?: MkdirOptionsT): Promise<void>;
 ```
 **VERIFIED:** Android, iOS, macOS, Windows.
 
@@ -432,7 +432,7 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
 `mkdir -p` in Linux).
 
 - `path` &mdash; **string** &mdash; Path to create.
-- `options` &mdash; **[MkdirOptions]** | **undefined** &mdash; Optional.
+- `options` &mdash; **[MkdirOptionsT]** | **undefined** &mdash; Optional.
   Additional parameters.
 - Resolves once completed.
 
@@ -539,10 +539,10 @@ type EncodingT = 'ascii' | 'base64' | `utf8`;
 ```
 Union of valid file encoding values.
 
-### MkdirOptions
-[MkdirOptions]: #mkdiroptions
+### MkdirOptionsT
+[MkdirOptionsT]: #mkdiroptionst
 ```ts
-type MkdirOptions = {
+type MkdirOptionsT = {
   NSURLIsExcludedFromBackupKey?: boolean; // iOS only
 };
 ```

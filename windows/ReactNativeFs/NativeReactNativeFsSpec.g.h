@@ -83,8 +83,8 @@ struct ReactNativeFsSpec_FSInfoResult {
     double freeSpace;
 };
 
-REACT_STRUCT(ReactNativeFsSpec_MkdirOptions)
-struct ReactNativeFsSpec_MkdirOptions {
+REACT_STRUCT(ReactNativeFsSpec_MkdirOptionsT)
+struct ReactNativeFsSpec_MkdirOptionsT {
     REACT_FIELD(NSURLIsExcludedFromBackupKey)
     std::optional<bool> NSURLIsExcludedFromBackupKey;
     REACT_FIELD(NSFileProtectionKey)
@@ -218,7 +218,7 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
       Method<void(std::string, Promise<bool>) noexcept>{5, L"exists"},
       Method<void(Promise<ReactNativeFsSpec_FSInfoResult>) noexcept>{6, L"getFSInfo"},
       Method<void(std::string, std::string, Promise<std::string>) noexcept>{7, L"hash"},
-      Method<void(std::string, ReactNativeFsSpec_MkdirOptions, Promise<void>) noexcept>{8, L"mkdir"},
+      Method<void(std::string, ReactNativeFsSpec_MkdirOptionsT, Promise<void>) noexcept>{8, L"mkdir"},
       Method<void(std::string, std::string, ReactNativeFsSpec_FileOptions, Promise<void>) noexcept>{9, L"moveFile"},
       Method<void(std::string, double, double, Promise<std::string>) noexcept>{10, L"read"},
       Method<void(std::string, Promise<std::string>) noexcept>{11, L"readFile"},
@@ -305,8 +305,8 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
     REACT_SHOW_METHOD_SPEC_ERRORS(
           8,
           "mkdir",
-          "    REACT_METHOD(mkdir) void mkdir(std::string path, ReactNativeFsSpec_MkdirOptions && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
-          "    REACT_METHOD(mkdir) static void mkdir(std::string path, ReactNativeFsSpec_MkdirOptions && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
+          "    REACT_METHOD(mkdir) void mkdir(std::string path, ReactNativeFsSpec_MkdirOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
+          "    REACT_METHOD(mkdir) static void mkdir(std::string path, ReactNativeFsSpec_MkdirOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
           9,
           "moveFile",

@@ -23,7 +23,7 @@ namespace JS {
       NSDictionary *_v;
     };
 
-    struct MkdirOptions {
+    struct MkdirOptionsT {
       std::optional<bool> NSURLIsExcludedFromBackupKey() const {
         return _v[@"NSURLIsExcludedFromBackupKey"];
       }
@@ -31,7 +31,7 @@ namespace JS {
         return _v[@"NSFileProtectionKey"];
       }
 
-      MkdirOptions(NSDictionary *const v) : _v(v) {}
+      MkdirOptionsT(NSDictionary *const v) : _v(v) {}
     private:
       NSDictionary *_v;
     };
@@ -107,10 +107,10 @@ namespace JS {
   return facebook::react::managedPointer<JS::NativeReactNativeFs::FileOptions>(json);
 }
 @end
-@implementation RCTCxxConvert (NativeReactNativeFs_MkdirOptions)
-+ (RCTManagedPointer *)JS_NativeReactNativeFs_MkdirOptions:(id)json
+@implementation RCTCxxConvert (NativeReactNativeFs_MkdirOptionsT)
++ (RCTManagedPointer *)JS_NativeReactNativeFs_MkdirOptionsT:(id)json
 {
-  return facebook::react::managedPointer<JS::NativeReactNativeFs::MkdirOptions>(json);
+  return facebook::react::managedPointer<JS::NativeReactNativeFs::MkdirOptionsT>(json);
 }
 @end
 
