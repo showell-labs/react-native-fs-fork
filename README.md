@@ -41,8 +41,32 @@ import {
 ```
 _When installing the library into a new project no additional steps are required._
 
+**ROADMAP:**
+- In the nearest future there will be a bunch of **v2.21.0-alpha.X** releases,
+  taking care that more and more functions of the original library work as per
+  documentation.
 
-**IMPORTANT:** _Below is the original documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
+- The aim for upcoming **v2.21.0** release is to be a drop-in replacement for
+  the latest **v2.20.0** release of the original library. It will have matching
+  functionality and API, with exception of any minor changes needed to fix
+  inconsistencies between **v2.20.0** and its documentation, and any changes
+  that just have to be done to satisfy latest React Native standards.
+
+- In further versions, **v2.X.Y**, we'll be taking care of improvements,
+  and optimizations of existing functionality, as well as adding new APIs,
+  and deprecating old ones (without yet dropping them out of the codebase),
+  with the ultimate goal to release **v3** version of the library.
+
+- The aims for **v3** release are the following:
+  - To unify library APIs for all platforms &mdash; the current library has
+    a lots of platform-dependent APIs, which goes against the purpose and spirit
+    of React Native &mdash; we'll abstract out and unify everything that is
+    possible, to allow smooth cross-plaform ride.
+  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
+  - To ensure that library has no intrinsic limitations (like now it is not efficient
+    for handling large files, _etc._)
+
+**IMPORTANT:** _Below is partially revised documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
 
 ---
 
@@ -222,7 +246,7 @@ RNFS.uploadFiles({
   - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
     directory.
 - [Functions]
-  - [copyFileAssets()] &mdash; (Android) Copies an asset file to
+  - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
     the given destination.
   - [exists()] &mdash; Checks if an item exists at the given path.
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
@@ -232,7 +256,7 @@ RNFS.uploadFiles({
     the given path inside the Android assets folder.
   - [readFile()] &mdash; Reads the file at a path and return its content as
     a string.
-  - [readFileAssets()] &mdash; Android-only. Reads the file at a path in
+  - [readFileAssets()] &mdash; (Android-only) Reads the file at a path in
     the Android app's assets folder.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
 and return its contents.
