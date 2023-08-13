@@ -264,13 +264,13 @@ export interface Spec extends TurboModule {
 
   // Common.
   appendFile(path: string, b64: string): Promise<void>;
-  copyFile(from: string, to: string, options: FileOptions): Promise<void>;
+  copyFile(from: string, into: string, options: FileOptions): Promise<void>;
   downloadFile(options: NativeDownloadFileOptions): Promise<DownloadResult>;
   exists(path: string): Promise<boolean>;
   getFSInfo(): Promise<FSInfoResult>;
   hash(path: string, algorithm: string): Promise<string>;
   mkdir(path: string, options: MkdirOptionsT): Promise<void>;
-  moveFile(from: string, to: string, options: FileOptions): Promise<void>;
+  moveFile(from: string, into: string, options: FileOptions): Promise<void>;
 
   read(path: string, length: number, position: number): Promise<string>;
   readFile(path: string): Promise<string>;
@@ -288,8 +288,8 @@ export interface Spec extends TurboModule {
   writeFile(path: string, b64: string, options: FileOptions): Promise<void>;
 
   // Android-specific.
-  copyFileAssets(from: string, to: string): Promise<void>;
-  copyFileRes(from: string, to: string): Promise<void>;
+  copyFileAssets(from: string, into: string): Promise<void>;
+  copyFileRes(from: string, into: string): Promise<void>;
   existsAssets(path: string): Promise<boolean>;
   existsRes(path: string): Promise<boolean>;
   getAllExternalFilesDirs(): Promise<string[]>;
@@ -324,7 +324,7 @@ export interface Spec extends TurboModule {
   resumeDownload(jobId: number): void;
 
   // Windows-specific.
-  copyFolder(from: string, to: string): Promise<void>;
+  copyFolder(from: string, into: string): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ReactNativeFs');

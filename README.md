@@ -382,7 +382,7 @@ IMPORTANT: when using `ExternalStorageDirectoryPath` it's necessary to request p
 ### copyFileAssets()
 [copyFileAssets()]: #copyfileassets
 ```ts
-function copyFileAssets(from: string, to: string): Promise<void>
+function copyFileAssets(from: string, into: string): Promise<void>
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 

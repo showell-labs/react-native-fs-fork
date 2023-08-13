@@ -395,12 +395,12 @@ export function writeFile(
 
 // Android-specific.
 
-export function copyFileAssets(from: string, to: string): Promise<void> {
-  return RNFS.copyFileAssets(normalizeFilePath(from), normalizeFilePath(to));
+export function copyFileAssets(from: string, into: string): Promise<void> {
+  return RNFS.copyFileAssets(normalizeFilePath(from), normalizeFilePath(into));
 }
 
-export function copyFileRes(from: string, to: string): Promise<void> {
-  return RNFS.copyFileRes(from, normalizeFilePath(to));
+export function copyFileRes(from: string, into: string): Promise<void> {
+  return RNFS.copyFileRes(from, normalizeFilePath(into));
 }
 
 export function existsAssets(filepath: string): Promise<boolean> {

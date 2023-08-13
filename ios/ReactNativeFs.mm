@@ -988,22 +988,22 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 }
 
 
-- (void)copyFile:(NSString *)from to:(NSString *)to options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFile()"];
 }
 
 
-- (void)copyFileAssets:(NSString *)from to:(NSString *)to resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFileAssets()"];
 }
 
 
-- (void)copyFileRes:(NSString *)from to:(NSString *)to resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFileRes:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFileRes()"];
 }
 
 
-- (void)copyFolder:(NSString *)from to:(NSString *)to resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFolder:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFolder()"];
 }
 
@@ -1022,7 +1022,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 }
 
 
-- (void)moveFile:(NSString *)from to:(NSString *)to options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)moveFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"moveFile()"];
 }
 
