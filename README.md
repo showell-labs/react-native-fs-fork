@@ -257,8 +257,8 @@ RNFS.uploadFiles({
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
-  - [readDir()] &mdash; Reads the content of a folder.
-  - [readDirAssets()] &mdash; (Android only) Reads the content of a folder at
+  - [readDir()] &mdash; Lists the content of a folder.
+  - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
     the given path inside the Android assets folder.
   - [readFile()] &mdash; Reads the file at a path and return its content as
     a string.
@@ -269,7 +269,7 @@ and return its contents.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
   - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
-  - [ReadDirItemT] &mdash; Elements returned by [readDir()].
+  - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
@@ -450,9 +450,9 @@ function readDir(dirpath: string): Promise<ReadDirItem[]>;
 ```
 **VERIFIED:** Android.
 
-Reads the content of given absolute path.
+Lists the content of given absolute path.
 - `path` &mdash; **string** &mdash; Path.
-- Resolves to an array of [ReadDirItemT] objects.
+- Resolves to an array of [ReadDirResItemT] objects.
 
 ### readDirAssets()
 [readDirAssets()]: #readdirassets
@@ -461,7 +461,7 @@ function readDirAssets(path: string): Promise<ReadDirItem[]>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
-(Android only) Reads the content of a folder at the given `path` inside
+(Android only) Lists the content of a folder at the given `path` inside
 the Android assets folder.
 
 - `path` &mdash; **string** &mdash; Folder path, relative to the root of
@@ -592,10 +592,10 @@ Type of result elements returned by the [readDirAssets()] function.
 - `isFile` &mdash; **() => boolean** &mdash; Is this item a regular file?
 - `isDirectory` &mdash; **() => boolean** &mdash; Is this item a directory?
 
-### ReadDirItemT
-[ReadDirItemT]: #readdiritemt
+### ReadDirResItemT
+[ReadDirResItemT]: #readdirresitemt
 ```ts
-type ReadDirItemT = {
+type ReadDirResItemT = {
   ctime: date;
   mtime: date;
   name: string;

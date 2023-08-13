@@ -107,7 +107,7 @@ export type ReadDirAssetsResItemT = {
 // TODO: When it is used as return type of Androids readDirAssets()
 // it is not so good, as there are no mtime and ctime fields in that case.
 // Should have a dedicated type for that.
-export type ReadDirItemT = {
+export type ReadDirResItemT = {
   // Common.
   mtime: Date | null; // The last modified date of the file
   name: string; // The name of the item
