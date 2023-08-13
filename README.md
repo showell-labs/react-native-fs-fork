@@ -257,6 +257,7 @@ RNFS.uploadFiles({
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
+  - [readDir()] &mdash; Reads the content of a folder.
   - [readDirAssets()] &mdash; (Android only) Reads the content of a folder at
     the given path inside the Android assets folder.
   - [readFile()] &mdash; Reads the file at a path and return its content as
@@ -268,6 +269,7 @@ and return its contents.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
   - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
+  - [ReadDirItemT] &mdash; Elements returned by [readDir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
