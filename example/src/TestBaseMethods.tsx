@@ -7,6 +7,7 @@ import {
   exists,
   existsAssets,
   mkdir,
+  readDir,
   readDirAssets,
   readFile,
   readFileAssets,
@@ -76,6 +77,83 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await exists(pathA)) return 'fail';
       await mkdir(pathB);
       if (!(await exists(pathB))) return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'readDir()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/read-dir-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      const now = Date.now();
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/file-a.txt`, 'A test file');
+      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      const dir = await readDir(path);
+
+      // First object is a folder created by mkdir.
+      let item = dir[0];
+      if (
+        !item ||
+        // TODO: This will be set on iOS?
+        item.ctime !== null ||
+        !item.isDirectory() ||
+        item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'folder' ||
+        item.path !== `${path}/folder` ||
+        // TODO: This can be platform dependent,
+        // also... why a folder size is 4096 bytes?
+        // Is it really a value reported by OS, or is it
+        // something resulting from how the library works?
+        item.size !== 4096
+      ) {
+        return 'fail';
+      }
+
+      // Second object is the smaller "file-a.txt"
+      item = dir[1];
+      if (
+        !item ||
+        // TODO: This will be set on iOS?
+        item.ctime !== null ||
+        item.isDirectory() ||
+        !item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'file-a.txt' ||
+        item.path !== `${path}/file-a.txt` ||
+        // TODO: This can be platform dependent.
+        item.size !== 11
+      ) {
+        return 'fail';
+      }
+
+      // Second object is the larger "file-b.txt"
+      item = dir[2];
+      if (
+        !item ||
+        // TODO: This will be set on iOS?
+        item.ctime !== null ||
+        item.isDirectory() ||
+        !item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'file-b.txt' ||
+        item.path !== `${path}/file-b.txt` ||
+        // TODO: This can be platform dependent.
+        item.size !== 18
+      ) {
+        return 'fail';
+      }
+
       return 'pass';
     } catch {
       return 'fail';

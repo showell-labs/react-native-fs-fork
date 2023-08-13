@@ -107,10 +107,10 @@ export type ReadDirAssetsResItemT = {
 // TODO: When it is used as return type of Androids readDirAssets()
 // it is not so good, as there are no mtime and ctime fields in that case.
 // Should have a dedicated type for that.
-export type ReadDirItem = {
+export type ReadDirItemT = {
   // Common.
-  mtime?: Date | null; // The last modified date of the file
-  name?: string; // The name of the item
+  mtime: Date | null; // The last modified date of the file
+  name: string; // The name of the item
   path: string; // The absolute path to the item
   size: number; // Size in bytes.
 
@@ -123,7 +123,7 @@ export type ReadDirItem = {
   isFile: () => boolean; // Is the file just a file?
 
   // iOS-specific
-  ctime?: Date | null; // The creation date of the file (iOS only)
+  ctime: Date | null; // The creation date of the file (iOS only)
 };
 
 // TODO: Essentially here StatResult is similar to ReadDirItem,

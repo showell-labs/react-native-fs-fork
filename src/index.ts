@@ -11,7 +11,7 @@ import {
   type NativeDownloadFileOptions,
   type NativeReadDirResItemT,
   type ReadDirAssetsResItemT,
-  type ReadDirItem,
+  type ReadDirItemT,
   type StatResult,
   type UploadFileOptions,
   type UploadResult,
@@ -41,7 +41,7 @@ type ReadDirCommand = (path: string) => Promise<NativeReadDirResItemT[]>;
 async function readDirGeneric(
   dirpath: string,
   command: ReadDirCommand,
-): Promise<ReadDirItem[]> {
+): Promise<ReadDirItemT[]> {
   const files = await command(normalizeFilePath(dirpath));
 
   const { FileTypeDirectory, FileTypeRegular } = RNFS.getConstants();
@@ -238,7 +238,7 @@ export function readFile(
   return readFileGeneric(path, encodingOrOptions, RNFS.readFile);
 }
 
-export function readDir(dirpath: string): Promise<ReadDirItem[]> {
+export function readDir(dirpath: string): Promise<ReadDirItemT[]> {
   return readDirGeneric(dirpath, RNFS.readDir);
 }
 
@@ -528,7 +528,7 @@ export {
   type EncodingT,
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
-  type ReadDirItem,
+  type ReadDirItemT,
   type WriteFileOptionsT,
   MainBundlePath,
   CachesDirectoryPath,

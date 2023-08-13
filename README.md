@@ -1,15 +1,20 @@
 # react-native-fs
 
-[React Native]: https://reactnative.dev/
-[react-native-fs]: https://github.com/itinance/react-native-fs
+<!-- Collection of hyperlinks. -->
+[Date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
 [New Architecture]: https://reactnative.dev/docs/the-new-architecture/landing-page
 [Old Architecture]: https://reactnative.dev/docs/native-modules-intro
+[React Native]: https://reactnative.dev/
+[react-native-fs]: https://github.com/itinance/react-native-fs
+<!-- End of hyperlinks collection. -->
 
+<!-- Status badges section (also double as links to related repos / CICD / etc.). -->
 [![Latest NPM Release](https://img.shields.io/npm/v/@dr.pogodin/react-native-fs.svg)](https://www.npmjs.com/package/@dr.pogodin/react-native-fs)
 [![NPM Downloads](https://img.shields.io/npm/dm/@dr.pogodin/react-native-fs.svg)](https://www.npmjs.com/package/@dr.pogodin/react-native-fs)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/birdofpreyru/react-native-fs/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/birdofpreyru/react-native-fs)
 [![GitHub Repo stars](https://img.shields.io/github/stars/birdofpreyru/react-native-fs?style=social)](https://github.com/birdofpreyru/react-native-fs)
 [![Dr. Pogodin Studio](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/logo-dr-pogodin-studio.svg)](https://dr.pogodin.studio/docs/react-native-fs)
+<!-- End of status badges section. -->
 
 File system access for [React Native] applications for Android, iOS,
 Mac (Catalyst), and Windows platforms. Supports both [new][New Architecture]
@@ -436,6 +441,17 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
   Additional parameters.
 - Resolves once completed.
 
+### readDir()
+[readDir()]: #readdir
+```ts
+function readDir(dirpath: string): Promise<ReadDirItem[]>;
+```
+**VERIFIED:** Android.
+
+Reads the content of given absolute path.
+- `path` &mdash; **string** &mdash; Path.
+- Resolves to an array of [ReadDirItemT] objects.
+
 ### readDirAssets()
 [readDirAssets()]: #readdirassets
 ```ts
@@ -574,6 +590,31 @@ Type of result elements returned by the [readDirAssets()] function.
 - `isFile` &mdash; **() => boolean** &mdash; Is this item a regular file?
 - `isDirectory` &mdash; **() => boolean** &mdash; Is this item a directory?
 
+### ReadDirItemT
+[ReadDirItemT]: #readdiritemt
+```ts
+type ReadDirItemT = {
+  ctime: date;
+  mtime: date;
+  name: string;
+  path: string;
+  size: number;
+  isFile: () => boolean;
+  isDirectory: () => boolean;
+};
+```
+The type of objects returned by the [readDir()] function.
+- `ctime` &mdash; [Date] | **null** &mdash; Item creation date (iOS only;
+  **null** on other platforms).
+- `isDirectory` &mdash; **() => boolean** &mdash; Evaluates _true_ if item is
+  a folder; _false_ otherwise.
+- `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if item is
+  a file; _false_ otherwise.
+- `mtime` &mdash; [Date] &mdash; The last modified date of the item.
+- `name` &mdash; **string** &mdash; Name of the item.
+- `path` &mdash; **string** &mdash; Absolute path of the item.
+- `size` &mdash; **number** &mdash; Item size in bytes.
+
 ### ReadFileOptionsT
 [ReadFileOptionsT]: #readfileoptionst
 ```ts
@@ -607,24 +648,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `readDir(dirpath: string): Promise<ReadDirItem[]>`
-
-Reads the contents of `path`. This must be an absolute path. Use the above path constants to form a usable file path.
-
-The returned promise resolves with an array of objects with the following properties:
-
-```js
-type ReadDirItem = {
-  ctime: date;     // The creation date of the file (iOS only)
-  mtime: date;     // The last modified date of the file
-  name: string;     // The name of the item
-  path: string;     // The absolute path to the item
-  size: string;     // Size in bytes
-  isFile: () => boolean;        // Is the item just a file?
-  isDirectory: () => boolean;   // Is the item a directory?
-};
-```
 
 ### `readdir(dirpath: string): Promise<string[]>`
 

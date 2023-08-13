@@ -29,6 +29,10 @@
   "repository": "https://github.com/birdofpreyru/react-native-fs",
   "author": "Dr. Sergey Pogodin <dr.pogodin@gmail.com> (https://dr.pogodin.studio)",
   "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/birdofpreyru"
+  },
   "bugs": {
     "url": "https://github.com/birdofpreyru/react-native-fs/issues"
   },
