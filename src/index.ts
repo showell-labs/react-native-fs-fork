@@ -5,7 +5,7 @@ import RNFS from './ReactNativeFs';
 import {
   type DownloadFileOptions,
   type DownloadResult,
-  type FSInfoResult,
+  type FSInfoResultT,
   type FileOptions,
   type MkdirOptionsT,
   type NativeDownloadFileOptions,
@@ -193,7 +193,7 @@ export function exists(filepath: string): Promise<boolean> {
   return RNFS.exists(normalizeFilePath(filepath));
 }
 
-export const getFSInfo: () => Promise<FSInfoResult> = RNFS.getFSInfo;
+export const getFSInfo: () => Promise<FSInfoResultT> = RNFS.getFSInfo;
 
 export const isResumable: (jobId: number) => Promise<boolean> =
   RNFS.isResumable;
@@ -526,6 +526,7 @@ const {
 
 export {
   type EncodingT,
+  type FSInfoResultT,
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,

@@ -74,9 +74,11 @@ export type FileOptions = {
   NSFileProtectionKey?: string;
 };
 
-export type FSInfoResult = {
+export type FSInfoResultT = {
   totalSpace: number; // The total amount of storage space on the device (in bytes).
+  totalSpaceEx: number;
   freeSpace: number; // The amount of available storage space on the device (in bytes).
+  freeSpaceEx: number;
 };
 
 // TODO: Are these names really needed, can be just called
@@ -267,7 +269,7 @@ export interface Spec extends TurboModule {
   copyFile(from: string, into: string, options: FileOptions): Promise<void>;
   downloadFile(options: NativeDownloadFileOptions): Promise<DownloadResult>;
   exists(path: string): Promise<boolean>;
-  getFSInfo(): Promise<FSInfoResult>;
+  getFSInfo(): Promise<FSInfoResultT>;
   hash(path: string, algorithm: string): Promise<string>;
   mkdir(path: string, options: MkdirOptionsT): Promise<void>;
   moveFile(from: string, into: string, options: FileOptions): Promise<void>;

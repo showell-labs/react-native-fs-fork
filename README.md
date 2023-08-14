@@ -256,6 +256,8 @@ RNFS.uploadFiles({
   - [exists()] &mdash; Checks if an item exists at the given path.
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
+  - [getFSInfo()] &mdash; Gets info on the free and total storage space
+    on the device, and its external storage.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
   - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
   - [readdir()] &mdash; Lists the content of a folder (names only).
@@ -271,6 +273,7 @@ RNFS.uploadFiles({
 and return its contents.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
+  - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
   - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
   - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
@@ -431,6 +434,17 @@ folder.
 - `path` &mdash; **string** &mdash; Path, relative to the root of the Android
   assets folder.
 - Resolves _true_ if the item exists; _false_ otherwise.
+
+### getFSInfo()
+[getFSInfo()]: #getfsinfo
+```ts
+function getFSInfo(): Promise<FSInfoResultT>;
+```
+**VERIFIED:** Android
+
+Provides information about free and total file system space.
+
+- Resolves to an [FSInfoResultT] object.
 
 ### moveFile()
 [moveFile()]: #movefile
@@ -605,6 +619,27 @@ turned into a group of 1-to-4 bytes in the written file).
 type EncodingT = 'ascii' | 'base64' | `utf8`;
 ```
 Union of valid file encoding values.
+
+### FSInfoResultT
+[FSInfoResultT]: #fsinforesultt
+```js
+type FSInfoResultT = {
+  freeSpace: number;
+  freeSpaceEx: number;
+  totalSpace: number;
+  totalSpaceEx: number;
+};
+```
+The type of result resolved by [getFSInfo()].
+
+- `freeSpace` &mdash; **number** &mdash; Free storage space on the device,
+  in bytes.
+- `freeSpaceEx` &mdash; **number** &mdash; Free storage space in the external
+  storage, in bytes.
+- `totalSpace` &mdash; **number** &mdash; The total storage space on the device,
+  in bytes.
+- `totalSpaceEx` &mdash; **number** &mdash; The total storage space in
+  the external storage, in bytes.
 
 ### MkdirOptionsT
 [MkdirOptionsT]: #mkdiroptionst
@@ -994,17 +1029,6 @@ Percentage can be computed easily by dividing `totalBytesSent` by `totalBytesExp
 ### (iOS only) `stopUpload(jobId: number): Promise<void>`
 
 Abort the current upload job with this ID.
-
-### `getFSInfo(): Promise<FSInfoResult>`
-
-Returns an object with the following properties:
-
-```js
-type FSInfoResult = {
-  totalSpace: number;   // The total amount of storage space on the device (in bytes).
-  freeSpace: number;    // The amount of available storage space on the device (in bytes).
-};
-```
 
 ### (Android only) `scanFile(path: string): Promise<string[]>`
 

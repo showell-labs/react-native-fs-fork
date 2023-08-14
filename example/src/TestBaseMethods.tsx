@@ -6,6 +6,7 @@ import {
   copyFileAssets,
   exists,
   existsAssets,
+  getFSInfo,
   mkdir,
   moveFile,
   readdir,
@@ -65,6 +66,22 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     try {
       if (!(await existsAssets('test/good-utf8.txt'))) return 'fail';
       if (await existsAssets('test/non-existing.txt')) return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'getFSInfo()': async () => {
+    try {
+      const res = await getFSInfo();
+      if (
+        typeof res.freeSpace !== 'number' ||
+        typeof res.freeSpaceEx !== 'number' ||
+        typeof res.totalSpace !== 'number' ||
+        typeof res.totalSpaceEx !== 'number'
+      ) {
+        return 'fail';
+      }
       return 'pass';
     } catch {
       return 'fail';
