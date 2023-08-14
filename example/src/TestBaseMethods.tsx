@@ -7,6 +7,7 @@ import {
   exists,
   existsAssets,
   mkdir,
+  readdir,
   readDir,
   readDirAssets,
   readFile,
@@ -77,6 +78,24 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await exists(pathA)) return 'fail';
       await mkdir(pathB);
       if (!(await exists(pathB))) return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'readdir()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/read-dir-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/file-a.txt`, 'A test file');
+      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      const dir = await readdir(path);
+
+      if (!isEqual(dir, ['folder', 'file-a.txt', 'file-b.txt'])) return 'fail';
+
       return 'pass';
     } catch {
       return 'fail';

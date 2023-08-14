@@ -257,7 +257,8 @@ RNFS.uploadFiles({
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
-  - [readDir()] &mdash; Lists the content of a folder.
+  - [readdir()] &mdash; Lists the content of a folder (names only).
+  - [readDir()] &mdash; Lists the content of a folder (with item details).
   - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
     the given path inside the Android assets folder.
   - [readFile()] &mdash; Reads the file at a path and return its content as
@@ -443,10 +444,23 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
   Additional parameters.
 - Resolves once completed.
 
-### readDir()
-[readDir()]: #readdir
+### readdir()
+[readdir()]: #readdir-1
 ```ts
-function readDir(dirpath: string): Promise<ReadDirItem[]>;
+function readdir(path: string): Promise<string[]>;
+```
+**VERIFIED:** Android
+
+Lists the content of given folder (names only &mdash; NodeJS-style). Note the
+lowercase `d` in the name, unlike in [readDir()].
+
+- `path` &mdash; **string** &mdash; Folder path.
+- Resolves to a **string** array &mdash; the names of items in the folder.
+
+### readDir()
+[readDir()]: #readdir-2
+```ts
+function readDir(path: string): Promise<ReadDirItem[]>;
 ```
 **VERIFIED:** Android.
 
@@ -596,8 +610,8 @@ Type of result elements returned by the [readDirAssets()] function.
 [ReadDirResItemT]: #readdirresitemt
 ```ts
 type ReadDirResItemT = {
-  ctime: date;
-  mtime: date;
+  ctime: Date | null;
+  mtime: Date;
   name: string;
   path: string;
   size: number;
@@ -650,10 +664,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `readdir(dirpath: string): Promise<string[]>`
-
-Node.js style version of `readDir` that returns only the names. Note the lowercase `d`.
 
 ### `stat(filepath: string): Promise<StatResult>`
 
