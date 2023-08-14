@@ -7,6 +7,7 @@ import {
   exists,
   existsAssets,
   mkdir,
+  moveFile,
   readdir,
   readDir,
   readDirAssets,
@@ -79,6 +80,48 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await exists(pathA)) return 'fail';
       await mkdir(pathB);
       if (!(await exists(pathB))) return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'moveFile()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/move-file-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it move a file?
+      await moveFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      if (
+        (await exists(`${path}/test-file.txt`)) ||
+        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+      ) {
+        return 'fail';
+      }
+
+      // Can it move a folder with its content?
+      await moveFile(`${path}/folder`, `${path}/moved-folder`);
+      if (
+        (await exists(`${path}/folder`)) ||
+        !(await exists(`${path}/moved-folder/another-test-file.txt`)) ||
+        (await readFile(`${path}/moved-folder/another-test-file.txt`)) !==
+          'Another dummy content'
+      ) {
+        return 'fail';
+      }
+
       return 'pass';
     } catch {
       return 'fail';

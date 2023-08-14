@@ -257,6 +257,7 @@ RNFS.uploadFiles({
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
+  - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
   - [readdir()] &mdash; Lists the content of a folder (names only).
   - [readDir()] &mdash; Lists the content of a folder (with item details).
   - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
@@ -430,6 +431,24 @@ folder.
 - `path` &mdash; **string** &mdash; Path, relative to the root of the Android
   assets folder.
 - Resolves _true_ if the item exists; _false_ otherwise.
+
+### moveFile()
+[moveFile()]: #movefile
+```ts
+function moveFile(from: string, into: string): Promise<void>;
+```
+**VERIFIED:** Android
+
+Moves an item (a file, or a folder with files) to a new location. This is more
+performant than reading and then re-writing the file data because the move
+is done natively and the data doesn't have to be copied or cross the bridge.
+
+**Note:** Overwrites existing file in Windows &mdash; To be verified, how does
+it behave on other systems, and whether it really overwrites items on Windows?
+
+- `from` &mdash; **string** &mdash; Old path of the item.
+- `into` &mdash; **string** &mdash; New path of the item.
+- Resolves once the operation is completed.
 
 ### mkdir()
 [mkdir()]: #mkdir
@@ -730,12 +749,6 @@ Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), 
 ### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
 
 Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
-
-### `moveFile(filepath: string, destPath: string): Promise<void>`
-
-Moves the file located at `filepath` to `destPath`. This is more performant than reading and then re-writing the file data because the move is done natively and the data doesn't have to be copied or cross the bridge.
-
-Note: Overwrites existing file in Windows.
 
 ### `copyFolder(srcFolderPath: string, destFolderPath: string): Promise<void>`
 
