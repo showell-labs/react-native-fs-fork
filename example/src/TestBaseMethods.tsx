@@ -1,4 +1,4 @@
-import { isEqual } from 'lodash';
+import { isEqual, isMatch } from 'lodash';
 import React from 'react';
 import { Text, View } from 'react-native';
 
@@ -12,6 +12,7 @@ import {
   readDirAssets,
   readFile,
   readFileAssets,
+  stat,
   TemporaryDirectoryPath,
   unlink,
   writeFile,
@@ -288,6 +289,77 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       res = await readFileAssets('test/good-utf8.txt', 'base64');
       if (res !== 'R8OWw5bDkAo=') return 'fail';
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'stat()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/stat-test`;
+      try {
+        unlink(path);
+      } catch {}
+      const now = Date.now();
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+
+      let res = await stat(`${path}/folder`);
+
+      if (
+        res.ctime.valueOf() < now - 1000 ||
+        res.ctime.valueOf() > now + 1000 ||
+        !res.isDirectory() ||
+        res.isFile() ||
+        // NOTE: mode is documented, but not actually returned, at least on
+        // Android. We'll deal with it later.
+        res.mode !== undefined ||
+        res.mtime.valueOf() < now - 1000 ||
+        res.mtime.valueOf() > now + 1000 ||
+        // TODO: Check this works as documented for Android Contentt URIs.
+        res.originalFilepath !== `${path}/folder` ||
+        res.path !== `${path}/folder` ||
+        // TODO: Again, check why we report 4096 byte size for a folder?
+        res.size !== 4096
+      ) {
+        return 'fail';
+      }
+
+      res = await stat(`${path}/test-file.txt`);
+
+      if (
+        res.ctime.valueOf() < now - 1000 ||
+        res.ctime.valueOf() > now + 1000 ||
+        res.isDirectory() ||
+        !res.isFile() ||
+        // NOTE: mode is documented, but not actually returned, at least on
+        // Android. We'll deal with it later.
+        res.mode !== undefined ||
+        res.mtime.valueOf() < now - 1000 ||
+        res.mtime.valueOf() > now + 1000 ||
+        // TODO: Check this works as documented for Android Contentt URIs.
+        res.originalFilepath !== `${path}/test-file.txt` ||
+        res.path !== `${path}/test-file.txt` ||
+        // TODO: Again, check why we report 4096 byte size for a folder?
+        res.size !== 13
+      ) {
+        return 'fail';
+      }
+
+      try {
+        res = await stat(`${path}/non-existing-file.txt`);
+        return 'fail';
+      } catch (e: any) {
+        if (
+          !isMatch(e, {
+            code: 'EUNSPECIFIED',
+            message: 'File does not exist',
+          })
+        ) {
+          return 'fail';
+        }
+      }
 
       return 'pass';
     } catch {

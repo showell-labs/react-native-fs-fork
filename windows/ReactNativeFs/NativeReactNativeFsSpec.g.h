@@ -107,8 +107,8 @@ struct ReactNativeFsSpec_NativeReadDirResItemT {
     std::string type;
 };
 
-REACT_STRUCT(ReactNativeFsSpec_NativeStatResult)
-struct ReactNativeFsSpec_NativeStatResult {
+REACT_STRUCT(ReactNativeFsSpec_NativeStatResultT)
+struct ReactNativeFsSpec_NativeStatResultT {
     REACT_FIELD(ctime)
     double ctime;
     REACT_FIELD(mtime)
@@ -223,7 +223,7 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
       Method<void(std::string, double, double, Promise<std::string>) noexcept>{10, L"read"},
       Method<void(std::string, Promise<std::string>) noexcept>{11, L"readFile"},
       Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{12, L"readDir"},
-      Method<void(std::string, Promise<ReactNativeFsSpec_NativeStatResult>) noexcept>{13, L"stat"},
+      Method<void(std::string, Promise<ReactNativeFsSpec_NativeStatResultT>) noexcept>{13, L"stat"},
       Method<void(double) noexcept>{14, L"stopDownload"},
       Method<void(double) noexcept>{15, L"stopUpload"},
       Method<void(std::string, ReactNativeFsSpec_TouchOptions, Promise<void>) noexcept>{16, L"touch"},
@@ -330,8 +330,8 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
     REACT_SHOW_METHOD_SPEC_ERRORS(
           13,
           "stat",
-          "    REACT_METHOD(stat) void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResult> &&result) noexcept { /* implementation */ }\n"
-          "    REACT_METHOD(stat) static void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResult> &&result) noexcept { /* implementation */ }\n");
+          "    REACT_METHOD(stat) void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResultT> &&result) noexcept { /* implementation */ }\n"
+          "    REACT_METHOD(stat) static void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResultT> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
           14,
           "stopDownload",

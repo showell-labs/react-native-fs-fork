@@ -130,7 +130,7 @@ export type ReadDirResItemT = {
 // but it does not contain Date fields, thus making it possible
 // to pass it from native side, unlike ReadDirItem.
 
-export type StatResult = {
+export type StatResultT = {
   // TODO: why is this not documented?
   name?: string; // The name of the item.
 
@@ -162,7 +162,7 @@ export type NativeReadDirResItemT = {
   type: string;
 };
 
-type NativeStatResult = {
+type NativeStatResultT = {
   ctime: number; // Created date
   mtime: number; // Last modified date
   size: number; // Size in bytes
@@ -278,7 +278,7 @@ export interface Spec extends TurboModule {
   // TODO: Not sure about the type of result here.
   readDir(path: string): Promise<NativeReadDirResItemT[]>;
 
-  stat(path: string): Promise<NativeStatResult>;
+  stat(path: string): Promise<NativeStatResultT>;
   stopDownload(jobId: number): void;
   stopUpload(jobId: number): void;
   touch(path: string, options: TouchOptions): Promise<void>;

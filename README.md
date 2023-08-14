@@ -265,6 +265,7 @@ RNFS.uploadFiles({
     a string.
   - [readFileAssets()] &mdash; (Android-only) Reads the file at a path in
     the Android app's assets folder.
+  - [stat()] &mdash; Returns info on a file system item.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
 and return its contents.
 - [Types]
@@ -274,6 +275,7 @@ and return its contents.
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
+  - [StatResultT] &mdash; The type of result resolved by [stat()].
   - [WriteFileOptionsT] &mdash; The type of extra options argument of
     the [writeFile()] function.
 - [Legacy] &mdash; Everything else inherited from the original library,
@@ -523,6 +525,20 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
   specifying the encoding.
 - Resolves to **string** &mdash; the asset content.
 
+### stat()
+[stat()]: #stat
+```ts
+function stat(path: string): Promise<StatResultT>;
+```
+**VERIFIED:** Android
+
+Stats an item at `path`. If the `path` is linked to a virtual file, for example
+Android Content URI, the `originalPath` can be used to find the pointed file
+path (**beware** &mdash; this has not been verified yet).
+
+- `path` &mdash; **string** &mdash; Item path.
+- Resolves to a [StatResultT] object.
+
 ### unlink()
 [unlink()]: #unlink
 ```ts
@@ -643,6 +659,36 @@ The type of extra options argument of the [readFile()] function.
 - `encoding` &mdash; [EncodingT] | **undefined** &mdash; Optional. File encoding.
   Defaults `utf8`.
 
+### StatResultT
+[StatResultT]: #statresultt
+```ts
+type StatResultT = {
+  ctime: Date;
+  isDirectory: () => boolean;
+  isFile: () => boolean;
+  mode: undefined;
+  mtime: Date;
+  originalFilepath: string;
+  path: string;
+  size: number;
+};
+```
+The type of result resolved by [stat()].
+
+- `ctime` &mdash; [Date] &mdash; Item's creation date.
+- `isDirectory` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item
+  is a folder; _false_ otherwise.
+- `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item is
+  a file; _false_ otherwise.
+- `mode` &mdash; **undefined** &mdash; It was documented as _UNIX file mode_,
+  with **number** type, but at least on Android the library did not return
+  such value from [stat()]. We'll do something about it later.
+- `mtime` &mdash; [Date] &mdash; Item's last modification date.
+- `originalFilepath` &mdash; **string** &mdash; (Android-only) In case
+  of content uri this is the pointed file path, otherwise is the same as `path`.
+- `path` &mdash; **string** &mdash; Item path.
+- `size` &mdash; **number** &mdash; Item size in bytes.
+
 ### WriteFileOptionsT
 [WriteFileOptionsT]: #writefileoptionst
 ```ts
@@ -664,24 +710,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `stat(filepath: string): Promise<StatResult>`
-
-Stats an item at `filepath`. If the `filepath` is linked to a virtual file, for example Android Content URI, the `originalPath` can be used to find the pointed file path.
-The promise resolves with an object with the following properties:
-
-```js
-type StatResult = {
-  path:            // The same as filepath argument
-  ctime: date;     // The creation date of the file
-  mtime: date;     // The last modified date of the file
-  size: number;     // Size in bytes
-  mode: number;     // UNIX file mode
-  originalFilepath: string;    // ANDROID: In case of content uri this is the pointed file path, otherwise is the same as path
-  isFile: () => boolean;        // Is the file just a file?
-  isDirectory: () => boolean;   // Is the file a directory?
-};
-```
 
 ### `read(filepath: string, length = 0, position = 0, encodingOrOptions?: any): Promise<string>`
 

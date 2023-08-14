@@ -12,7 +12,7 @@ import {
   type NativeReadDirResItemT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
-  type StatResult,
+  type StatResultT,
   type UploadFileOptions,
   type UploadResult,
 } from './NativeReactNativeFs';
@@ -248,7 +248,7 @@ export async function readdir(dirpath: string): Promise<string[]> {
   return files.map((file) => file.name || '');
 }
 
-export async function stat(filepath: string): Promise<StatResult> {
+export async function stat(filepath: string): Promise<StatResultT> {
   const result = await RNFS.stat(normalizeFilePath(filepath));
 
   const { FileTypeDirectory, FileTypeRegular } = RNFS.getConstants();
