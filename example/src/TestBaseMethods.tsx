@@ -3,6 +3,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import {
+  copyFile,
   copyFileAssets,
   exists,
   existsAssets,
@@ -33,6 +34,51 @@ function logCharCodes(datum: string) {
 */
 
 const tests: { [name: string]: StatusOrEvaluator } = {
+  'copyFile()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/copy-file-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it move a file?
+      await copyFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      if (
+        (await readFile(`${path}/test-file.txt`)) !== 'Dummy content' ||
+        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+      ) {
+        return 'fail';
+      }
+
+      // Can it move a folder with its content?
+      try {
+        await copyFile(`${path}/folder`, `${path}/moved-folder`);
+        return 'fail';
+      } catch (e: any) {
+        if (
+          e.code !== 'EISDIR' ||
+          e.message !==
+            `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+        ) {
+          return 'fail';
+        }
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'copyFileAssets()': async () => {
     const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
     try {

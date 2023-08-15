@@ -69,7 +69,7 @@ export type DownloadResult = {
   bytesWritten: number; // The number of bytes written to the file
 };
 
-export type FileOptions = {
+export type FileOptionsT = {
   // iOS-specific.
   NSFileProtectionKey?: string;
 };
@@ -266,13 +266,13 @@ export interface Spec extends TurboModule {
 
   // Common.
   appendFile(path: string, b64: string): Promise<void>;
-  copyFile(from: string, into: string, options: FileOptions): Promise<void>;
+  copyFile(from: string, into: string, options: FileOptionsT): Promise<void>;
   downloadFile(options: NativeDownloadFileOptions): Promise<DownloadResult>;
   exists(path: string): Promise<boolean>;
   getFSInfo(): Promise<FSInfoResultT>;
   hash(path: string, algorithm: string): Promise<string>;
   mkdir(path: string, options: MkdirOptionsT): Promise<void>;
-  moveFile(from: string, into: string, options: FileOptions): Promise<void>;
+  moveFile(from: string, into: string, options: FileOptionsT): Promise<void>;
 
   read(path: string, length: number, position: number): Promise<string>;
   readFile(path: string): Promise<string>;
@@ -287,7 +287,7 @@ export interface Spec extends TurboModule {
   unlink(path: string): Promise<void>;
   uploadFiles(options: NativeUploadFileOptions): Promise<UploadResult>;
   write(path: string, b64: string, position: number): Promise<void>;
-  writeFile(path: string, b64: string, options: FileOptions): Promise<void>;
+  writeFile(path: string, b64: string, options: FileOptionsT): Promise<void>;
 
   // Android-specific.
   copyFileAssets(from: string, into: string): Promise<void>;

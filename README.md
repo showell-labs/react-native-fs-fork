@@ -251,6 +251,7 @@ RNFS.uploadFiles({
   - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
     directory.
 - [Functions]
+  - [copyFile()] &mdash; Copies a file to a new destination.
   - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
     the given destination.
   - [exists()] &mdash; Checks if an item exists at the given path.
@@ -273,6 +274,7 @@ RNFS.uploadFiles({
 and return its contents.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
+  - [FileOptionsT] &mdash; Extra options for [copyFile()].
   - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
   - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
   - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
@@ -392,6 +394,25 @@ IMPORTANT: when using `ExternalStorageDirectoryPath` it's necessary to request p
 
 ## Functions
 [Functions]: #functions
+
+### copyFile()
+[copyFile()]: #copyfile
+```ts
+function copyFile(from: string, into: string, options?: FileOptionsT): Promise<void>;
+```
+**VERIFIED:** Android.
+
+Copies a file to a new destination. Throws if called on a directory.
+
+**Note:** On Android and Windows [copyFile()] will overwrite `destPath` if it
+already exists. On iOS an error will be thrown if the file already exists.
+&mdash; **beware**, this has not been verified yet.
+
+- `from` &mdash; **string** &mdash; Source path.
+- `into` &mdash; **string** &mdash; Destination path.
+- `options` &mdash; [FileOptionsT] | **undefined** &mdash; Optional. Additional
+  settings. **beware**, it has not been verified they work, yet.
+- Resolves once done.
 
 ### copyFileAssets()
 [copyFileAssets()]: #copyfileassets
@@ -620,6 +641,19 @@ type EncodingT = 'ascii' | 'base64' | `utf8`;
 ```
 Union of valid file encoding values.
 
+### FileOptionsT
+[FileOptionsT]: #fileoptionst
+```ts
+type FileOptionsT = {
+  // iOS-specific.
+  NSFileProtectionKey?: string;
+};
+```
+The type of additional options for [copyFile()].
+
+- `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
+  iOS-only. See https://developer.apple.com/documentation/foundation/nsfileprotectionkey
+
 ### FSInfoResultT
 [FSInfoResultT]: #fsinforesultt
 ```js
@@ -790,12 +824,6 @@ Write the `contents` to `filepath` at the given random access position. When `po
 Copies the contents located at `srcFolderPath` to `destFolderPath`.
 
 Note: Windows only. This method is recommended when directories need to be copied from one place to another.
-
-### `copyFile(filepath: string, destPath: string): Promise<void>`
-
-Copies the file located at `filepath` to `destPath`.
-
-Note: On Android and Windows copyFile will overwrite `destPath` if it already exists. On iOS an error will be thrown if the file already exists.
 
 ### `copyFileRes(filename: string, destPath: string): Promise<void>`
 

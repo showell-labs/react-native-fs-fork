@@ -6,7 +6,7 @@ import {
   type DownloadFileOptions,
   type DownloadResult,
   type FSInfoResultT,
-  type FileOptions,
+  type FileOptionsT,
   type MkdirOptionsT,
   type NativeDownloadFileOptions,
   type NativeReadDirResItemT,
@@ -69,13 +69,13 @@ export function appendFile(
 }
 
 export function copyFile(
-  filepath: string,
-  destPath: string,
-  options: FileOptions = {},
+  from: string,
+  into: string,
+  options: FileOptionsT = {},
 ): Promise<void> {
   return RNFS.copyFile(
-    normalizeFilePath(filepath),
-    normalizeFilePath(destPath),
+    normalizeFilePath(from),
+    normalizeFilePath(into),
     options,
   );
 }
@@ -208,7 +208,7 @@ export function mkdir(
 export function moveFile(
   filepath: string,
   destPath: string,
-  options: FileOptions = {},
+  options: FileOptionsT = {},
 ): Promise<void> {
   return RNFS.moveFile(
     normalizeFilePath(filepath),
@@ -526,6 +526,7 @@ const {
 
 export {
   type EncodingT,
+  type FileOptionsT,
   type FSInfoResultT,
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
