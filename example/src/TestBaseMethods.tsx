@@ -10,6 +10,7 @@ import {
   getFSInfo,
   mkdir,
   moveFile,
+  read,
   readdir,
   readDir,
   readDirAssets,
@@ -185,6 +186,32 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
 
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'read()': async () => {
+    try {
+      const good = 'GÖÖÐ\n';
+      const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
+      const path = `${TemporaryDirectoryPath}/read-test`;
+      await writeFile(path, utf8, 'ascii');
+
+      console.log(await read(path, 2, 1, 'base64'));
+
+      if (
+        (await read(path)) !== '' ||
+        (await read(path, 8)) !== good ||
+        // NOTE: No matter the encoding, the length is in bytes, rather than
+        // in read symbols.
+        (await read(path, 5)) !== 'GÖÖ' ||
+        (await read(path, 4, 1)) !== 'ÖÖ' ||
+        (await read(path, 2, 1, 'ascii')) !== '\xC3\x96' ||
+        (await read(path, 2, 1, 'base64')) !== 'w5Y='
+      ) {
+        return 'fail';
+      }
       return 'pass';
     } catch {
       return 'fail';

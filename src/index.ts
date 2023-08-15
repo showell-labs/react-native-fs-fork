@@ -217,19 +217,21 @@ export function moveFile(
   );
 }
 
-export async function read(
-  filepath: string,
-  length: number = 0,
-  position: number = 0,
-  encodingOrOptions?: EncodingOptions,
-): Promise<string> {
-  const b64 = await RNFS.read(normalizeFilePath(filepath), length, position);
-  return decode(b64, toEncoding(encodingOrOptions));
-}
-
 export type ReadFileOptionsT = {
   encoding?: EncodingT;
 };
+
+export async function read(
+  path: string,
+  // TODO: It would make more sense to read entire file by the default,
+  // or, if the position is given, to read from that position to the end.
+  length: number = 0,
+  position: number = 0,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<string> {
+  const b64 = await RNFS.read(normalizeFilePath(path), length, position);
+  return decode(b64, toEncoding(encodingOrOptions));
+}
 
 export function readFile(
   path: string,

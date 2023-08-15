@@ -261,12 +261,12 @@ RNFS.uploadFiles({
     on the device, and its external storage.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
   - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+  - [read()] &mdash; Reads a fragment of file content.
   - [readdir()] &mdash; Lists the content of a folder (names only).
   - [readDir()] &mdash; Lists the content of a folder (with item details).
   - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
     the given path inside the Android assets folder.
-  - [readFile()] &mdash; Reads the file at a path and return its content as
-    a string.
+  - [readFile()] &mdash; Reads entire file content.
   - [readFileAssets()] &mdash; (Android-only) Reads the file at a path in
     the Android app's assets folder.
   - [stat()] &mdash; Returns info on a file system item.
@@ -500,6 +500,33 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
   Additional parameters.
 - Resolves once completed.
 
+### read()
+[read()]: #read
+```ts
+function read(path: string, length = 0, position = 0, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
+```
+**VERIFIED:** Android.
+
+Reads `length` bytes from the given `position` of a file.
+
+**Note:** To read entire file at once consider to use [readFile()] instead.
+
+**Note:** No matter the encoding, this function will always read the specified
+number of bytes from the given position, and then transform that byte chunk
+into a string using the given encoding; that is in constrast of, say, reading
+the given number of characters, if `utf8` is given.
+
+- `path` &mdash; **string** &mdash; File path.
+- `length` &mdash; **number** | **undefined** &mdash; Optional. The number of
+  bytes to read. Defaults 0.
+- `position` &mdash; **number** | **undefined** &mdash; Optional. The starting
+  read position, in bytes. Defaults 0.
+- `encodingOrOptions` &mdash; [EncodingT] | [ReadFileOptionsT] | **undefined**
+  &mdash; Optional. The encoding to use, or additional read options (currently,
+  the encoding is the only option anyway). Defaults `utf8`.
+- Resolves to **string** &mdash; the content read from file, transformed into
+  the string according to the specified encoding.
+
 ### readdir()
 [readdir()]: #readdir-1
 ```ts
@@ -547,7 +574,9 @@ function readFile(path: string, encodingOrOptions?: EncodingT | ReadFileOptionsT
 
 Reads the file at `path` and return its content as a string.
 
-**NOTE:** For `base64` encoding this function will return file content encoded
+**Note:** To read a selected fragment of the file see [read()].
+
+**Note:** For `base64` encoding this function will return file content encoded
 into Base64 format; for `ascii` it will fill each character of the result string
 with the code of corresponding byte in the file; and for `utf8` (default)
 it will assume the source file is UTF8-encoded, and it will decode it into
@@ -798,12 +827,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `read(filepath: string, length = 0, position = 0, encodingOrOptions?: any): Promise<string>`
-
-Reads `length` bytes from the given `position` of the file at `path` and returns contents. `encoding` can be one of `utf8` (default), `ascii`, `base64`. Use `base64` for reading binary files.
-
-Note: reading big files piece by piece using this method may be useful in terms of performance.
 
 ### `readFileRes(filename:string, encoding?: string): Promise<string>`
 
