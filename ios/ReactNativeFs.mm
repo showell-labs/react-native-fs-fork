@@ -270,21 +270,21 @@ RCT_EXPORT_METHOD(readFile:(NSString *)filepath
   resolve(base64Content);
 }
 
-RCT_EXPORT_METHOD(read:(NSString *)filepath
+RCT_EXPORT_METHOD(read:(NSString *)path
                   length: (double)length
                   position: (double)position
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:path];
 
     if (!fileExists) {
-        return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+        return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", path], nil);
     }
 
     NSError *error = nil;
 
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:&error];
 
     if (error) {
         return [self reject:reject withError:error];
@@ -295,7 +295,7 @@ RCT_EXPORT_METHOD(read:(NSString *)filepath
     }
 
     // Open the file handler.
-    NSFileHandle *file = [NSFileHandle fileHandleForReadingAtPath:filepath];
+    NSFileHandle *file = [NSFileHandle fileHandleForReadingAtPath:path];
     if (file == nil) {
         return reject(@"EISDIR", @"EISDIR: Could not open file for reading", nil);
     }
