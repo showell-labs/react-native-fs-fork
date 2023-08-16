@@ -236,7 +236,11 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await writeFile(`${path}/file-b.txt`, 'A second test file');
       const dir = await readdir(path);
 
-      if (!isEqual(dir, ['folder', 'file-a.txt', 'file-b.txt'])) return 'fail';
+      // TODO: As of now, readdir() does not guarantee any specific order
+      // of names in the returned listing.
+      dir.sort();
+
+      if (!isEqual(dir, ['file-a.txt', 'file-b.txt', 'folder'])) return 'fail';
 
       return 'pass';
     } catch {

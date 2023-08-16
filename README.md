@@ -541,10 +541,12 @@ the given number of characters, if `utf8` is given.
 ```ts
 function readdir(path: string): Promise<string[]>;
 ```
-**VERIFIED:** Android
+**VERIFIED:** Android, iOS (new arch)
 
 Lists the content of given folder (names only &mdash; NodeJS-style). Note the
 lowercase `d` in the name, unlike in [readDir()].
+
+**NOTE:** There is no guarantees about the sort order of resolved listing.
 
 - `path` &mdash; **string** &mdash; Folder path.
 - Resolves to a **string** array &mdash; the names of items in the folder.
@@ -557,6 +559,9 @@ function readDir(path: string): Promise<ReadDirItem[]>;
 **VERIFIED:** Android.
 
 Lists the content of given absolute path.
+
+**NOTE:** There is no guarantees about the sort order of resolved listing.
+
 - `path` &mdash; **string** &mdash; Path.
 - Resolves to an array of [ReadDirResItemT] objects.
 
