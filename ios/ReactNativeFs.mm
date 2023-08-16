@@ -384,25 +384,26 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
   resolve(output);
 }
 
-RCT_EXPORT_METHOD(moveFile:(NSString *)filepath
-                  destPath:(NSString *)destPath
-                  options:(NSDictionary *)options
+
+RCT_EXPORT_METHOD(moveFile:(NSString *)from
+                  into:(NSString *)into
+                  options:(JS::NativeReactNativeFs::FileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
   NSFileManager *manager = [NSFileManager defaultManager];
 
   NSError *error = nil;
-  BOOL success = [manager moveItemAtPath:filepath toPath:destPath error:&error];
+  BOOL success = [manager moveItemAtPath:from toPath:into error:&error];
 
   if (!success) {
     return [self reject:reject withError:error];
   }
 
-  if ([options objectForKey:@"NSFileProtectionKey"]) {
+  if (options.NSFileProtectionKey()) {
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
-    [attributes setValue:[options objectForKey:@"NSFileProtectionKey"] forKey:@"NSFileProtectionKey"];
-    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:destPath error:&error];
+    [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
+    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
 
     if (!updateSuccess) {
       return [self reject:reject withError:error];
@@ -1015,11 +1016,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (void)getAllExternalFilesDirs:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"getAllExternalFilesDirs()"];
-}
-
-
-- (void)moveFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptionsT &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"moveFile()"];
 }
 
 

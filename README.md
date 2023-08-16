@@ -476,7 +476,7 @@ Provides information about free and total file system space.
 ```ts
 function moveFile(from: string, into: string): Promise<void>;
 ```
-**VERIFIED:** Android
+**VERIFIED:** Android, iOS (new arch)
 
 Moves an item (a file, or a folder with files) to a new location. This is more
 performant than reading and then re-writing the file data because the move
