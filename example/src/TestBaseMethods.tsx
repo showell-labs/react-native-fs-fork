@@ -123,14 +123,22 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'getFSInfo()': async () => {
     try {
       const res = await getFSInfo();
+
       if (
         typeof res.freeSpace !== 'number' ||
-        typeof res.freeSpaceEx !== 'number' ||
-        typeof res.totalSpace !== 'number' ||
-        typeof res.totalSpaceEx !== 'number'
+        typeof res.totalSpace !== 'number'
       ) {
         return 'fail';
       }
+
+      if (
+        Platform.OS === 'android' &&
+        (typeof res.freeSpaceEx !== 'number' ||
+          typeof res.totalSpaceEx !== 'number')
+      ) {
+        return 'fail';
+      }
+
       return 'pass';
     } catch {
       return 'fail';
@@ -199,8 +207,6 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
       const path = `${TemporaryDirectoryPath}/read-test`;
       await writeFile(path, utf8, 'ascii');
-
-      console.log(await read(path, 2, 1, 'base64'));
 
       if (
         (await read(path)) !== '' ||

@@ -465,7 +465,7 @@ folder.
 ```ts
 function getFSInfo(): Promise<FSInfoResultT>;
 ```
-**VERIFIED:** Android
+**VERIFIED:** Android, iOS (new arch)
 
 Provides information about free and total file system space.
 
@@ -701,10 +701,15 @@ The type of result resolved by [getFSInfo()].
 
 - `freeSpace` &mdash; **number** &mdash; Free storage space on the device,
   in bytes.
-- `freeSpaceEx` &mdash; **number** &mdash; Free storage space in the external
-  storage, in bytes.
 - `totalSpace` &mdash; **number** &mdash; The total storage space on the device,
   in bytes.
+
+**BEWARE:** The following values have been seen reported on Android, but they
+are not reported on iOS, probably neither on other systems, and they should be
+further checked / fixed.
+
+- `freeSpaceEx` &mdash; **number** &mdash; Free storage space in the external
+  storage, in bytes.
 - `totalSpaceEx` &mdash; **number** &mdash; The total storage space in
   the external storage, in bytes.
 
