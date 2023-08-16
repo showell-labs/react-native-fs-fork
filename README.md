@@ -400,13 +400,17 @@ IMPORTANT: when using `ExternalStorageDirectoryPath` it's necessary to request p
 ```ts
 function copyFile(from: string, into: string, options?: FileOptionsT): Promise<void>;
 ```
-**VERIFIED:** Android.
+**VERIFIED:** Android, iOS (new arch)
 
 Copies a file to a new destination. Throws if called on a directory.
 
 **Note:** On Android and Windows [copyFile()] will overwrite `destPath` if it
 already exists. On iOS an error will be thrown if the file already exists.
 &mdash; **beware**, this has not been verified yet.
+
+**BEWARE:** On Android [copyFile()] throws if called on a folder; on other
+platforms it does not throw, but it has not been verified yet, if it actually
+copies a folder with all its content there.
 
 - `from` &mdash; **string** &mdash; Source path.
 - `into` &mdash; **string** &mdash; Destination path.

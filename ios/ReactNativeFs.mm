@@ -90,7 +90,7 @@ RCT_EXPORT_METHOD(stat:(NSString *)filepath
 
 RCT_EXPORT_METHOD(writeFile:(NSString *)filepath
                   b64:(NSString *)base64Content
-                  options:(JS::NativeReactNativeFs::FileOptions &)options
+                  options:(JS::NativeReactNativeFs::FileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
@@ -412,25 +412,26 @@ RCT_EXPORT_METHOD(moveFile:(NSString *)filepath
   resolve(nil);
 }
 
-RCT_EXPORT_METHOD(copyFile:(NSString *)filepath
-                  destPath:(NSString *)destPath
-                  options:(NSDictionary *)options
+
+RCT_EXPORT_METHOD(copyFile:(NSString *)from
+                  into:(NSString *)into
+                  options:(JS::NativeReactNativeFs::FileOptionsT & )options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
   NSFileManager *manager = [NSFileManager defaultManager];
 
   NSError *error = nil;
-  BOOL success = [manager copyItemAtPath:filepath toPath:destPath error:&error];
+  BOOL success = [manager copyItemAtPath:from toPath:into error:&error];
 
   if (!success) {
     return [self reject:reject withError:error];
   }
 
-  if ([options objectForKey:@"NSFileProtectionKey"]) {
+  if (options.NSFileProtectionKey()) {
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
-    [attributes setValue:[options objectForKey:@"NSFileProtectionKey"] forKey:@"NSFileProtectionKey"];
-    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:destPath error:&error];
+    [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
+    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
 
     if (!updateSuccess) {
       return [self reject:reject withError:error];
@@ -988,11 +989,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 }
 
 
-- (void)copyFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
-  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFile()"];
-}
-
-
 - (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFileAssets()"];
 }
@@ -1022,7 +1018,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 }
 
 
-- (void)moveFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptions &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)moveFile:(NSString *)from into:(NSString *)into options:(JS::NativeReactNativeFs::FileOptionsT &)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"moveFile()"];
 }
 

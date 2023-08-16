@@ -1,6 +1,6 @@
 import { isEqual, isMatch } from 'lodash';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import {
   copyFile,
@@ -61,10 +61,12 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
 
-      // Can it move a folder with its content?
+      // Can it copy a folder with its content?
       try {
         await copyFile(`${path}/folder`, `${path}/moved-folder`);
-        return 'fail';
+        // TODO: For platforms that allow to copy folders, we should do more
+        // checks here, similar to moveFile() checks.
+        return Platform.OS === 'android' ? 'fail' : 'pass';
       } catch (e: any) {
         if (
           e.code !== 'EISDIR' ||
