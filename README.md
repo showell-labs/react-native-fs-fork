@@ -272,6 +272,7 @@ RNFS.uploadFiles({
   - [stat()] &mdash; Returns info on a file system item.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
 and return its contents.
+  - [writeFile()] &mdash; Writes content into a file.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
   - [FileOptionsT] &mdash; Extra options for [copyFile()].
@@ -471,6 +472,21 @@ Provides information about free and total file system space.
 
 - Resolves to an [FSInfoResultT] object.
 
+### mkdir()
+[mkdir()]: #mkdir
+```ts
+function mkdir(path: string, options?: MkdirOptionsT): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Creates folder(s) at `path`, and does not throw if already exists (similar to
+`mkdir -p` in Linux).
+
+- `path` &mdash; **string** &mdash; Path to create.
+- `options` &mdash; **[MkdirOptionsT]** | **undefined** &mdash; Optional.
+  Additional parameters.
+- Resolves once completed.
+
 ### moveFile()
 [moveFile()]: #movefile
 ```ts
@@ -488,21 +504,6 @@ it behave on other systems, and whether it really overwrites items on Windows?
 - `from` &mdash; **string** &mdash; Old path of the item.
 - `into` &mdash; **string** &mdash; New path of the item.
 - Resolves once the operation is completed.
-
-### mkdir()
-[mkdir()]: #mkdir
-```ts
-function mkdir(path: string, options?: MkdirOptionsT): Promise<void>;
-```
-**VERIFIED:** Android, iOS, macOS, Windows.
-
-Creates folder(s) at `path`, and does not throw if already exists (similar to
-`mkdir -p` in Linux).
-
-- `path` &mdash; **string** &mdash; Path to create.
-- `options` &mdash; **[MkdirOptionsT]** | **undefined** &mdash; Optional.
-  Additional parameters.
-- Resolves once completed.
 
 ### read()
 [read()]: #read
