@@ -249,7 +249,9 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'readDir()': async () => {
     try {
-      const path = `${TemporaryDirectoryPath}/read-dir-test`;
+      let path = TemporaryDirectoryPath;
+      if (!path.endsWith('/')) path += '/';
+      path += 'read-dir-test';
       try {
         await unlink(path);
       } catch {}
@@ -259,34 +261,17 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await writeFile(`${path}/file-b.txt`, 'A second test file');
       const dir = await readDir(path);
 
-      // First object is a folder created by mkdir.
+      // TODO: Currently there is no guarantee on the sort order of the result.
+      dir.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Second object is the smaller "file-a.txt"
       let item = dir[0];
       if (
         !item ||
-        // TODO: This will be set on iOS?
-        item.ctime !== null ||
-        !item.isDirectory() ||
-        item.isFile() ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'folder' ||
-        item.path !== `${path}/folder` ||
-        // TODO: This can be platform dependent,
-        // also... why a folder size is 4096 bytes?
-        // Is it really a value reported by OS, or is it
-        // something resulting from how the library works?
-        item.size !== 4096
-      ) {
-        return 'fail';
-      }
-
-      // Second object is the smaller "file-a.txt"
-      item = dir[1];
-      if (
-        !item ||
-        // TODO: This will be set on iOS?
-        item.ctime !== null ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
         item.isDirectory() ||
         !item.isFile() ||
         !(item.mtime instanceof Date) ||
@@ -301,11 +286,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       }
 
       // Second object is the larger "file-b.txt"
-      item = dir[2];
+      item = dir[1];
       if (
         !item ||
-        // TODO: This will be set on iOS?
-        item.ctime !== null ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
         item.isDirectory() ||
         !item.isFile() ||
         !(item.mtime instanceof Date) ||
@@ -315,6 +302,34 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         item.path !== `${path}/file-b.txt` ||
         // TODO: This can be platform dependent.
         item.size !== 18
+      ) {
+        return 'fail';
+      }
+
+      // First object is a folder created by mkdir.
+      item = dir[2];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        !item.isDirectory() ||
+        item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'folder' ||
+        item.path !== `${path}/folder` ||
+        // TODO: This is platform dependent,
+        // also... why a folder size is 4096 or whatever bytes?
+        // Is it really a value reported by OS, or is it
+        // something resulting from how the library works?
+        item.size !==
+          Platform.select({
+            android: 4096,
+            default: 64,
+          })
       ) {
         return 'fail';
       }
