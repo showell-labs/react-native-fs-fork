@@ -14,11 +14,11 @@
 // these ourselves.
 namespace JS {
   namespace NativeReactNativeFs {
-    struct FileOptions {
+    struct FileOptionsT {
       NSString *NSFileProtectionKey() const {
         return _v[@"NSFileProtectionKey"];
       };
-      FileOptions(NSDictionary *const v) : _v(v) {}
+      FileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
       NSDictionary *_v;
     };
@@ -101,10 +101,10 @@ namespace JS {
   }
 }
 
-@implementation RCTCxxConvert (NativeReactNativeFs_FileOptions)
-+ (RCTManagedPointer *)JS_NativeReactNativeFs_FileOptions:(id)json
+@implementation RCTCxxConvert (NativeReactNativeFs_FileOptionsT)
++ (RCTManagedPointer *)JS_NativeReactNativeFs_FileOptionsT:(id)json
 {
-  return facebook::react::managedPointer<JS::NativeReactNativeFs::FileOptions>(json);
+  return facebook::react::managedPointer<JS::NativeReactNativeFs::FileOptionsT>(json);
 }
 @end
 @implementation RCTCxxConvert (NativeReactNativeFs_MkdirOptionsT)

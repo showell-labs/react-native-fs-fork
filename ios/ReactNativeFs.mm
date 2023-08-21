@@ -1061,7 +1061,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (dispatch_queue_t)methodQueue
 {
-  return dispatch_queue_create("pe.lum.rnfs", DISPATCH_QUEUE_SERIAL);
+  return dispatch_queue_create("pe.lum.newrnfs", DISPATCH_QUEUE_SERIAL);
 }
 
 + (BOOL)requiresMainQueueSetup
