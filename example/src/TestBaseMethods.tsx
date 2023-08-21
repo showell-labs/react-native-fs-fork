@@ -474,14 +474,26 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         res.isFile() ||
         // NOTE: mode is documented, but not actually returned, at least on
         // Android. We'll deal with it later.
-        res.mode !== undefined ||
+        res.mode !==
+          Platform.select({
+            android: undefined,
+            default: 493,
+          }) ||
         res.mtime.valueOf() < now - 1000 ||
         res.mtime.valueOf() > now + 1000 ||
         // TODO: Check this works as documented for Android Contentt URIs.
-        res.originalFilepath !== `${path}/folder` ||
+        res.originalFilepath !==
+          Platform.select({
+            android: `${path}/folder`,
+            ios: 'NOT_SUPPORTED_ON_IOS',
+          }) ||
         res.path !== `${path}/folder` ||
         // TODO: Again, check why we report 4096 byte size for a folder?
-        res.size !== 4096
+        res.size !==
+          Platform.select({
+            android: 4096,
+            ios: 64,
+          })
       ) {
         return 'fail';
       }
@@ -495,11 +507,19 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         !res.isFile() ||
         // NOTE: mode is documented, but not actually returned, at least on
         // Android. We'll deal with it later.
-        res.mode !== undefined ||
+        res.mode !==
+          Platform.select({
+            android: undefined,
+            default: 420,
+          }) ||
         res.mtime.valueOf() < now - 1000 ||
         res.mtime.valueOf() > now + 1000 ||
         // TODO: Check this works as documented for Android Contentt URIs.
-        res.originalFilepath !== `${path}/test-file.txt` ||
+        res.originalFilepath !==
+          Platform.select({
+            android: `${path}/test-file.txt`,
+            ios: 'NOT_SUPPORTED_ON_IOS',
+          }) ||
         res.path !== `${path}/test-file.txt` ||
         // TODO: Again, check why we report 4096 byte size for a folder?
         res.size !== 13
@@ -511,13 +531,25 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         res = await stat(`${path}/non-existing-file.txt`);
         return 'fail';
       } catch (e: any) {
-        if (
-          !isMatch(e, {
-            code: 'EUNSPECIFIED',
-            message: 'File does not exist',
-          })
-        ) {
-          return 'fail';
+        if (Platform.OS === 'android') {
+          if (
+            !isMatch(e, {
+              code: 'EUNSPECIFIED',
+              message: 'File does not exist',
+            })
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            !isMatch(e, {
+              code: 'ENSCOCOAERRORDOMAIN260',
+              message:
+                'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
+            })
+          ) {
+            return 'fail';
+          }
         }
       }
 

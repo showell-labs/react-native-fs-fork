@@ -632,7 +632,7 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
 ```ts
 function stat(path: string): Promise<StatResultT>;
 ```
-**VERIFIED:** Android
+**VERIFIED:** Android, iOS (new arch)
 
 Stats an item at `path`. If the `path` is linked to a virtual file, for example
 Android Content URI, the `originalPath` can be used to find the pointed file
@@ -821,9 +821,8 @@ The type of result resolved by [stat()].
   is a folder; _false_ otherwise.
 - `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item is
   a file; _false_ otherwise.
-- `mode` &mdash; **undefined** &mdash; It was documented as _UNIX file mode_,
-  with **number** type, but at least on Android the library did not return
-  such value from [stat()]. We'll do something about it later.
+- `mode` &mdash; **number** | **undefined** &mdash; UNIX file mode; _undefined_
+  on platforms that currnetly do not support it (Android).
 - `mtime` &mdash; [Date] &mdash; Item's last modification date.
 - `originalFilepath` &mdash; **string** &mdash; (Android-only) In case
   of content uri this is the pointed file path, otherwise is the same as `path`.
