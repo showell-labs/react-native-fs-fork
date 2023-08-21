@@ -405,7 +405,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function copyFile(from: string, into: string, options?: FileOptionsT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Copies a file to a new destination. Throws if called on a directory.
 
@@ -470,7 +470,7 @@ folder.
 ```ts
 function getFSInfo(): Promise<FSInfoResultT>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Provides information about free and total file system space.
 
@@ -496,7 +496,7 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
 ```ts
 function moveFile(from: string, into: string): Promise<void>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Moves an item (a file, or a folder with files) to a new location. This is more
 performant than reading and then re-writing the file data because the move
@@ -514,7 +514,7 @@ it behave on other systems, and whether it really overwrites items on Windows?
 ```ts
 function read(path: string, length = 0, position = 0, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Reads `length` bytes from the given `position` of a file.
 
@@ -546,7 +546,7 @@ the given number of characters, if `utf8` is given.
 ```ts
 function readdir(path: string): Promise<string[]>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Lists the content of given folder (names only &mdash; NodeJS-style). Note the
 lowercase `d` in the name, unlike in [readDir()].
@@ -561,7 +561,7 @@ lowercase `d` in the name, unlike in [readDir()].
 ```ts
 function readDir(path: string): Promise<ReadDirItem[]>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Lists the content of given absolute path.
 
@@ -632,7 +632,7 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
 ```ts
 function stat(path: string): Promise<StatResultT>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Stats an item at `path`. If the `path` is linked to a virtual file, for example
 Android Content URI, the `originalPath` can be used to find the pointed file
