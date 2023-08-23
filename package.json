@@ -44,8 +44,8 @@
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.72.2",
-    "@types/jest": "^29.5.3",
-    "@types/react": "^18.2.20",
+    "@types/jest": "^29.5.4",
+    "@types/react": "^18.2.21",
     "del-cli": "^5.0.0",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^9.0.0",

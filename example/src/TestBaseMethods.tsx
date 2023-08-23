@@ -230,7 +230,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await writeFile(path, utf8, 'ascii');
 
       if (
-        (await read(path)) !== (['android', 'windows'].includes(Platform.OS) ? '' : good) ||
+        (await read(path)) !==
+          (['android', 'windows'].includes(Platform.OS) ? '' : good) ||
         (await read(path, 8)) !== good ||
         // NOTE: No matter the encoding, the length is in bytes, rather than
         // in read symbols.
@@ -293,7 +294,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows'&& item.isDirectory()) ||
+        (Platform.OS !== 'windows' && item.isDirectory()) ||
         (Platform.OS !== 'windows' && !item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
@@ -314,7 +315,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows'&& item.isDirectory()) ||
+        (Platform.OS !== 'windows' && item.isDirectory()) ||
         (Platform.OS !== 'windows' && !item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
@@ -335,7 +336,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows'&& !item.isDirectory()) ||
+        (Platform.OS !== 'windows' && !item.isDirectory()) ||
         (Platform.OS !== 'windows' && item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
@@ -548,10 +549,11 @@ const tests: { [name: string]: StatusOrEvaluator } = {
             windows: undefined,
           }) ||
         res.path !== `${path}${SEP}test-file.txt` ||
-        res.size !== Platform.select<number | string>({
-          windows: '13',
-          default: 13,
-        })
+        res.size !==
+          Platform.select<number | string>({
+            windows: '13',
+            default: 13,
+          })
       ) {
         return 'fail';
       }
