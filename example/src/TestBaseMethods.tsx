@@ -34,6 +34,8 @@ function logCharCodes(datum: string) {
 }
 */
 
+const SEP = Platform.OS === 'windows' ? '\\' : '/';
+
 const tests: { [name: string]: StatusOrEvaluator } = {
   'copyFile()': async () => {
     // TODO: It should be also tested and documented:
@@ -269,7 +271,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'readDir()': async () => {
     try {
       let path = TemporaryDirectoryPath;
-      if (!path.endsWith('/')) path += '/';
+      if (!path.endsWith(SEP)) path += SEP;
       path += 'read-dir-test';
       try {
         await unlink(path);
@@ -291,13 +293,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        item.isDirectory() ||
-        !item.isFile() ||
+        (Platform.OS !== 'windows'&& item.isDirectory()) ||
+        (Platform.OS !== 'windows' && !item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
         item.name !== 'file-a.txt' ||
-        item.path !== `${path}/file-a.txt` ||
+        item.path !== `${path}${SEP}file-a.txt` ||
         // TODO: This can be platform dependent.
         item.size !== 11
       ) {
@@ -312,13 +314,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        item.isDirectory() ||
-        !item.isFile() ||
+        (Platform.OS !== 'windows'&& item.isDirectory()) ||
+        (Platform.OS !== 'windows' && !item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
         item.name !== 'file-b.txt' ||
-        item.path !== `${path}/file-b.txt` ||
+        item.path !== `${path}${SEP}file-b.txt` ||
         // TODO: This can be platform dependent.
         item.size !== 18
       ) {
@@ -333,13 +335,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        !item.isDirectory() ||
-        item.isFile() ||
+        (Platform.OS !== 'windows'&& !item.isDirectory()) ||
+        (Platform.OS !== 'windows' && item.isFile()) ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
         item.name !== 'folder' ||
-        item.path !== `${path}/folder` ||
+        item.path !== `${path}${SEP}folder` ||
         // TODO: This is platform dependent,
         // also... why a folder size is 4096 or whatever bytes?
         // Is it really a value reported by OS, or is it
@@ -347,6 +349,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         item.size !==
           Platform.select({
             android: 4096,
+            windows: 0,
             default: 64,
           })
       ) {

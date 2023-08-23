@@ -564,11 +564,15 @@ lowercase `d` in the name, unlike in [readDir()].
 ```ts
 function readDir(path: string): Promise<ReadDirItem[]>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Lists the content of given absolute path.
 
 **BEWARE:** There is no guarantees about the sort order of resolved listing.
+
+**BEWARE:** On Windows the `isDirectory()` and `isFile()` methods of result
+currently return _false_ for all items; also `size` value in the result is
+platform dependent for directories.
 
 - `path` &mdash; **string** &mdash; Path.
 - Resolves to an array of [ReadDirResItemT] objects.
