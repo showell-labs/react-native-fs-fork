@@ -115,6 +115,7 @@
     </ClInclude>
     <ClInclude Include="ReactNativeModule.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RNFSException.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -125,6 +126,7 @@
       <DependentUpon>ReactPackageProvider.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="RNFSException.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ReactPackageProvider.idl" />
