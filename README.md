@@ -517,11 +517,11 @@ on other platforms it works fine.
 ```ts
 function read(path: string, length = 0, position = 0, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Reads `length` bytes from the given `position` of a file.
 
-**BEWARE:** On Android [read()] called with zero `length` and `position`
+**BEWARE:** On Android and Windows [read()] called with zero `length` and `position`
 resolves to empty string; however on other platforms it resolves to the entire
 file content (same as [readFile()]). This behavior has been inherited from
 the legacy RNFS implementation, and is to be corrected in future.

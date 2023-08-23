@@ -228,7 +228,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await writeFile(path, utf8, 'ascii');
 
       if (
-        (await read(path)) !== (Platform.OS === 'android' ? '' : good) ||
+        (await read(path)) !== (['android', 'windows'].includes(Platform.OS) ? '' : good) ||
         (await read(path, 8)) !== good ||
         // NOTE: No matter the encoding, the length is in bytes, rather than
         // in read symbols.
