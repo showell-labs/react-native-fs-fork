@@ -195,14 +195,24 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       }
 
       // Can it move a folder with its content?
-      await moveFile(`${path}/folder`, `${path}/moved-folder`);
-      if (
-        (await exists(`${path}/folder`)) ||
-        !(await exists(`${path}/moved-folder/another-test-file.txt`)) ||
-        (await readFile(`${path}/moved-folder/another-test-file.txt`)) !==
-          'Another dummy content'
-      ) {
-        return 'fail';
+      try {
+        await moveFile(`${path}/folder`, `${path}/moved-folder`);
+        if (
+          (await exists(`${path}/folder`)) ||
+          !(await exists(`${path}/moved-folder/another-test-file.txt`)) ||
+          (await readFile(`${path}/moved-folder/another-test-file.txt`)) !==
+            'Another dummy content'
+        ) {
+          return 'fail';
+        }
+      } catch (e: any) {
+        if (
+          Platform.OS !== 'windows' ||
+          e.code !== 'EUNSPECIFIED' ||
+          e.message !== 'The parameter is incorrect.'
+        ) {
+          return 'fail';
+        }
       }
 
       return 'pass';

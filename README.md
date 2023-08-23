@@ -496,7 +496,7 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
 ```ts
 function moveFile(from: string, into: string): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Moves an item (a file, or a folder with files) to a new location. This is more
 performant than reading and then re-writing the file data because the move
@@ -504,6 +504,9 @@ is done natively and the data doesn't have to be copied or cross the bridge.
 
 **Note:** Overwrites existing file in Windows &mdash; To be verified, how does
 it behave on other systems, and whether it really overwrites items on Windows?
+
+**BEWARE:** On Windows it currently does not allow moving folders with files,
+on other platforms it works fine.
 
 - `from` &mdash; **string** &mdash; Old path of the item.
 - `into` &mdash; **string** &mdash; New path of the item.
