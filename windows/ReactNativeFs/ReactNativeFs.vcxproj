@@ -109,7 +109,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="NativeReactNativeFsSpec.g.h" />
+    <ClInclude Include="codegen\NativeReactNativeFsSpec.g.h" />
     <ClInclude Include="ReactPackageProvider.h">
       <DependentUpon>ReactPackageProvider.idl</DependentUpon>
     </ClInclude>

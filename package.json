@@ -8,6 +8,7 @@
   "react-native": "src/index",
   "source": "src/index",
   "scripts": {
+    "codegen-windows": "react-native codegen-windows",
     "test": "npm run lint && npm run typecheck",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -62,7 +63,7 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-windows": "*"
+    "react-native-windows": "^0.72"
   },
   "engines": {
     "node": ">= 16.0.0"
@@ -121,6 +122,10 @@
   "codegenConfig": {
     "name": "RNReactNativeFsSpec",
     "type": "modules",
-    "jsSrcsDir": "src"
+    "jsSrcsDir": "src",
+    "windows": {
+      "namespace": "winrt::ReactNativeFs",
+      "outputDirectory": "windows/ReactNativeFs/codegen"
+    }
   }
 }

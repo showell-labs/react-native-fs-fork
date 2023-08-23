@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NativeReactNativeFsSpec.g.h"
+#include "codegen/NativeReactNativeFsSpec.g.h"
 
 #include "JSValue.h"
 #include "NativeModules.h"
