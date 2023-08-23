@@ -66,14 +66,23 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         await copyFile(`${path}/folder`, `${path}/moved-folder`);
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
-        return Platform.OS === 'android' ? 'fail' : 'pass';
+        return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
       } catch (e: any) {
-        if (
-          e.code !== 'EISDIR' ||
-          e.message !==
-            `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
-        ) {
-          return 'fail';
+        if (Platform.OS === 'windows') {
+          if (
+            e.code !== 'EUNSPECIFIED' ||
+            e.message !== 'The parameter is incorrect.'
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            e.code !== 'EISDIR' ||
+            e.message !==
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+          ) {
+            return 'fail';
+          }
         }
       }
 

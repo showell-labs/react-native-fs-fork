@@ -405,7 +405,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function copyFile(from: string, into: string, options?: FileOptionsT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Copies a file to a new destination. Throws if called on a directory.
 
