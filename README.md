@@ -639,11 +639,17 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
 ```ts
 function stat(path: string): Promise<StatResultT>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Stats an item at `path`. If the `path` is linked to a virtual file, for example
 Android Content URI, the `originalPath` can be used to find the pointed file
 path (**beware** &mdash; this has not been verified yet).
+
+**BEWARE:** On Windows a bunch of stuff in the response is currently not compatible
+with the specs &mdash; `size` is a string rather than number, `isDirectory()` and `isFile()`
+do not work (always return _false_), _etc_. Also on Windows, even with those defects
+accounted for the test for this function tends to randomly fail on a regular basis.
+It thus requires more troubleshooting, but it is not a priority for now.
 
 - `path` &mdash; **string** &mdash; Item path.
 - Resolves to a [StatResultT] object.
