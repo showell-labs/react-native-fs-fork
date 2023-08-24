@@ -5,14 +5,14 @@ import RNFS from './ReactNativeFs';
 import {
   type DownloadFileOptions,
   type DownloadResult,
-  type FSInfoResult,
-  type FileOptions,
-  type MkdirOptions,
+  type FSInfoResultT,
+  type FileOptionsT,
+  type MkdirOptionsT,
   type NativeDownloadFileOptions,
   type NativeReadDirResItemT,
   type ReadDirAssetsResItemT,
-  type ReadDirItem,
-  type StatResult,
+  type ReadDirResItemT,
+  type StatResultT,
   type UploadFileOptions,
   type UploadResult,
 } from './NativeReactNativeFs';
@@ -41,7 +41,7 @@ type ReadDirCommand = (path: string) => Promise<NativeReadDirResItemT[]>;
 async function readDirGeneric(
   dirpath: string,
   command: ReadDirCommand,
-): Promise<ReadDirItem[]> {
+): Promise<ReadDirResItemT[]> {
   const files = await command(normalizeFilePath(dirpath));
 
   const { FileTypeDirectory, FileTypeRegular } = RNFS.getConstants();
@@ -69,13 +69,13 @@ export function appendFile(
 }
 
 export function copyFile(
-  filepath: string,
-  destPath: string,
-  options: FileOptions = {},
+  from: string,
+  into: string,
+  options: FileOptionsT = {},
 ): Promise<void> {
   return RNFS.copyFile(
-    normalizeFilePath(filepath),
-    normalizeFilePath(destPath),
+    normalizeFilePath(from),
+    normalizeFilePath(into),
     options,
   );
 }
@@ -193,19 +193,22 @@ export function exists(filepath: string): Promise<boolean> {
   return RNFS.exists(normalizeFilePath(filepath));
 }
 
-export const getFSInfo: () => Promise<FSInfoResult> = RNFS.getFSInfo;
+export const getFSInfo: () => Promise<FSInfoResultT> = RNFS.getFSInfo;
 
 export const isResumable: (jobId: number) => Promise<boolean> =
   RNFS.isResumable;
 
-export function mkdir(path: string, options: MkdirOptions = {}): Promise<void> {
+export function mkdir(
+  path: string,
+  options: MkdirOptionsT = {},
+): Promise<void> {
   return RNFS.mkdir(normalizeFilePath(path), options);
 }
 
 export function moveFile(
   filepath: string,
   destPath: string,
-  options: FileOptions = {},
+  options: FileOptionsT = {},
 ): Promise<void> {
   return RNFS.moveFile(
     normalizeFilePath(filepath),
@@ -214,19 +217,21 @@ export function moveFile(
   );
 }
 
-export async function read(
-  filepath: string,
-  length: number = 0,
-  position: number = 0,
-  encodingOrOptions?: EncodingOptions,
-): Promise<string> {
-  const b64 = await RNFS.read(normalizeFilePath(filepath), length, position);
-  return decode(b64, toEncoding(encodingOrOptions));
-}
-
 export type ReadFileOptionsT = {
   encoding?: EncodingT;
 };
+
+export async function read(
+  path: string,
+  // TODO: It would make more sense to read entire file by the default,
+  // or, if the position is given, to read from that position to the end.
+  length: number = 0,
+  position: number = 0,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<string> {
+  const b64 = await RNFS.read(normalizeFilePath(path), length, position);
+  return decode(b64, toEncoding(encodingOrOptions));
+}
 
 export function readFile(
   path: string,
@@ -235,7 +240,7 @@ export function readFile(
   return readFileGeneric(path, encodingOrOptions, RNFS.readFile);
 }
 
-export function readDir(dirpath: string): Promise<ReadDirItem[]> {
+export function readDir(dirpath: string): Promise<ReadDirResItemT[]> {
   return readDirGeneric(dirpath, RNFS.readDir);
 }
 
@@ -245,7 +250,7 @@ export async function readdir(dirpath: string): Promise<string[]> {
   return files.map((file) => file.name || '');
 }
 
-export async function stat(filepath: string): Promise<StatResult> {
+export async function stat(filepath: string): Promise<StatResultT> {
   const result = await RNFS.stat(normalizeFilePath(filepath));
 
   const { FileTypeDirectory, FileTypeRegular } = RNFS.getConstants();
@@ -392,12 +397,12 @@ export function writeFile(
 
 // Android-specific.
 
-export function copyFileAssets(from: string, to: string): Promise<void> {
-  return RNFS.copyFileAssets(normalizeFilePath(from), normalizeFilePath(to));
+export function copyFileAssets(from: string, into: string): Promise<void> {
+  return RNFS.copyFileAssets(normalizeFilePath(from), normalizeFilePath(into));
 }
 
-export function copyFileRes(from: string, to: string): Promise<void> {
-  return RNFS.copyFileRes(from, normalizeFilePath(to));
+export function copyFileRes(from: string, into: string): Promise<void> {
+  return RNFS.copyFileRes(from, normalizeFilePath(into));
 }
 
 export function existsAssets(filepath: string): Promise<boolean> {
@@ -523,9 +528,11 @@ const {
 
 export {
   type EncodingT,
-  type MkdirOptions,
+  type FileOptionsT,
+  type FSInfoResultT,
+  type MkdirOptionsT,
   type ReadDirAssetsResItemT,
-  type ReadDirItem,
+  type ReadDirResItemT,
   type WriteFileOptionsT,
   MainBundlePath,
   CachesDirectoryPath,

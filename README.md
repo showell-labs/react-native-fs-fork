@@ -1,15 +1,20 @@
 # react-native-fs
 
-[React Native]: https://reactnative.dev/
-[react-native-fs]: https://github.com/itinance/react-native-fs
+<!-- Collection of hyperlinks. -->
+[Date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
 [New Architecture]: https://reactnative.dev/docs/the-new-architecture/landing-page
 [Old Architecture]: https://reactnative.dev/docs/native-modules-intro
+[React Native]: https://reactnative.dev/
+[react-native-fs]: https://github.com/itinance/react-native-fs
+<!-- End of hyperlinks collection. -->
 
+<!-- Status badges section (also double as links to related repos / CICD / etc.). -->
 [![Latest NPM Release](https://img.shields.io/npm/v/@dr.pogodin/react-native-fs.svg)](https://www.npmjs.com/package/@dr.pogodin/react-native-fs)
 [![NPM Downloads](https://img.shields.io/npm/dm/@dr.pogodin/react-native-fs.svg)](https://www.npmjs.com/package/@dr.pogodin/react-native-fs)
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/birdofpreyru/react-native-fs/tree/master.svg?style=shield)](https://app.circleci.com/pipelines/github/birdofpreyru/react-native-fs)
 [![GitHub Repo stars](https://img.shields.io/github/stars/birdofpreyru/react-native-fs?style=social)](https://github.com/birdofpreyru/react-native-fs)
 [![Dr. Pogodin Studio](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/logo-dr-pogodin-studio.svg)](https://dr.pogodin.studio/docs/react-native-fs)
+<!-- End of status badges section. -->
 
 File system access for [React Native] applications for Android, iOS,
 Mac (Catalyst), and Windows platforms. Supports both [new][New Architecture]
@@ -41,8 +46,32 @@ import {
 ```
 _When installing the library into a new project no additional steps are required._
 
+**ROADMAP:**
+- In the nearest future there will be a bunch of **v2.21.0-alpha.X** releases,
+  taking care that more and more functions of the original library work as per
+  documentation.
 
-**IMPORTANT:** _Below is the original documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
+- The aim for upcoming **v2.21.0** release is to be a drop-in replacement for
+  the latest **v2.20.0** release of the original library. It will have matching
+  functionality and API, with exception of any minor changes needed to fix
+  inconsistencies between **v2.20.0** and its documentation, and any changes
+  that just have to be done to satisfy latest React Native standards.
+
+- In further versions, **v2.X.Y**, we'll be taking care of improvements,
+  and optimizations of existing functionality, as well as adding new APIs,
+  and deprecating old ones (without yet dropping them out of the codebase),
+  with the ultimate goal to release **v3** version of the library.
+
+- The aims for **v3** release are the following:
+  - To unify library APIs for all platforms &mdash; the current library has
+    a lots of platform-dependent APIs, which goes against the purpose and spirit
+    of React Native &mdash; we'll abstract out and unify everything that is
+    possible, to allow smooth cross-plaform ride.
+  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
+  - To ensure that library has no intrinsic limitations (like now it is not efficient
+    for handling large files, _etc._)
+
+**IMPORTANT:** _Below is partially revised documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
 
 ---
 
@@ -222,26 +251,38 @@ RNFS.uploadFiles({
   - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
     directory.
 - [Functions]
-  - [copyFileAssets()] &mdash; (Android) Copies an asset file to
+  - [copyFile()] &mdash; Copies a file to a new destination.
+  - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
     the given destination.
   - [exists()] &mdash; Checks if an item exists at the given path.
   - [existsAssets()] &mdash; Checks if an item exists at the given path inside
     the Android assets folder.
+  - [getFSInfo()] &mdash; Gets info on the free and total storage space
+    on the device, and its external storage.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
-  - [readDirAssets()] &mdash; (Android only) Reads the content of a folder at
+  - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+  - [read()] &mdash; Reads a fragment of file content.
+  - [readdir()] &mdash; Lists the content of a folder (names only).
+  - [readDir()] &mdash; Lists the content of a folder (with item details).
+  - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
     the given path inside the Android assets folder.
-  - [readFile()] &mdash; Reads the file at a path and return its content as
-    a string.
-  - [readFileAssets()] &mdash; Android-only. Reads the file at a path in
+  - [readFile()] &mdash; Reads entire file content.
+  - [readFileAssets()] &mdash; (Android-only) Reads the file at a path in
     the Android app's assets folder.
+  - [stat()] &mdash; Returns info on a file system item.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
 and return its contents.
+  - [writeFile()] &mdash; Writes content into a file.
 - [Types]
   - [EncodingT] &mdash; Union of valid file encoding values.
-  - [MkdirOptions] &mdash; Extra options for [mkdir()].
+  - [FileOptionsT] &mdash; Extra options for [copyFile()].
+  - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
+  - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
+  - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
+  - [StatResultT] &mdash; The type of result resolved by [stat()].
   - [WriteFileOptionsT] &mdash; The type of extra options argument of
     the [writeFile()] function.
 - [Legacy] &mdash; Everything else inherited from the original library,
@@ -304,6 +345,8 @@ const ExternalStorageDirectoryPath: string;
 
 The absolute path to the external storage, shared directory (android only).
 
+**BEWARE:** When using `ExternalStorageDirectoryPath` it's necessary to request permissions (on Android) to read and write on the external storage, here an example: [React Native Offical Doc](https://facebook.github.io/react-native/docs/permissionsandroid)
+
 ### LibraryDirectoryPath
 [LibraryDirectoryPath]: #librarydirectorypath
 ```ts
@@ -350,15 +393,40 @@ const TemporaryDirectoryPath: string;
 The absolute path to the temporary directory (falls back to Caching-Directory on
 Android).
 
-IMPORTANT: when using `ExternalStorageDirectoryPath` it's necessary to request permissions (on Android) to read and write on the external storage, here an example: [React Native Offical Doc](https://facebook.github.io/react-native/docs/permissionsandroid)
+**BEWARE:** The trailing slash might be inconsistent in this path! At the very
+least, on Android this constant does not have a slash in the end; but on iOS
+(new arch) it has it. It is something to unify in future.
 
 ## Functions
 [Functions]: #functions
 
+### copyFile()
+[copyFile()]: #copyfile
+```ts
+function copyFile(from: string, into: string, options?: FileOptionsT): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Copies a file to a new destination. Throws if called on a directory.
+
+**Note:** On Android and Windows [copyFile()] will overwrite `destPath` if it
+already exists. On iOS an error will be thrown if the file already exists.
+&mdash; **beware**, this has not been verified yet.
+
+**BEWARE:** On Android [copyFile()] throws if called on a folder; on other
+platforms it does not throw, but it has not been verified yet, if it actually
+copies a folder with all its content there.
+
+- `from` &mdash; **string** &mdash; Source path.
+- `into` &mdash; **string** &mdash; Destination path.
+- `options` &mdash; [FileOptionsT] | **undefined** &mdash; Optional. Additional
+  settings. **beware**, it has not been verified they work, yet.
+- Resolves once done.
+
 ### copyFileAssets()
 [copyFileAssets()]: #copyfileassets
 ```ts
-function copyFileAssets(from: string, to: string): Promise<void>
+function copyFileAssets(from: string, into: string): Promise<void>
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
@@ -397,10 +465,21 @@ folder.
   assets folder.
 - Resolves _true_ if the item exists; _false_ otherwise.
 
+### getFSInfo()
+[getFSInfo()]: #getfsinfo
+```ts
+function getFSInfo(): Promise<FSInfoResultT>;
+```
+**VERIFIED:** Android, iOS, macOS.
+
+Provides information about free and total file system space.
+
+- Resolves to an [FSInfoResultT] object.
+
 ### mkdir()
 [mkdir()]: #mkdir
 ```ts
-function mkdir(path: string, options?: MkdirOptions): Promise<void>;
+function mkdir(path: string, options?: MkdirOptionsT): Promise<void>;
 ```
 **VERIFIED:** Android, iOS, macOS, Windows.
 
@@ -408,9 +487,95 @@ Creates folder(s) at `path`, and does not throw if already exists (similar to
 `mkdir -p` in Linux).
 
 - `path` &mdash; **string** &mdash; Path to create.
-- `options` &mdash; **[MkdirOptions]** | **undefined** &mdash; Optional.
+- `options` &mdash; **[MkdirOptionsT]** | **undefined** &mdash; Optional.
   Additional parameters.
 - Resolves once completed.
+
+### moveFile()
+[moveFile()]: #movefile
+```ts
+function moveFile(from: string, into: string): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Moves an item (a file, or a folder with files) to a new location. This is more
+performant than reading and then re-writing the file data because the move
+is done natively and the data doesn't have to be copied or cross the bridge.
+
+**Note:** Overwrites existing file in Windows &mdash; To be verified, how does
+it behave on other systems, and whether it really overwrites items on Windows?
+
+**BEWARE:** On Windows it currently does not allow moving folders with files,
+on other platforms it works fine.
+
+- `from` &mdash; **string** &mdash; Old path of the item.
+- `into` &mdash; **string** &mdash; New path of the item.
+- Resolves once the operation is completed.
+
+### read()
+[read()]: #read
+```ts
+function read(path: string, length = 0, position = 0, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Reads `length` bytes from the given `position` of a file.
+
+**BEWARE:** On Android and Windows [read()] called with zero `length` and `position`
+resolves to empty string; however on other platforms it resolves to the entire
+file content (same as [readFile()]). This behavior has been inherited from
+the legacy RNFS implementation, and is to be corrected in future.
+
+**Note:** To read entire file at once consider to use [readFile()] instead.
+
+**Note:** No matter the encoding, this function will always read the specified
+number of bytes from the given position, and then transform that byte chunk
+into a string using the given encoding; that is in constrast of, say, reading
+the given number of characters, if `utf8` is given.
+
+- `path` &mdash; **string** &mdash; File path.
+- `length` &mdash; **number** | **undefined** &mdash; Optional. The number of
+  bytes to read. Defaults 0.
+- `position` &mdash; **number** | **undefined** &mdash; Optional. The starting
+  read position, in bytes. Defaults 0.
+- `encodingOrOptions` &mdash; [EncodingT] | [ReadFileOptionsT] | **undefined**
+  &mdash; Optional. The encoding to use, or additional read options (currently,
+  the encoding is the only option anyway). Defaults `utf8`.
+- Resolves to **string** &mdash; the content read from file, transformed into
+  the string according to the specified encoding.
+
+### readdir()
+[readdir()]: #readdir-1
+```ts
+function readdir(path: string): Promise<string[]>;
+```
+**VERIFIED:** Android, iOS, macOS.
+
+Lists the content of given folder (names only &mdash; NodeJS-style). Note the
+lowercase `d` in the name, unlike in [readDir()].
+
+**BEWARE:** There is no guarantees about the sort order of resolved listing.
+
+- `path` &mdash; **string** &mdash; Folder path.
+- Resolves to a **string** array &mdash; the names of items in the folder.
+
+### readDir()
+[readDir()]: #readdir-2
+```ts
+function readDir(path: string): Promise<ReadDirItem[]>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Lists the content of given absolute path.
+
+**BEWARE:** There is no guarantees about the sort order of resolved listing.
+
+**BEWARE:** On Windows the `isDirectory()` and `isFile()` methods of result
+currently return _false_ for all items; also `size` value in the result is
+platform dependent for directories.
+
+- `path` &mdash; **string** &mdash; Path.
+- Resolves to an array of [ReadDirResItemT] objects.
 
 ### readDirAssets()
 [readDirAssets()]: #readdirassets
@@ -419,7 +584,7 @@ function readDirAssets(path: string): Promise<ReadDirItem[]>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
-(Android only) Reads the content of a folder at the given `path` inside
+(Android only) Lists the content of a folder at the given `path` inside
 the Android assets folder.
 
 - `path` &mdash; **string** &mdash; Folder path, relative to the root of
@@ -435,7 +600,9 @@ function readFile(path: string, encodingOrOptions?: EncodingT | ReadFileOptionsT
 
 Reads the file at `path` and return its content as a string.
 
-**NOTE:** For `base64` encoding this function will return file content encoded
+**Note:** To read a selected fragment of the file see [read()].
+
+**Note:** For `base64` encoding this function will return file content encoded
 into Base64 format; for `ascii` it will fill each character of the result string
 with the code of corresponding byte in the file; and for `utf8` (default)
 it will assume the source file is UTF8-encoded, and it will decode it into
@@ -466,6 +633,26 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
   Optional. Encoding, or extra options object, which currently only supports
   specifying the encoding.
 - Resolves to **string** &mdash; the asset content.
+
+### stat()
+[stat()]: #stat
+```ts
+function stat(path: string): Promise<StatResultT>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Stats an item at `path`. If the `path` is linked to a virtual file, for example
+Android Content URI, the `originalPath` can be used to find the pointed file
+path (**beware** &mdash; this has not been verified yet).
+
+**BEWARE:** On Windows a bunch of stuff in the response is currently not compatible
+with the specs &mdash; `size` is a string rather than number, `isDirectory()` and `isFile()`
+do not work (always return _false_), _etc_. Also on Windows, even with those defects
+accounted for the test for this function tends to randomly fail on a regular basis.
+It thus requires more troubleshooting, but it is not a priority for now.
+
+- `path` &mdash; **string** &mdash; Item path.
+- Resolves to a [StatResultT] object.
 
 ### unlink()
 [unlink()]: #unlink
@@ -515,10 +702,49 @@ type EncodingT = 'ascii' | 'base64' | `utf8`;
 ```
 Union of valid file encoding values.
 
-### MkdirOptions
-[MkdirOptions]: #mkdiroptions
+### FileOptionsT
+[FileOptionsT]: #fileoptionst
 ```ts
-type MkdirOptions = {
+type FileOptionsT = {
+  // iOS-specific.
+  NSFileProtectionKey?: string;
+};
+```
+The type of additional options for [copyFile()].
+
+- `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
+  iOS-only. See https://developer.apple.com/documentation/foundation/nsfileprotectionkey
+
+### FSInfoResultT
+[FSInfoResultT]: #fsinforesultt
+```js
+type FSInfoResultT = {
+  freeSpace: number;
+  freeSpaceEx: number;
+  totalSpace: number;
+  totalSpaceEx: number;
+};
+```
+The type of result resolved by [getFSInfo()].
+
+- `freeSpace` &mdash; **number** &mdash; Free storage space on the device,
+  in bytes.
+- `totalSpace` &mdash; **number** &mdash; The total storage space on the device,
+  in bytes.
+
+**BEWARE:** The following values have been seen reported on Android, but they
+are not reported on iOS, probably neither on other systems, and they should be
+further checked / fixed.
+
+- `freeSpaceEx` &mdash; **number** &mdash; Free storage space in the external
+  storage, in bytes.
+- `totalSpaceEx` &mdash; **number** &mdash; The total storage space in
+  the external storage, in bytes.
+
+### MkdirOptionsT
+[MkdirOptionsT]: #mkdiroptionst
+```ts
+type MkdirOptionsT = {
   NSURLIsExcludedFromBackupKey?: boolean; // iOS only
 };
 ```
@@ -550,6 +776,31 @@ Type of result elements returned by the [readDirAssets()] function.
 - `isFile` &mdash; **() => boolean** &mdash; Is this item a regular file?
 - `isDirectory` &mdash; **() => boolean** &mdash; Is this item a directory?
 
+### ReadDirResItemT
+[ReadDirResItemT]: #readdirresitemt
+```ts
+type ReadDirResItemT = {
+  ctime: Date | null;
+  mtime: Date;
+  name: string;
+  path: string;
+  size: number;
+  isFile: () => boolean;
+  isDirectory: () => boolean;
+};
+```
+The type of objects returned by the [readDir()] function.
+- `ctime` &mdash; [Date] | **null** &mdash; Item creation date (iOS only;
+  **null** on other platforms).
+- `isDirectory` &mdash; **() => boolean** &mdash; Evaluates _true_ if item is
+  a folder; _false_ otherwise.
+- `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if item is
+  a file; _false_ otherwise.
+- `mtime` &mdash; [Date] &mdash; The last modified date of the item.
+- `name` &mdash; **string** &mdash; Name of the item.
+- `path` &mdash; **string** &mdash; Absolute path of the item.
+- `size` &mdash; **number** &mdash; Item size in bytes.
+
 ### ReadFileOptionsT
 [ReadFileOptionsT]: #readfileoptionst
 ```ts
@@ -561,6 +812,35 @@ The type of extra options argument of the [readFile()] function.
 
 - `encoding` &mdash; [EncodingT] | **undefined** &mdash; Optional. File encoding.
   Defaults `utf8`.
+
+### StatResultT
+[StatResultT]: #statresultt
+```ts
+type StatResultT = {
+  ctime: Date;
+  isDirectory: () => boolean;
+  isFile: () => boolean;
+  mode: undefined;
+  mtime: Date;
+  originalFilepath: string;
+  path: string;
+  size: number;
+};
+```
+The type of result resolved by [stat()].
+
+- `ctime` &mdash; [Date] &mdash; Item's creation date.
+- `isDirectory` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item
+  is a folder; _false_ otherwise.
+- `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item is
+  a file; _false_ otherwise.
+- `mode` &mdash; **number** | **undefined** &mdash; UNIX file mode; _undefined_
+  on platforms that currnetly do not support it (Android).
+- `mtime` &mdash; [Date] &mdash; Item's last modification date.
+- `originalFilepath` &mdash; **string** &mdash; (Android-only) In case
+  of content uri this is the pointed file path, otherwise is the same as `path`.
+- `path` &mdash; **string** &mdash; Item path.
+- `size` &mdash; **number** &mdash; Item size in bytes.
 
 ### WriteFileOptionsT
 [WriteFileOptionsT]: #writefileoptionst
@@ -584,52 +864,6 @@ from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
 
-### `readDir(dirpath: string): Promise<ReadDirItem[]>`
-
-Reads the contents of `path`. This must be an absolute path. Use the above path constants to form a usable file path.
-
-The returned promise resolves with an array of objects with the following properties:
-
-```js
-type ReadDirItem = {
-  ctime: date;     // The creation date of the file (iOS only)
-  mtime: date;     // The last modified date of the file
-  name: string;     // The name of the item
-  path: string;     // The absolute path to the item
-  size: string;     // Size in bytes
-  isFile: () => boolean;        // Is the item just a file?
-  isDirectory: () => boolean;   // Is the item a directory?
-};
-```
-
-### `readdir(dirpath: string): Promise<string[]>`
-
-Node.js style version of `readDir` that returns only the names. Note the lowercase `d`.
-
-### `stat(filepath: string): Promise<StatResult>`
-
-Stats an item at `filepath`. If the `filepath` is linked to a virtual file, for example Android Content URI, the `originalPath` can be used to find the pointed file path.
-The promise resolves with an object with the following properties:
-
-```js
-type StatResult = {
-  path:            // The same as filepath argument
-  ctime: date;     // The creation date of the file
-  mtime: date;     // The last modified date of the file
-  size: number;     // Size in bytes
-  mode: number;     // UNIX file mode
-  originalFilepath: string;    // ANDROID: In case of content uri this is the pointed file path, otherwise is the same as path
-  isFile: () => boolean;        // Is the file just a file?
-  isDirectory: () => boolean;   // Is the file a directory?
-};
-```
-
-### `read(filepath: string, length = 0, position = 0, encodingOrOptions?: any): Promise<string>`
-
-Reads `length` bytes from the given `position` of the file at `path` and returns contents. `encoding` can be one of `utf8` (default), `ascii`, `base64`. Use `base64` for reading binary files.
-
-Note: reading big files piece by piece using this method may be useful in terms of performance.
-
 ### `readFileRes(filename:string, encoding?: string): Promise<string>`
 
 Reads the file named `filename` in the Android app's `res` folder and return contents. Only the file name (not folder) needs to be specified. The file type will be detected from the extension and automatically located within `res/drawable` (for image files) or `res/raw` (for everything else). `encoding` can be one of `utf8` (default), `ascii`, `base64`. Use `base64` for reading binary files.
@@ -644,23 +878,11 @@ Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), 
 
 Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
 
-### `moveFile(filepath: string, destPath: string): Promise<void>`
-
-Moves the file located at `filepath` to `destPath`. This is more performant than reading and then re-writing the file data because the move is done natively and the data doesn't have to be copied or cross the bridge.
-
-Note: Overwrites existing file in Windows.
-
 ### `copyFolder(srcFolderPath: string, destFolderPath: string): Promise<void>`
 
 Copies the contents located at `srcFolderPath` to `destFolderPath`.
 
 Note: Windows only. This method is recommended when directories need to be copied from one place to another.
-
-### `copyFile(filepath: string, destPath: string): Promise<void>`
-
-Copies the file located at `filepath` to `destPath`.
-
-Note: On Android and Windows copyFile will overwrite `destPath` if it already exists. On iOS an error will be thrown if the file already exists.
 
 ### `copyFileRes(filename: string, destPath: string): Promise<void>`
 
@@ -894,17 +1116,6 @@ Percentage can be computed easily by dividing `totalBytesSent` by `totalBytesExp
 ### (iOS only) `stopUpload(jobId: number): Promise<void>`
 
 Abort the current upload job with this ID.
-
-### `getFSInfo(): Promise<FSInfoResult>`
-
-Returns an object with the following properties:
-
-```js
-type FSInfoResult = {
-  totalSpace: number;   // The total amount of storage space on the device (in bytes).
-  freeSpace: number;    // The amount of available storage space on the device (in bytes).
-};
-```
 
 ### (Android only) `scanFile(path: string): Promise<string[]>`
 

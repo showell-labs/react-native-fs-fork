@@ -17,6 +17,8 @@
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
 
+#include "RNFSException.h"
+
 using namespace winrt;
 using namespace winrt::ReactNativeFs;
 using namespace winrt::Windows::ApplicationModel;

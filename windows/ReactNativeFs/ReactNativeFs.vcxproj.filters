@@ -8,12 +8,14 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="ReactPackageProvider.cpp" />
     <ClCompile Include="ReactNativeModule.cpp" />
+    <ClCompile Include="RNFSException.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReactPackageProvider.h" />
     <ClInclude Include="ReactNativeModule.h" />
-    <ClInclude Include="NativeReactNativeFsSpec.g.h" />
+    <ClInclude Include="codegen\NativeReactNativeFsSpec.g.h" />
+    <ClInclude Include="RNFSException.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />

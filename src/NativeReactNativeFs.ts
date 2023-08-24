@@ -69,14 +69,16 @@ export type DownloadResult = {
   bytesWritten: number; // The number of bytes written to the file
 };
 
-export type FileOptions = {
+export type FileOptionsT = {
   // iOS-specific.
   NSFileProtectionKey?: string;
 };
 
-export type FSInfoResult = {
+export type FSInfoResultT = {
   totalSpace: number; // The total amount of storage space on the device (in bytes).
+  totalSpaceEx: number;
   freeSpace: number; // The amount of available storage space on the device (in bytes).
+  freeSpaceEx: number;
 };
 
 // TODO: Are these names really needed, can be just called
@@ -84,7 +86,7 @@ export type FSInfoResult = {
 export type Headers = { [name: string]: string };
 export type Fields = { [name: string]: string };
 
-export type MkdirOptions = {
+export type MkdirOptionsT = {
   // iOS-specific.
   NSURLIsExcludedFromBackupKey?: boolean;
   NSFileProtectionKey?: string;
@@ -107,10 +109,10 @@ export type ReadDirAssetsResItemT = {
 // TODO: When it is used as return type of Androids readDirAssets()
 // it is not so good, as there are no mtime and ctime fields in that case.
 // Should have a dedicated type for that.
-export type ReadDirItem = {
+export type ReadDirResItemT = {
   // Common.
-  mtime?: Date | null; // The last modified date of the file
-  name?: string; // The name of the item
+  mtime: Date | null; // The last modified date of the file
+  name: string; // The name of the item
   path: string; // The absolute path to the item
   size: number; // Size in bytes.
 
@@ -123,14 +125,14 @@ export type ReadDirItem = {
   isFile: () => boolean; // Is the file just a file?
 
   // iOS-specific
-  ctime?: Date | null; // The creation date of the file (iOS only)
+  ctime: Date | null; // The creation date of the file (iOS only)
 };
 
 // TODO: Essentially here StatResult is similar to ReadDirItem,
 // but it does not contain Date fields, thus making it possible
 // to pass it from native side, unlike ReadDirItem.
 
-export type StatResult = {
+export type StatResultT = {
   // TODO: why is this not documented?
   name?: string; // The name of the item.
 
@@ -162,7 +164,7 @@ export type NativeReadDirResItemT = {
   type: string;
 };
 
-type NativeStatResult = {
+type NativeStatResultT = {
   ctime: number; // Created date
   mtime: number; // Last modified date
   size: number; // Size in bytes
@@ -264,13 +266,13 @@ export interface Spec extends TurboModule {
 
   // Common.
   appendFile(path: string, b64: string): Promise<void>;
-  copyFile(from: string, to: string, options: FileOptions): Promise<void>;
+  copyFile(from: string, into: string, options: FileOptionsT): Promise<void>;
   downloadFile(options: NativeDownloadFileOptions): Promise<DownloadResult>;
   exists(path: string): Promise<boolean>;
-  getFSInfo(): Promise<FSInfoResult>;
+  getFSInfo(): Promise<FSInfoResultT>;
   hash(path: string, algorithm: string): Promise<string>;
-  mkdir(path: string, options: MkdirOptions): Promise<void>;
-  moveFile(from: string, to: string, options: FileOptions): Promise<void>;
+  mkdir(path: string, options: MkdirOptionsT): Promise<void>;
+  moveFile(from: string, into: string, options: FileOptionsT): Promise<void>;
 
   read(path: string, length: number, position: number): Promise<string>;
   readFile(path: string): Promise<string>;
@@ -278,18 +280,18 @@ export interface Spec extends TurboModule {
   // TODO: Not sure about the type of result here.
   readDir(path: string): Promise<NativeReadDirResItemT[]>;
 
-  stat(path: string): Promise<NativeStatResult>;
+  stat(path: string): Promise<NativeStatResultT>;
   stopDownload(jobId: number): void;
   stopUpload(jobId: number): void;
   touch(path: string, options: TouchOptions): Promise<void>;
   unlink(path: string): Promise<void>;
   uploadFiles(options: NativeUploadFileOptions): Promise<UploadResult>;
   write(path: string, b64: string, position: number): Promise<void>;
-  writeFile(path: string, b64: string, options: FileOptions): Promise<void>;
+  writeFile(path: string, b64: string, options: FileOptionsT): Promise<void>;
 
   // Android-specific.
-  copyFileAssets(from: string, to: string): Promise<void>;
-  copyFileRes(from: string, to: string): Promise<void>;
+  copyFileAssets(from: string, into: string): Promise<void>;
+  copyFileRes(from: string, into: string): Promise<void>;
   existsAssets(path: string): Promise<boolean>;
   existsRes(path: string): Promise<boolean>;
   getAllExternalFilesDirs(): Promise<string[]>;
@@ -324,7 +326,7 @@ export interface Spec extends TurboModule {
   resumeDownload(jobId: number): void;
 
   // Windows-specific.
-  copyFolder(from: string, to: string): Promise<void>;
+  copyFolder(from: string, into: string): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('ReactNativeFs');

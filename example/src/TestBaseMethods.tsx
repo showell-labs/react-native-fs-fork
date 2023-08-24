@@ -1,15 +1,22 @@
-import { isEqual } from 'lodash';
+import { isEqual, isMatch } from 'lodash';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
 import {
+  copyFile,
   copyFileAssets,
   exists,
   existsAssets,
+  getFSInfo,
   mkdir,
+  moveFile,
+  read,
+  readdir,
+  readDir,
   readDirAssets,
   readFile,
   readFileAssets,
+  stat,
   TemporaryDirectoryPath,
   unlink,
   writeFile,
@@ -27,7 +34,65 @@ function logCharCodes(datum: string) {
 }
 */
 
+const SEP = Platform.OS === 'windows' ? '\\' : '/';
+
 const tests: { [name: string]: StatusOrEvaluator } = {
+  'copyFile()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/copy-file-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it move a file?
+      await copyFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      if (
+        (await readFile(`${path}/test-file.txt`)) !== 'Dummy content' ||
+        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+      ) {
+        return 'fail';
+      }
+
+      // Can it copy a folder with its content?
+      try {
+        await copyFile(`${path}/folder`, `${path}/moved-folder`);
+        // TODO: For platforms that allow to copy folders, we should do more
+        // checks here, similar to moveFile() checks.
+        return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
+      } catch (e: any) {
+        if (Platform.OS === 'windows') {
+          if (
+            e.code !== 'EUNSPECIFIED' ||
+            e.message !== 'The parameter is incorrect.'
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            e.code !== 'EISDIR' ||
+            e.message !==
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+          ) {
+            return 'fail';
+          }
+        }
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'copyFileAssets()': async () => {
     const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
     try {
@@ -66,6 +131,30 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'getFSInfo()': async () => {
+    try {
+      const res = await getFSInfo();
+
+      if (
+        typeof res.freeSpace !== 'number' ||
+        typeof res.totalSpace !== 'number'
+      ) {
+        return 'fail';
+      }
+
+      if (
+        Platform.OS === 'android' &&
+        (typeof res.freeSpaceEx !== 'number' ||
+          typeof res.totalSpaceEx !== 'number')
+      ) {
+        return 'fail';
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'mkdir()': async () => {
     const pathA = `${TemporaryDirectoryPath}/test-mkdir-path`;
     const pathB = `${pathA}/inner/path`;
@@ -76,6 +165,198 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await exists(pathA)) return 'fail';
       await mkdir(pathB);
       if (!(await exists(pathB))) return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'moveFile()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/move-file-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it move a file?
+      await moveFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      if (
+        (await exists(`${path}/test-file.txt`)) ||
+        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+      ) {
+        return 'fail';
+      }
+
+      // Can it move a folder with its content?
+      try {
+        await moveFile(`${path}/folder`, `${path}/moved-folder`);
+        if (
+          (await exists(`${path}/folder`)) ||
+          !(await exists(`${path}/moved-folder/another-test-file.txt`)) ||
+          (await readFile(`${path}/moved-folder/another-test-file.txt`)) !==
+            'Another dummy content'
+        ) {
+          return 'fail';
+        }
+      } catch (e: any) {
+        if (
+          Platform.OS !== 'windows' ||
+          e.code !== 'EUNSPECIFIED' ||
+          e.message !== 'The parameter is incorrect.'
+        ) {
+          return 'fail';
+        }
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'read()': async () => {
+    try {
+      const good = 'GÖÖÐ\n';
+      const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
+      const path = `${TemporaryDirectoryPath}/read-test`;
+      await writeFile(path, utf8, 'ascii');
+
+      if (
+        (await read(path)) !==
+          (['android', 'windows'].includes(Platform.OS) ? '' : good) ||
+        (await read(path, 8)) !== good ||
+        // NOTE: No matter the encoding, the length is in bytes, rather than
+        // in read symbols.
+        (await read(path, 5)) !== 'GÖÖ' ||
+        (await read(path, 4, 1)) !== 'ÖÖ' ||
+        (await read(path, 2, 1, 'ascii')) !== '\xC3\x96' ||
+        (await read(path, 2, 1, 'base64')) !== 'w5Y='
+      ) {
+        return 'fail';
+      }
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'readdir()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/read-dir-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/file-a.txt`, 'A test file');
+      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      const dir = await readdir(path);
+
+      // TODO: As of now, readdir() does not guarantee any specific order
+      // of names in the returned listing.
+      dir.sort();
+
+      if (!isEqual(dir, ['file-a.txt', 'file-b.txt', 'folder'])) return 'fail';
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'readDir()': async () => {
+    try {
+      let path = TemporaryDirectoryPath;
+      if (!path.endsWith(SEP)) path += SEP;
+      path += 'read-dir-test';
+      try {
+        await unlink(path);
+      } catch {}
+      const now = Date.now();
+      await mkdir(`${path}/folder`);
+      await writeFile(`${path}/file-a.txt`, 'A test file');
+      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      const dir = await readDir(path);
+
+      // TODO: Currently there is no guarantee on the sort order of the result.
+      dir.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Second object is the smaller "file-a.txt"
+      let item = dir[0];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        (Platform.OS !== 'windows' && item.isDirectory()) ||
+        (Platform.OS !== 'windows' && !item.isFile()) ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'file-a.txt' ||
+        item.path !== `${path}${SEP}file-a.txt` ||
+        // TODO: This can be platform dependent.
+        item.size !== 11
+      ) {
+        return 'fail';
+      }
+
+      // Second object is the larger "file-b.txt"
+      item = dir[1];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        (Platform.OS !== 'windows' && item.isDirectory()) ||
+        (Platform.OS !== 'windows' && !item.isFile()) ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'file-b.txt' ||
+        item.path !== `${path}${SEP}file-b.txt` ||
+        // TODO: This can be platform dependent.
+        item.size !== 18
+      ) {
+        return 'fail';
+      }
+
+      // First object is a folder created by mkdir.
+      item = dir[2];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        (Platform.OS !== 'windows' && !item.isDirectory()) ||
+        (Platform.OS !== 'windows' && item.isFile()) ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'folder' ||
+        item.path !== `${path}${SEP}folder` ||
+        // TODO: This is platform dependent,
+        // also... why a folder size is 4096 or whatever bytes?
+        // Is it really a value reported by OS, or is it
+        // something resulting from how the library works?
+        item.size !==
+          Platform.select({
+            android: 4096,
+            windows: 0,
+            default: 64,
+          })
+      ) {
+        return 'fail';
+      }
+
       return 'pass';
     } catch {
       return 'fail';
@@ -168,7 +449,6 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (res !== good) return 'fail';
       return 'pass';
     } catch (e) {
-      console.error(e);
       return 'fail';
     }
   },
@@ -191,6 +471,127 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       res = await readFileAssets('test/good-utf8.txt', 'base64');
       if (res !== 'R8OWw5bDkAo=') return 'fail';
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'stat()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}${SEP}stat-test`;
+      try {
+        unlink(path);
+      } catch {}
+      const now = Date.now();
+      await mkdir(`${path}${SEP}folder`);
+      await writeFile(`${path}${SEP}test-file.txt`, 'Dummy content');
+
+      // TODO: There is something wrong with this test on Windows:
+      // it tends to randomly pass or fail, it should be double-checked
+      // why.
+      let res = await stat(`${path}${SEP}folder`);
+      if (
+        res.ctime.valueOf() < now - 1000 ||
+        res.ctime.valueOf() > now + 1000 ||
+        (Platform.OS !== 'windows' && !res.isDirectory()) ||
+        res.isFile() ||
+        // NOTE: mode is documented, but not actually returned, at least on
+        // Android. We'll deal with it later.
+        res.mode !==
+          Platform.select({
+            android: undefined,
+            windows: undefined,
+            default: 493,
+          }) ||
+        res.mtime.valueOf() < now - 1000 ||
+        res.mtime.valueOf() > now + 1000 ||
+        // TODO: Check this works as documented for Android Contentt URIs.
+        res.originalFilepath !==
+          Platform.select({
+            android: `${path}${SEP}folder`,
+            ios: 'NOT_SUPPORTED_ON_IOS',
+            windows: undefined,
+          }) ||
+        res.path !== `${path}${SEP}folder` ||
+        // TODO: Again, check why we report 4096 byte size for a folder?
+        res.size !==
+          Platform.select<number | string>({
+            android: 4096,
+            ios: 64,
+            windows: '0',
+          })
+      ) {
+        return 'fail';
+      }
+
+      res = await stat(`${path}${SEP}test-file.txt`);
+      if (
+        res.ctime.valueOf() < now - 1000 ||
+        res.ctime.valueOf() > now + 1000 ||
+        res.isDirectory() ||
+        (Platform.OS !== 'windows' && !res.isFile()) ||
+        // NOTE: mode is documented, but not actually returned, at least on
+        // Android. We'll deal with it later.
+        res.mode !==
+          Platform.select({
+            android: undefined,
+            default: 420,
+            windows: undefined,
+          }) ||
+        res.mtime.valueOf() < now - 1000 ||
+        res.mtime.valueOf() > now + 1000 ||
+        // TODO: Check this works as documented for Android Contentt URIs.
+        res.originalFilepath !==
+          Platform.select({
+            android: `${path}${SEP}test-file.txt`,
+            ios: 'NOT_SUPPORTED_ON_IOS',
+            windows: undefined,
+          }) ||
+        res.path !== `${path}${SEP}test-file.txt` ||
+        res.size !==
+          Platform.select<number | string>({
+            windows: '13',
+            default: 13,
+          })
+      ) {
+        return 'fail';
+      }
+
+      try {
+        res = await stat(`${path}${SEP}non-existing-file.txt`);
+        return 'fail';
+      } catch (e: any) {
+        if (Platform.OS === 'android') {
+          if (
+            !isMatch(e, {
+              code: 'EUNSPECIFIED',
+              message: 'File does not exist',
+            })
+          ) {
+            return 'fail';
+          }
+        } else if (Platform.OS === 'windows') {
+          if (
+            !isMatch(e, {
+              code: 'ENOENT',
+              message: `ENOENT: no such file or directory, open ${path}${SEP}non-existing-file.txt`,
+            })
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            !isMatch(e, {
+              code: 'ENSCOCOAERRORDOMAIN260',
+              message:
+                'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
+            })
+          ) {
+            return 'fail';
+          }
+        }
+      }
 
       return 'pass';
     } catch {
