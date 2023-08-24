@@ -37,7 +37,7 @@
   "bugs": {
     "url": "https://github.com/birdofpreyru/react-native-fs/issues"
   },
-  "homepage": "https://dr.pogodin.studio/docs/react-native-fs",
+  "homepage": "https://dr.pogodin.studio/docs/react-native-file-system",
   "title": "React Native File System",
   "dependencies": {
     "buffer": "^6.0.3"
