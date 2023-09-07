@@ -254,8 +254,10 @@ RNFS.uploadFiles({
   - [copyFile()] &mdash; Copies a file to a new destination.
   - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
     the given destination.
+  - [downloadFile()] &mdash; Downloads a file from network.
   - [exists()] &mdash; Checks if an item exists at the given path.
-  - [existsAssets()] &mdash; Checks if an item exists at the given path inside
+  - [existsAssets()] &mdash; (Android only) Checks if an item exists at
+    the given path inside
     the Android assets folder.
   - [getFSInfo()] &mdash; Gets info on the free and total storage space
     on the device, and its external storage.
@@ -274,6 +276,12 @@ RNFS.uploadFiles({
 and return its contents.
   - [writeFile()] &mdash; Writes content into a file.
 - [Types]
+  - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
+    to `begin` callback in [DownloadFileOptionsT].
+  - [DownloadFileOptionsT] &mdash; Options for [downloadFile()].
+  - [DownloadProgressCallbackResultT] &mdash; The type of argument passed to
+    the `progress` callback in [DownloadFileOptionsT].
+  - [DownloadResultT] &mdash; Return type of [downloadFile()].
   - [EncodingT] &mdash; Union of valid file encoding values.
   - [FileOptionsT] &mdash; Extra options for [copyFile()].
   - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
@@ -283,6 +291,7 @@ and return its contents.
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
     the [readFile()] function.
   - [StatResultT] &mdash; The type of result resolved by [stat()].
+  - [StringMapT] &mdash; Just a simple **string**-to-**string** mapping.
   - [WriteFileOptionsT] &mdash; The type of extra options argument of
     the [writeFile()] function.
 - [Legacy] &mdash; Everything else inherited from the original library,
@@ -438,6 +447,25 @@ it exists.
   folder's root).
 - `to` &mdash; **string** &mdash; Destination path.
 - Resolves once completed.
+
+### downloadFile()
+[downloadFile()]: #downloadfile
+```ts
+function downloadFile(options: DownloadFileOptionsT): {
+  jobId: number;
+  promise: Promise<DownloadResultT>;
+};
+```
+**VERIFIED:** Android.\
+**BEWARE:** Only basic functionality has been verified.
+
+Downloads a  file from `options.fromUrl` to `options.toFile`. It Will overwrite
+any previously existing file.
+
+- `options` &mdash; [DownloadFileOptionsT] &mdash; Download settings.
+- Returns an object holding `jobId` **number** (can be used to manage in-progress
+  download by corresponding functions) and `promise` resolving to [DownloadResultT]
+  once the download is completed.
 
 ### exists()
 [exists()]: #exists
@@ -695,6 +723,132 @@ turned into a group of 1-to-4 bytes in the written file).
 ## Types
 [Types]: #types
 
+### DownloadBeginCallbackResultT
+[DownloadBeginCallbackResultT]: #downloadbegincallbackresultt
+```ts
+type DownloadBeginCallbackResultT = {
+  jobId: number;
+  statusCode: number;
+  contentLength: number;
+  headers: Headers;
+};
+```
+The type of argument passed to `begin` callback in [DownloadFileOptionsT].
+
+- `jobId` &mdash; **number** &mdash; The download job ID, required if one wishes
+  to cancel the download. See [stopDownload()].
+- `statusCode` &mdash; **number** &mdash; The HTTP status code.
+- `contentLength` &mdash; **number** &mdash; The total size in bytes of
+  the download resource.
+- `headers` &mdash; [StringMapT] &mdash; The HTTP response headers from
+  the server.
+
+### DownloadFileOptionsT
+[DownloadFileOptionsT]: #downloadfileoptionst
+```ts
+type DownloadFileOptions = {
+  fromUrl: string;
+  toFile: string;
+  headers?: StringMapT;
+  background?: boolean;
+  discretionary?: boolean;
+  cacheable?: boolean;
+  progressInterval?: number;
+  progressDivider?: number;
+  begin?: (res: DownloadBeginCallbackResultT) => void;
+  progress?: (res: DownloadProgressCallbackResultT) => void;
+  resumable?: () => void;
+  connectionTimeout?: number;
+  readTimeout?: number;
+  backgroundTimeout?: number;
+};
+```
+The type of options argument of [downloadFile()].
+- `fromUrl` &mdash; **string** &mdash; URL to download file from.
+- `toFile` &mdash; **string** &mdash; Local filesystem path to save the file to.
+- `headers` &mdash; [StringMapT] &mdash; Optional. An object of headers to be
+  passed to the server.
+
+- `background` &mdash; **boolean** &mdash; Optional. Continue the download in
+  the background after the app terminates (iOS only).
+  See [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios).
+  Defaults _false_.
+
+- `discretionary` &mdash; **boolean** &mdash; Optional. Allow the OS to control
+  the timing and speed of the download to improve perceived performance
+  (iOS only).
+- `cacheable` &mdash; **boolean** &mdash; Optional. Whether the download can be
+  stored in the shared NSURLCache (iOS only, defaults to _true_).
+
+- `progressInterval` &mdash; **number** Optional. If provided, the download
+  progress events will be emitted with the maximum frequency of `progressInterval`.
+
+  For example, if `progressInterval` = 100, you will not receive callbacks more
+  often than every 100th millisecond.
+
+- `progressDivider` &mdash; **number** Optional. If provided, the download
+  progress events are emitted at `progressDivider` number of steps.
+
+  For example, if `progressDivider` = 10, you will receive only ten callbacks
+  for this values of progress: 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.
+  Use it for performance issues.
+
+  If `progressDivider` = 0, you will receive all `progressCallback` calls,
+  default value is 0.
+
+- `begin` &mdash; **(res: [DownloadBeginCallbackResultT]) => void** &mdash;
+  Optional; required if `progress` prop provided. If provided, it is invoked
+  when download starts, once headers have been received, and it is passed
+  a single argument of [DownloadBeginCallbackResultT] type.
+
+- `progress` &mdash; **(res: [DownloadProgressCallbackResultT]) => void** &mdash;
+  Optional. If provided, it is being invoked continuously and passed in a single
+  argument of [DownloadProgressCallbackResultT] type.
+
+- `resumable` &mdash; **() => void** &mdash; Optional. iOS-only. If provided,
+  it is invoked when the download has stopped and and can be resumed using [resumeDownload()]. 
+
+- `connectionTimeout` &mdash; **number** &mdash; Optional. Only supported on
+  Android yet.
+- `readTimeout` &mdash; **number** Optional. Supported on Android and iOS.
+- `backgroundTimeout` &mdash; **number** &mdash; Optional. Maximum time
+  (in milliseconds) to download an entire resource (iOS only, useful for timing
+  out background downloads).
+
+### DownloadProgressCallbackResultT
+[DownloadProgressCallbackResultT]: #downloadprogresscallbackresultt
+```ts
+type DownloadProgressCallbackResultT = {
+  jobId: number;
+  contentLength: number;
+  bytesWritten: number;
+};
+```
+The type of argument passed to the `progress` callback in [DownloadFileOptionsT].
+
+- `jobId` &mdash; **number** The download job ID, required if one wishes
+  to cancel the download. See [stopDownload()].
+- `contentLength` &mdash; **number** &mdash; The total size in bytes of
+  the download resource.
+- `bytesWritten` &mdash; **number** &mdash; The number of bytes written to
+  the file so far.
+
+### DownloadResultT
+[DownloadResultT]: #downloadresultt
+```ts
+type DownloadResultT = {
+  jobId: number;
+  statusCode: number;
+  bytesWritten: number;
+};
+```
+Return type of [downloadFile()].
+- `jobId` &mdash; **number** &mdash; The download job ID, required if one wishes
+  to cancel the download. See [stopDownload()].
+- `statusCode` &mdash; **number** &mdash; The HTTP status code.
+- `bytesWritten` &mdash; **number** &mdash; The number of bytes written to
+  the file.
+
 ### EncodingT
 [EncodingT]: #encodingt
 ```ts
@@ -842,6 +996,13 @@ The type of result resolved by [stat()].
 - `path` &mdash; **string** &mdash; Item path.
 - `size` &mdash; **number** &mdash; Item size in bytes.
 
+### StringMapT
+[StringMapT]: #stringmapt
+```ts
+type StringMapT = { [key: string]: string };
+```
+Just a simple **string**-to-**string** mapping.
+
 ### WriteFileOptionsT
 [WriteFileOptionsT]: #writefileoptionst
 ```ts
@@ -964,71 +1125,6 @@ Reads the file at `path` and returns its checksum as determined by `algorithm`, 
 ### `touch(filepath: string, mtime?: Date, ctime?: Date): Promise<string>`
 
 Sets the modification timestamp `mtime` and creation timestamp `ctime` of the file at `filepath`. Setting `ctime` is supported on iOS and Windows, android always sets both timestamps to `mtime`.
-
-### `downloadFile(options: DownloadFileOptions): { jobId: number, promise: Promise<DownloadResult> }`
-
-```js
-type DownloadFileOptions = {
-  fromUrl: string;          // URL to download file from
-  toFile: string;           // Local filesystem path to save the file to
-  headers?: Headers;        // An object of headers to be passed to the server
-  background?: boolean;     // Continue the download in the background after the app terminates (iOS only)
-  discretionary?: boolean;  // Allow the OS to control the timing and speed of the download to improve perceived performance  (iOS only)
-  cacheable?: boolean;      // Whether the download can be stored in the shared NSURLCache (iOS only, defaults to true)
-  progressInterval?: number;
-  progressDivider?: number;
-  begin?: (res: DownloadBeginCallbackResult) => void; // Note: it is required when progress prop provided
-  progress?: (res: DownloadProgressCallbackResult) => void;
-  resumable?: () => void;    // only supported on iOS yet
-  connectionTimeout?: number // only supported on Android yet
-  readTimeout?: number       // supported on Android and iOS
-  backgroundTimeout?: number // Maximum time (in milliseconds) to download an entire resource (iOS only, useful for timing out background downloads)
-};
-```
-```js
-type DownloadResult = {
-  jobId: number;          // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
-  statusCode: number;     // The HTTP status code
-  bytesWritten: number;   // The number of bytes written to the file
-};
-```
-
-Download file from `options.fromUrl` to `options.toFile`. Will overwrite any previously existing file.
-
-If `options.begin` is provided, it will be invoked once upon download starting when headers have been received and passed a single argument with the following properties:
-
-```js
-type DownloadBeginCallbackResult = {
-  jobId: number;          // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
-  statusCode: number;     // The HTTP status code
-  contentLength: number;  // The total size in bytes of the download resource
-  headers: Headers;       // The HTTP response headers from the server
-};
-```
-
-If `options.progress` is provided, it will be invoked continuously and passed a single argument with the following properties:
-
-```js
-type DownloadProgressCallbackResult = {
-  jobId: number;          // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
-  contentLength: number;  // The total size in bytes of the download resource
-  bytesWritten: number;   // The number of bytes written to the file so far
-};
-```
-
-If `options.progressInterval` is provided, it will return progress events in the maximum frequency of `progressDivider`.
-For example, if `progressInterval` = 100, you will not receive callbacks more often than every 100th millisecond.
-
-If `options.progressDivider` is provided, it will return progress events that divided by `progressDivider`.
-
-For example, if `progressDivider` = 10, you will receive only ten callbacks for this values of progress: 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100
-Use it for performance issues.
-If `progressDivider` = 0, you will receive all `progressCallback` calls, default value is 0.
-
-(IOS only): `options.background` (`Boolean`) - Whether to continue downloads when the app is not focused (default: `false`)
-                           This option is currently only available for iOS, see the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
-
-(IOS only): If `options.resumable` is provided, it will be invoked when the download has stopped and and can be resumed using `resumeDownload()`.
 
 ### `stopDownload(jobId: number): void`
 

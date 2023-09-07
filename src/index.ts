@@ -3,18 +3,21 @@ import { type EmitterSubscription, NativeEventEmitter } from 'react-native';
 import RNFS from './ReactNativeFs';
 
 import {
-  type DownloadFileOptions,
-  type DownloadResult,
+  type DownloadBeginCallbackResultT,
+  type DownloadFileOptionsT,
+  type DownloadProgressCallbackResultT,
+  type DownloadResultT,
   type FSInfoResultT,
   type FileOptionsT,
   type MkdirOptionsT,
-  type NativeDownloadFileOptions,
+  type NativeDownloadFileOptionsT,
   type NativeReadDirResItemT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StatResultT,
-  type UploadFileOptions,
-  type UploadResult,
+  type StringMapT,
+  type UploadFileOptionsT,
+  type UploadResultT,
 } from './NativeReactNativeFs';
 
 import {
@@ -80,9 +83,9 @@ export function copyFile(
   );
 }
 
-export function downloadFile(options: DownloadFileOptions): {
+export function downloadFile(options: DownloadFileOptionsT): {
   jobId: number;
-  promise: Promise<DownloadResult>;
+  promise: Promise<DownloadResultT>;
 } {
   if (typeof options !== 'object') {
     throw new Error('downloadFile: Invalid value for argument `options`');
@@ -159,7 +162,7 @@ export function downloadFile(options: DownloadFileOptions): {
     );
   }
 
-  var nativeOptions: NativeDownloadFileOptions = {
+  var nativeOptions: NativeDownloadFileOptionsT = {
     jobId: jobId,
     fromUrl: options.fromUrl,
     toFile: normalizeFilePath(options.toFile),
@@ -291,9 +294,9 @@ export function unlink(path: string): Promise<void> {
   return RNFS.unlink(normalizeFilePath(path));
 }
 
-export function uploadFiles(options: UploadFileOptions): {
+export function uploadFiles(options: UploadFileOptionsT): {
   jobId: number;
-  promise: Promise<UploadResult>;
+  promise: Promise<UploadResultT>;
 } {
   const jobId = ++lastJobId;
   const subscriptions: EmitterSubscription[] = [];
@@ -360,7 +363,7 @@ export function uploadFiles(options: UploadFileOptions): {
 
   return {
     jobId,
-    promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResult) => {
+    promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResultT) => {
       subscriptions.forEach((sub) => sub.remove());
       return res;
     }),
@@ -527,12 +530,17 @@ const {
 } = RNFS.getConstants();
 
 export {
+  type DownloadBeginCallbackResultT,
+  type DownloadFileOptionsT,
+  type DownloadProgressCallbackResultT,
+  type DownloadResultT,
   type EncodingT,
   type FileOptionsT,
   type FSInfoResultT,
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
+  type StringMapT,
   type WriteFileOptionsT,
   MainBundlePath,
   CachesDirectoryPath,

@@ -5,6 +5,7 @@ import { Platform, Text, View } from 'react-native';
 import {
   copyFile,
   copyFileAssets,
+  downloadFile,
   exists,
   existsAssets,
   getFSInfo,
@@ -103,6 +104,37 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await copyFileAssets('test/good-utf8.txt', path);
       const res = await readFile(path);
       if (res !== 'GÖÖÐ\n') return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  // TODO: This should live in a dedicated module, with a bunch of tests needed
+  // to cover all download-related functions & scenarious; however, to get this
+  // function checked faster, placing it here for now.
+  'downloadFile()': async () => {
+    const url =
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+    const path = `${TemporaryDirectoryPath}/download-file-01`;
+    const good = 'GÖÖÐ\n';
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      const { jobId, promise } = downloadFile({
+        fromUrl: url,
+        toFile: path,
+      });
+      const res = await promise;
+      if (
+        typeof jobId !== 'number' ||
+        res.bytesWritten !== 8 ||
+        res.statusCode !== 200
+      ) {
+        return 'fail';
+      }
+      const file = await readFile(path);
+      if (file !== good) return 'fail';
       return 'pass';
     } catch {
       return 'fail';
