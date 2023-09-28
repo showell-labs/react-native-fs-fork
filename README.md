@@ -89,7 +89,7 @@ Just install & use:
 $ npm install --save @dr.pogodin/react-native-fs
 ```
 
-NOTE: Windows auto-link command (at least as it was needed for example project to install the lib hosted in the parent folder):
+**Note**: Windows auto-link command (at least as it was needed for example project to install the lib hosted in the parent folder):
 ```sh
 npx react-native autolink-windows --sln "windows\ReactNativeFsExample.sln" --proj "windows\ReactNativeFsExample\ReactNativeFsExample.vcxproj"
 ```
