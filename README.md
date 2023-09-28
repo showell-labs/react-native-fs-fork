@@ -254,6 +254,8 @@ RNFS.uploadFiles({
   - [copyFile()] &mdash; Copies a file to a new destination.
   - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
     the given destination.
+  - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
+    in a Windows-efficient way.
   - [downloadFile()] &mdash; Downloads a file from network.
   - [exists()] &mdash; Checks if an item exists at the given path.
   - [existsAssets()] &mdash; (Android only) Checks if an item exists at
@@ -269,7 +271,7 @@ RNFS.uploadFiles({
   - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
     the given path inside the Android assets folder.
   - [readFile()] &mdash; Reads entire file content.
-  - [readFileAssets()] &mdash; (Android-only) Reads the file at a path in
+  - [readFileAssets()] &mdash; (Android only) Reads the file at a path in
     the Android app's assets folder.
   - [stat()] &mdash; Returns info on a file system item.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
@@ -455,6 +457,19 @@ it exists.
   folder's root).
 - `to` &mdash; **string** &mdash; Destination path.
 - Resolves once completed.
+
+### copyFolder()
+[copyFolder()]: #copyfolder
+```ts
+copyFolder(from: string, into: string): Promise<void>;
+```
+**VERIFIED**: **NOT SUPPORTED**: Android
+
+Windows only. Copies content to a new location in a Windows-efficient way,
+compared to [copyFile()].
+
+- `from` &mdash; **string** &mdash; Source location.
+- `into` &mdash; **string** &mdash; Destination location.
 
 ### downloadFile()
 [downloadFile()]: #downloadfile
@@ -1182,12 +1197,6 @@ Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), 
 ### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
 
 Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
-
-### `copyFolder(srcFolderPath: string, destFolderPath: string): Promise<void>`
-
-Copies the contents located at `srcFolderPath` to `destFolderPath`.
-
-Note: Windows only. This method is recommended when directories need to be copied from one place to another.
 
 ### `copyFileRes(filename: string, destPath: string): Promise<void>`
 

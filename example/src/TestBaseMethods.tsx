@@ -5,6 +5,7 @@ import { Platform, Text, View } from 'react-native';
 import {
   copyFile,
   copyFileAssets,
+  copyFolder,
   downloadFile,
   exists,
   existsAssets,
@@ -80,6 +81,52 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       // Can it copy a folder with its content?
       try {
         await copyFile(`${path}/folder`, `${path}/moved-folder`);
+        // TODO: For platforms that allow to copy folders, we should do more
+        // checks here, similar to moveFile() checks.
+        return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
+      } catch (e: any) {
+        if (Platform.OS === 'windows') {
+          if (
+            e.code !== 'EUNSPECIFIED' ||
+            e.message !== 'The parameter is incorrect.'
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            e.code !== 'EISDIR' ||
+            e.message !==
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+          ) {
+            return 'fail';
+          }
+        }
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'copyFolder()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/copy-folder-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it copy a folder with its content?
+      try {
+        await copyFolder(`${path}/folder`, `${path}/moved-folder`);
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
         return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
@@ -675,8 +722,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
 
+      try {
+        unlink(targetDevicePath);
+      } catch {}
+
       const res = uploadFiles({
         toUrl: `${server?.origin!}/dav/upload-files.txt`,
+        method: 'PUT',
         files: [
           {
             name: 'upload-files-source-file',

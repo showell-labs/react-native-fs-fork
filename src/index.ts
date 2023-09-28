@@ -510,11 +510,8 @@ export const stopUpload: (jobId: number) => void = RNFS.stopUpload;
 // Windows-specific.
 
 // Windows workaround for slow copying of large folders of files
-export function copyFolder(filepath: string, destPath: string): Promise<void> {
-  return RNFS.copyFolder(
-    normalizeFilePath(filepath),
-    normalizeFilePath(destPath),
-  );
+export function copyFolder(from: string, into: string): Promise<void> {
+  return RNFS.copyFolder(normalizeFilePath(from), normalizeFilePath(into));
 }
 
 const {
