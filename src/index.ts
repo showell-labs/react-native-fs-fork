@@ -16,7 +16,10 @@ import {
   type ReadDirResItemT,
   type StatResultT,
   type StringMapT,
+  type UploadBeginCallbackArgT,
   type UploadFileOptionsT,
+  type UploadFileItemT,
+  type UploadProgressCallbackArgT,
   type UploadResultT,
 } from './NativeReactNativeFs';
 
@@ -541,6 +544,11 @@ export {
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StringMapT,
+  type UploadBeginCallbackArgT,
+  type UploadFileItemT,
+  type UploadFileOptionsT,
+  type UploadProgressCallbackArgT,
+  type UploadResultT,
   type WriteFileOptionsT,
   MainBundlePath,
   CachesDirectoryPath,

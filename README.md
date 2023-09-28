@@ -274,6 +274,7 @@ RNFS.uploadFiles({
   - [stat()] &mdash; Returns info on a file system item.
   - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
 and return its contents.
+  - [uploadFiles()] &mdash; Uploads files to a remote location.
   - [writeFile()] &mdash; Writes content into a file.
 - [Types]
   - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
@@ -292,6 +293,13 @@ and return its contents.
     the [readFile()] function.
   - [StatResultT] &mdash; The type of result resolved by [stat()].
   - [StringMapT] &mdash; Just a simple **string**-to-**string** mapping.
+  - [UploadBeginCallbackArgT] &mdash; The type of `begin` callback argument in [UploadFileOptionsT].
+  - [UploadFileItemT] &mdash; The type of `files` elements in
+    [UploadFileOptionsT] objects.
+  - [UploadFileOptionsT] &mdash; Options for [uploadFiles()].
+  - [UploadProgressCallbackArgT] &mdash; The type of `progress` callback
+    argument in [UploadFileOptionsT], and a few other places.
+  - [UploadResultT] &mdash; The type of resolved [uploadFiles()] promise.
   - [WriteFileOptionsT] &mdash; The type of extra options argument of
     the [writeFile()] function.
 - [Legacy] &mdash; Everything else inherited from the original library,
@@ -695,6 +703,27 @@ be thrown. Also recursively deletes directories (works like Linux `rm -rf`).
 - `path` &mdash; **string** &mdash; Item path.
 - Resolves once done.
 
+### uploadFiles()
+[uploadFiles()]: #uploadfiles
+```ts
+function uploadFiles(options: UploadFileOptionsT): {
+  jobId: number;
+  promise: Promise<UploadResultT>;
+}
+```
+**VERIFIED**: Android
+
+Uploads files to a remote location.
+
+**BEWARE**: Only the most basic upload functionality has been tested so far
+in this library fork.
+
+- `options` &mdash; [UploadFileOptionsT] &mdash; Upload settings.
+
+- Returns an object holding `jobId` **number** (can be used to manage
+  in-progress download by corresponding functions) and `promise` resolving
+  to [UploadResultT] once the download is completed.
+
 ### writeFile()
 [writeFile()]: #writefile
 ```ts
@@ -908,7 +937,6 @@ Type of extra options argument for [mkdir()].
   Apple will *reject* apps for storing offline cache data that does not have this
   attribute.
 
-
 ### ReadDirAssetsResItemT
 [ReadDirAssetsResItemT]: #readdirassetsresitemt
 ```ts
@@ -1002,6 +1030,122 @@ The type of result resolved by [stat()].
 type StringMapT = { [key: string]: string };
 ```
 Just a simple **string**-to-**string** mapping.
+
+### UploadBeginCallbackArgT
+[UploadBeginCallbackArgT]: #uploadbegincallbackargt
+```ts
+type UploadBeginCallbackArgT = {
+  jobId: number;
+};
+```
+The type of `begin` callback argument in [UploadFileOptionsT].
+
+- `jobId` &mdash; **number** &mdash; The upload job ID, required if one wishes
+  to cancel the upload. See [stopUpload()].
+
+### UploadFileItemT
+[UploadFileItemT]: #uploadfileitemt
+
+```js
+type UploadFileItemT = {
+  name?: string;
+  filename: string;
+  filepath: string;
+  filetype?: string;
+};
+```
+The type of `files` elements in [UploadFileOptionsT] objects.
+
+- `name` &mdash; **string** | **undefined** &mdash; Optional Name of the file,
+  if not defined then `filename` is used.
+
+- `filename` &mdash; **string** &mdash; Name of file.
+
+- `filepath` &mdash; **string** &mdash; Path to file.
+
+- `filetype` &mdash; **string** | **undefined** &mdash; Optional. The mimetype
+  of the file to be uploaded, if not defined it will get mimetype from
+  `filepath` extension.
+
+### UploadFileOptionsT
+[UploadFileOptionsT]: #uploadfileoptionst
+```ts
+type UploadFileOptionsT = {
+  toUrl: string;
+  binaryStreamOnly?: boolean;
+  files: UploadFileItem[];
+  headers?: StringMapT;
+  fields?: StringMapT;
+  method?: string;
+  begin?: (res: UploadBeginCallbackArgT) => void;
+  progress?: (res: UploadProgressCallbackArgT) => void;
+};
+```
+Type of options object in [uploadFiles()] function.
+
+- `toUrl` &mdash; **string** &mdash; URL to upload file to.
+
+- `binaryStreamOnly` &mdash; **boolean** | **undefined** &mdash; Optional.
+  Allow for binary data stream for file to be uploaded without extra headers.
+  Defaults _false_.
+- `files` &mdash; [UploadFileItemT]**[]** &mdash; An array of objects with the file
+  information to be uploaded.
+- `headers` &mdash; [StringMapT] | **undefined** &mdash; Optional. An object of
+  headers to be passed to the server.
+- `fields` &mdash; [StringMapT] | **undefined** &mdash; Optional. An object of
+  fields to be passed to the server.
+- `method` &mdash; **string** | **undefined** &mdash; Optional. Defaults `POST`,
+  supports `POST` and `PUT`.
+
+- `begin` &mdash; **(res: [UploadBeginCallbackArgT]) => void** &mdash;
+  Optional. If provided, it will be invoked once upon upload has begun.
+
+- `progress` &mdash; **(res: [UploadProgressCallbackArgT]) => void** &mdash;
+  Optional. If provided, it will be invoked continuously and passed a single
+  object of [UploadProgressCallbackArgT] type.
+
+### UploadProgressCallbackArgT
+[UploadProgressCallbackArgT]: #uploadprogresscallbackargt
+```ts
+type UploadProgressCallbackArgT = {
+  jobId: number;
+  totalBytesExpectedToSend: number;
+  totalBytesSent: number;
+};
+```
+The type of `progress` callback argument in [UploadFileOptionsT].
+
+Percentage can be computed easily by dividing `totalBytesSent` by
+`totalBytesExpectedToSend`.
+
+- `jobId` &mdash; **number** &mdash; The upload job ID, required if one wishes
+  to cancel the upload. See [stopUpload()].
+- `totalBytesExpectedToSend` **number** &mdash; The total number of bytes that
+  will be sent to the server
+- `totalBytesSent` &mdash; **number** &mdash; The number of bytes sent to
+  the server
+
+### UploadResultT
+[UploadResultT]: #uploadresultt
+```ts
+type UploadResultT = {
+  jobId: number;
+  statusCode: number;
+  headers: StringMapT;
+  body: string;
+};
+```
+The type of resolved [uploadFiles()] promise.
+
+- `jobId` &mdash; **number** &mdash; The upload job ID, required if one wishes
+  to cancel the upload. See [stopUpload()].
+
+- `statusCode` &mdash; **number** &mdash; The HTTP status code.
+
+- `headers` &mdash; [StringMapT] &mdash; The HTTP response headers from
+  the server.
+
+- `body` &mdash; **string** &mdash; The HTTP response body.
 
 ### WriteFileOptionsT
 [WriteFileOptionsT]: #writefileoptionst
@@ -1151,63 +1295,6 @@ if (await RNFS.isResumable(jobId) {
 For use when using background downloads, tell iOS you are done handling a completed download.
 
 Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
-
-### `uploadFiles(options: UploadFileOptions): { jobId: number, promise: Promise<UploadResult> }`
-
-`options` (`Object`) - An object containing named parameters
-
-```js
-type UploadFileOptions = {
-  toUrl: string;            // URL to upload file to
-  binaryStreamOnly?: boolean// Allow for binary data stream for file to be uploaded without extra headers, Default is 'false'
-  files: UploadFileItem[];  // An array of objects with the file information to be uploaded.
-  headers?: Headers;        // An object of headers to be passed to the server
-  fields?: Fields;          // An object of fields to be passed to the server
-  method?: string;          // Default is 'POST', supports 'POST' and 'PUT'
-  begin?: (res: UploadBeginCallbackResult) => void;
-  progress?: (res: UploadProgressCallbackResult) => void;
-};
-
-```
-```js
-type UploadResult = {
-  jobId: number;        // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
-  statusCode: number;   // The HTTP status code
-  headers: Headers;     // The HTTP response headers from the server
-  body: string;         // The HTTP response body
-};
-```
-
-Each file should have the following structure:
-
-```js
-type UploadFileItem = {
-  name: string;       // Name of the file, if not defined then filename is used
-  filename: string;   // Name of file
-  filepath: string;   // Path to file
-  filetype: string;   // The mimetype of the file to be uploaded, if not defined it will get mimetype from `filepath` extension
-};
-```
-
-If `options.begin` is provided, it will be invoked once upon upload has begun:
-
-```js
-type UploadBeginCallbackResult = {
-  jobId: number;        // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
-};
-```
-
-If `options.progress` is provided, it will be invoked continuously and passed a single object with the following properties:
-
-```js
-type UploadProgressCallbackResult = {
-  jobId: number;                      // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
-  totalBytesExpectedToSend: number;   // The total number of bytes that will be sent to the server
-  totalBytesSent: number;             // The number of bytes sent to the server
-};
-```
-
-Percentage can be computed easily by dividing `totalBytesSent` by `totalBytesExpectedToSend`.
 
 ### (iOS only) `stopUpload(jobId: number): Promise<void>`
 

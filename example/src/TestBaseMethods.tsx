@@ -20,10 +20,12 @@ import {
   stat,
   TemporaryDirectoryPath,
   unlink,
+  uploadFiles,
   writeFile,
 } from '@dr.pogodin/react-native-fs';
 
 import TestCase, { type StatusOrEvaluator } from './TestCase';
+import { FILE_DIR, waitServer } from './testServer';
 
 import styles from './styles';
 
@@ -36,6 +38,17 @@ function logCharCodes(datum: string) {
 */
 
 const SEP = Platform.OS === 'windows' ? '\\' : '/';
+
+const UPLOAD_FILES_CONTROL = `--*****
+Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
+Content-Type: null
+Content-length: 8
+
+GÖÖÐ
+
+
+--*****--
+`;
 
 const tests: { [name: string]: StatusOrEvaluator } = {
   'copyFile()': async () => {
@@ -649,6 +662,36 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       } catch {}
       return 'pass';
     } catch {
+      return 'fail';
+    }
+  },
+  'uploadFiles()': async () => {
+    try {
+      const server = await waitServer();
+
+      const good = 'GÖÖÐ\n';
+      const path = `${TemporaryDirectoryPath}/upload-files.txt`;
+      await writeFile(path, good);
+
+      const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
+
+      const res = uploadFiles({
+        toUrl: `${server?.origin!}/dav/upload-files.txt`,
+        files: [
+          {
+            name: 'upload-files-source-file',
+            filename: 'upload-files-source-file.txt',
+            filepath: path,
+          },
+        ],
+      });
+      await res.promise;
+
+      let uploadedFile = await readFile(targetDevicePath);
+      uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
+
+      return uploadedFile === UPLOAD_FILES_CONTROL ? 'pass' : 'fail';
+    } catch (e) {
       return 'fail';
     }
   },

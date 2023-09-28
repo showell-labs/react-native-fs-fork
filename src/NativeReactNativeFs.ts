@@ -175,17 +175,17 @@ type NativeStatResultT = {
 };
 
 export type UploadFileItemT = {
-  name: string; // Name of the file, if not defined then filename is used
+  name?: string; // Name of the file, if not defined then filename is used
   filename: string; // Name of file
   filepath: string; // Path to file
-  filetype: string; // The mimetype of the file to be uploaded, if not defined it will get mimetype from `filepath` extension
+  filetype?: string; // The mimetype of the file to be uploaded, if not defined it will get mimetype from `filepath` extension
 };
 
-export type UploadBeginCallbackResultT = {
+export type UploadBeginCallbackArgT = {
   jobId: number; // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
 };
 
-export type UploadProgressCallbackResultT = {
+export type UploadProgressCallbackArgT = {
   jobId: number; // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
   totalBytesExpectedToSend: number; // The total number of bytes that will be sent to the server
   totalBytesSent: number; // The number of bytes sent to the server
@@ -198,10 +198,13 @@ export type UploadFileOptionsT = {
   headers?: StringMapT; // An object of headers to be passed to the server
   fields?: StringMapT; // An object of fields to be passed to the server
   method?: string; // Default is 'POST', supports 'POST' and 'PUT'
-  beginCallback?: (res: UploadBeginCallbackResultT) => void; // deprecated
-  progressCallback?: (res: UploadProgressCallbackResultT) => void; // deprecated
-  begin?: (res: UploadBeginCallbackResultT) => void;
-  progress?: (res: UploadProgressCallbackResultT) => void;
+
+  // TODO: Remove these future versions.
+  beginCallback?: (res: UploadBeginCallbackArgT) => void; // deprecated
+  progressCallback?: (res: UploadProgressCallbackArgT) => void; // deprecated
+
+  begin?: (res: UploadBeginCallbackArgT) => void;
+  progress?: (res: UploadProgressCallbackArgT) => void;
 };
 
 type NativeUploadFileOptionsT = {
