@@ -447,7 +447,7 @@ RCT_EXPORT_METHOD(copyFile:(NSString *)from
     return @[@"UploadBegin",@"UploadProgress",@"DownloadBegin",@"DownloadProgress",@"DownloadResumable"];
 }
 
-RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptions &)options
+RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
@@ -589,26 +589,28 @@ RCT_EXPORT_METHOD(completeHandlerIOS:(nonnull NSNumber *)jobId
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptions &)options
+RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  [[RNFSException NOT_IMPLEMENTED] reject:reject];
-  /*
   RNFSUploadParams* params = [RNFSUploadParams alloc];
 
   NSNumber* jobId = [NSNumber numberWithDouble:options.jobId()];
   params.toUrl = options.toUrl();
   params.files = options.files();
-  params.binaryStreamOnly = [[options objectForKey:@"binaryStreamOnly"] boolValue];
-  NSDictionary* headers = options[@"headers"];
-  NSDictionary* fields = options[@"fields"];
-  NSString* method = options[@"method"];
+
+  if (options.binaryStreamOnly().has_value()) {
+    params.binaryStreamOnly = options.binaryStreamOnly().value();
+  }
+
+  NSDictionary* headers = options.headers();
+  NSDictionary* fields = options.fields();
+  NSString* method = options.method();
   params.headers = headers;
   params.fields = fields;
   params.method = method;
-  bool hasBeginCallback = [options[@"hasBeginCallback"] boolValue];
-  bool hasProgressCallback = [options[@"hasProgressCallback"] boolValue];
+  bool hasBeginCallback = options.hasBeginCallback();
+  bool hasProgressCallback = options.hasProgressCallback();
 
   params.completeCallback = ^(NSString* body, NSURLResponse *resp) {
     [self.uploaders removeObjectForKey:[jobId stringValue]];
@@ -652,7 +654,6 @@ RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptions 
   [uploader uploadFiles:params];
 
   [self.uploaders setValue:uploader forKey:[jobId stringValue]];
-   */
 }
 
 RCT_EXPORT_METHOD(stopUpload:(double)jobId)

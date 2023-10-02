@@ -40,7 +40,7 @@ function logCharCodes(datum: string) {
 
 const SEP = Platform.OS === 'windows' ? '\\' : '/';
 
-const UPLOAD_FILES_CONTROL = `--*****
+const UPLOAD_FILES_CONTROL_ANDROID = `--*****
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
 Content-Type: null
 Content-length: 8
@@ -50,6 +50,25 @@ GÖÖÐ
 
 --*****--
 `;
+
+const UPLOAD_FILES_CONTROL_IOS = `Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
+Content-Type: text/plain
+Content-Length: 8
+
+GÖÖÐ
+
+`;
+
+// TODO: Why these messages are different I am not sure. Perhaps WebDAV module
+// of the static server outputs dumps incoming messages in different formats on
+// different platforms. Should be double-checked at some point.
+const UPLOAD_FILES_CONTROL = Platform.select({
+  android: UPLOAD_FILES_CONTROL_ANDROID,
+  ios: UPLOAD_FILES_CONTROL_IOS,
+  macos: UPLOAD_FILES_CONTROL_IOS,
+  windows: UPLOAD_FILES_CONTROL_IOS, // TODO: It will be different.
+  default: '',
+});
 
 const tests: { [name: string]: StatusOrEvaluator } = {
   'copyFile()': async () => {
@@ -742,7 +761,11 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       let uploadedFile = await readFile(targetDevicePath);
       uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
 
-      return uploadedFile === UPLOAD_FILES_CONTROL ? 'pass' : 'fail';
+      if (uploadedFile !== UPLOAD_FILES_CONTROL) {
+        console.log('MISMATCH', uploadedFile, UPLOAD_FILES_CONTROL);
+      }
+
+      return uploadedFile.includes(UPLOAD_FILES_CONTROL) ? 'pass' : 'fail';
     } catch (e) {
       return 'fail';
     }

@@ -207,13 +207,16 @@ export type UploadFileOptionsT = {
   progress?: (res: UploadProgressCallbackArgT) => void;
 };
 
-type NativeUploadFileOptionsT = {
+export type NativeUploadFileOptionsT = {
+  jobId: number;
   toUrl: string; // URL to upload file to
   binaryStreamOnly?: boolean; // Allow for binary data stream for file to be uploaded without extra headers, Default is 'false'
-  files: UploadFileItemT[]; // An array of objects with the file information to be uploaded.
+  files: object[]; // An array of objects with the file information to be uploaded.
   headers?: StringMapT; // An object of headers to be passed to the server
   fields?: StringMapT; // An object of fields to be passed to the server
   method?: string; // Default is 'POST', supports 'POST' and 'PUT'
+  hasBeginCallback: boolean;
+  hasProgressCallback: boolean;
 };
 
 export type UploadResultT = {

@@ -12,6 +12,7 @@ import {
   type MkdirOptionsT,
   type NativeDownloadFileOptionsT,
   type NativeReadDirResItemT,
+  type NativeUploadFileOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StatResultT,
@@ -348,7 +349,7 @@ export function uploadFiles(options: UploadFileOptionsT): {
     );
   }
 
-  var nativeOptions = {
+  var nativeOptions: NativeUploadFileOptionsT = {
     jobId: jobId,
     toUrl: options.toUrl,
     files: options.files,
