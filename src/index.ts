@@ -13,6 +13,7 @@ import {
   type NativeDownloadFileOptionsT,
   type NativeReadDirResItemT,
   type NativeUploadFileOptionsT,
+  type PickFileOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StatResultT,
@@ -222,6 +223,14 @@ export function moveFile(
     normalizeFilePath(destPath),
     options,
   );
+}
+
+export function pickFile(
+  options: Partial<PickFileOptionsT> = {},
+): Promise<string[]> {
+  return RNFS.pickFile({
+    mimeTypes: options.mimeTypes || ['*/*'],
+  });
 }
 
 export type ReadFileOptionsT = {

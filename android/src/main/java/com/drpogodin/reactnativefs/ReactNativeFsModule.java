@@ -17,6 +17,10 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.SparseArray;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.ActivityResultRegistry;
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocument;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
@@ -28,6 +32,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.ReactActivity;
 
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 
@@ -39,8 +44,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,8 +60,32 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
   private SparseArray<Downloader> downloaders = new SparseArray<>();
   private SparseArray<Uploader> uploaders = new SparseArray<>();
 
+  private ArrayDeque<Promise> pendingPickFilePromises = new ArrayDeque<Promise>();
+  private ActivityResultLauncher<String[]> pickFileLauncher;
+
   ReactNativeFsModule(ReactApplicationContext context) {
     super(context);
+
+    ReactActivity activity = (ReactActivity)getCurrentActivity();
+    ActivityResultRegistry registry = activity.getActivityResultRegistry();
+    pickFileLauncher = registry.register(
+      "RNFS_pickFile",
+      new OpenDocument(),
+      new ActivityResultCallback<Uri>() {
+        @Override
+        public void onActivityResult(Uri uri) {
+          WritableArray res = Arguments.createArray();
+          res.pushString(uri.toString());
+          pendingPickFilePromises.pop().resolve(res);
+        }
+      }
+    );
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    pickFileLauncher.unregister();
+    super.finalize();
   }
 
   @Override
@@ -481,6 +512,24 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
   @ReactMethod
   public void pathForGroup(String group, Promise promise) {
     Errors.NOT_IMPLEMENTED.reject(promise, "pathForGroup()");
+  }
+
+  @ReactMethod
+  public void pickFile(ReadableMap options, Promise promise) {
+    ReadableArray mimeTypesArray = options.getArray("mimeTypes");
+    String[] mimeTypes = new String[mimeTypesArray.size()];
+    for (int i = 0; i < mimeTypesArray.size(); ++i) {
+      mimeTypes[i] = mimeTypesArray.getString(i);
+    }
+
+    // Note: Here we assume that if a new pickFile() call is done prior to
+    // the previous one having been completed, effectivly the new call with
+    // open a new file picker on top of the view stack (thus, on top of
+    // the one opened for the previous call), thus just keeping all pending
+    // promises in FILO stack we should be able to resolve them in the correct
+    // order.
+    pendingPickFilePromises.push(promise);
+    pickFileLauncher.launch(mimeTypes);
   }
 
   @ReactMethod

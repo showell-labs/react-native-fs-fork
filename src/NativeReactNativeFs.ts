@@ -40,6 +40,10 @@ export type NativeDownloadFileOptionsT = {
   hasResumableCallback: boolean;
 };
 
+export type PickFileOptionsT = {
+  mimeTypes: string[];
+};
+
 export type DownloadFileOptionsT = {
   fromUrl: string; // URL to download file from
   toFile: string; // Local filesystem path to save the file to
@@ -276,6 +280,7 @@ export interface Spec extends TurboModule {
   hash(path: string, algorithm: string): Promise<string>;
   mkdir(path: string, options: MkdirOptionsT): Promise<void>;
   moveFile(from: string, into: string, options: FileOptionsT): Promise<void>;
+  pickFile(options: PickFileOptionsT): Promise<string[]>;
 
   read(path: string, length: number, position: number): Promise<string>;
   readFile(path: string): Promise<string>;

@@ -5,7 +5,8 @@ package com.drpogodin.reactnativefs;
 import com.facebook.react.bridge.Promise;
 
 public enum Errors {
-  NOT_IMPLEMENTED("This method is not implemented for Android");
+  NOT_IMPLEMENTED("This method is not implemented for Android"),
+  OPERATION_FAILED("Operation failed");
 
   private final String message;
   public static final String LOGTAG = "RNFS";
