@@ -571,28 +571,15 @@ on other platforms it works fine.
 ```ts
 function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 ```
-**BEWARE**:
-- As of now, it is implemented only for Android and iOS, and it will reject the result
-  promise on other platforms.
-
-Prompts app user to select file(s) using a platform-provided file picker UI.
-
-**Note**: On recent Android versions the visibility of files in shared locations
-(_e.g._ downloaded files in [DownloadDirectoryPath] folder) is limited to the apps
-owing those files &mdash; for example, [readDir()], [readFile()] and other functions
-provided by this library for the direct file system access just won't see any files
-downloaded by different apps. [pickFile()] is the solution for this restriction
-&mdash; for user selected files it returns special URI allowing other functions
-to access them (similar approach work to get access to entire folders, but it
-has not been implemented yet). I guess, it is similar on other platforms
-with app sandboxes.
+Prompts the user to select file(s) using a platform-provided file picker UI,
+which also allows to access files outside the app sandbox.
 
 - `options` &mdash; [PickFileOptionsT] &mdash; Optional parameters. By default,
   this function allows user to select a single file of any kind.
 
 - Resolves to a **string** array &mdash; URIs (paths) of user-selected files,
   allowing a direct access to them with other methods in this library
-  (_e.g._ [readFile()]).
+  (_e.g._ [readFile()]), even if the file is outside the app sandbox.
 
 ### read()
 [read()]: #read

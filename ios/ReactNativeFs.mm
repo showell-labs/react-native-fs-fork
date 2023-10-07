@@ -1101,6 +1101,13 @@ RCT_EXPORT_METHOD(
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 ) {
+  if (TARGET_OS_MACCATALYST) {
+    [[RNFSException NOT_IMPLEMENTED]
+     reject:reject
+     details:@"pickFile() does not work on macOS yet"];
+    return;
+  }
+
   dispatch_async(dispatch_get_main_queue(), ^() {
     UIDocumentPickerViewController *picker;
 
