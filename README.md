@@ -744,7 +744,7 @@ function uploadFiles(options: UploadFileOptionsT): {
   promise: Promise<UploadResultT>;
 }
 ```
-**VERIFIED**: Android, iOS
+**VERIFIED**: Android, iOS, macOS
 
 Uploads files to a remote location.
 
