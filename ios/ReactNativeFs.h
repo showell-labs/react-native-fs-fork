@@ -3,7 +3,7 @@
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RNReactNativeFsSpec.h"
 
-@interface ReactNativeFs : RCTEventEmitter <NativeReactNativeFsSpec>
+@interface ReactNativeFs : RCTEventEmitter <NativeReactNativeFsSpec,UIDocumentPickerDelegate>
 #else
 #import <optional>
 #import <React/RCTCxxConvert.h>
@@ -114,7 +114,7 @@ namespace JS {
 }
 @end
 
-@interface ReactNativeFs : RCTEventEmitter <RCTBridgeModule>
+@interface ReactNativeFs : RCTEventEmitter <RCTBridgeModule,UIDocumentPickerDelegate>
 #endif
 
 @property (retain) NSMutableDictionary* downloaders;

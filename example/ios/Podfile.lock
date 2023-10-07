@@ -1279,7 +1279,7 @@ SPEC CHECKSUMS:
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   dr-pogodin-react-native-fs: 3ccf8b867c5feeae20dd41e05d7fde2c07f2119f
-  dr-pogodin-react-native-static-server: 9b41fc942e30cbc71a9668028bff222b7e88bb00
+  dr-pogodin-react-native-static-server: 119dd7d33ab3b69285471e205f5d4a3bb8d3d0fd
   FBLazyVector: 71803c074f6325f10b5ec891c443b6bbabef0ca7
   Flipper: 6edb735e6c3e332975d1b17956bcc584eccf5818
   Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
