@@ -1092,17 +1092,29 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
   // TODO: Should crash here, as it is a fatal error.
 }
 
-- (void)pickFile:(JS::NativeReactNativeFs::PickFileOptionsT &)options
-         resolve:(RCTPromiseResolveBlock)resolve
-          reject:(RCTPromiseRejectBlock)reject
-{
+RCT_EXPORT_METHOD(
+#ifdef RCT_NEW_ARCH_ENABLED
+                  pickFile:(JS::NativeReactNativeFs::PickFileOptionsT &)options
+#else
+                  pickFile:(NSDictionary*)options
+#endif
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject
+) {
   dispatch_async(dispatch_get_main_queue(), ^() {
     UIDocumentPickerViewController *picker;
+
+#   ifdef RCT_NEW_ARCH_ENABLED
     facebook::react::LazyVector<NSString*> mimeTypes = options.mimeTypes();
+    int numMimeTypes = mimeTypes.size();
+#   else
+    NSArray<NSString*>* mimeTypes = options[@"mimeTypes"];
+    int numMimeTypes = mimeTypes.count;
+#   endif
 
     if (@available(iOS 14.0, *)) {
-      NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:mimeTypes.size()];
-      for (int i = 0; i < mimeTypes.size(); ++i) {
+      NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:numMimeTypes];
+      for (int i = 0; i < numMimeTypes; ++i) {
         NSString *mime = mimeTypes[i];
         UTType *type;
         if ([mime isEqual:@"*/*"]) type = UTTypeItem;
