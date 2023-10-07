@@ -265,6 +265,8 @@ RNFS.uploadFiles({
     on the device, and its external storage.
   - [mkdir()] &mdash; Creates folder(s) at the given path.
   - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+  - [pickFile()] &mdash; Prompts user to select file(s) with help of
+    a platform-provided file picker UI.
   - [read()] &mdash; Reads a fragment of file content.
   - [readdir()] &mdash; Lists the content of a folder (names only).
   - [readDir()] &mdash; Lists the content of a folder (with item details).
@@ -289,6 +291,7 @@ and return its contents.
   - [FileOptionsT] &mdash; Extra options for [copyFile()].
   - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
   - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
+  - [PickFileOptionsT] &mdash; Optional parameters for [pickFile()].
   - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
   - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
   - [ReadFileOptionsT] &mdash; The type of extra options argument of
@@ -562,6 +565,21 @@ on other platforms it works fine.
 - `from` &mdash; **string** &mdash; Old path of the item.
 - `into` &mdash; **string** &mdash; New path of the item.
 - Resolves once the operation is completed.
+
+### pickFile()
+[pickFile()]: #pickfile
+```ts
+function pickFile(options?: PickFileOptionsT): Promise<string[]>;
+```
+Prompts the user to select file(s) using a platform-provided file picker UI,
+which also allows to access files outside the app sandbox.
+
+- `options` &mdash; [PickFileOptionsT] &mdash; Optional parameters. By default,
+  this function allows user to select a single file of any kind.
+
+- Resolves to a **string** array &mdash; URIs (paths) of user-selected files,
+  allowing a direct access to them with other methods in this library
+  (_e.g._ [readFile()]), even if the file is outside the app sandbox.
 
 ### read()
 [read()]: #read
@@ -951,6 +969,20 @@ Type of extra options argument for [mkdir()].
   (iOS only) The  property can be provided to set this attribute on iOS platforms.
   Apple will *reject* apps for storing offline cache data that does not have this
   attribute.
+
+### PickFileOptionsT
+[PickFileOptionsT]: #pickfileoptionst
+```ts
+type PickFileOptionsT = {
+  mimeTypes?: string[];
+};
+```
+Optional parameters for [pickFile()] function.
+
+- `mimeTypes` &mdash; **string[]** &mdash; Optional. An array of
+  [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
+  of files user is allowed to select. Defaults to `['*/*']` allowing to select
+  any file.
 
 ### ReadDirAssetsResItemT
 [ReadDirAssetsResItemT]: #readdirassetsresitemt

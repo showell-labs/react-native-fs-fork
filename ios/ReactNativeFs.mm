@@ -1,5 +1,7 @@
 #import "ReactNativeFs.h"
 
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
 #import "NSArray+Map.h"
 #import "Downloader.h"
 #import "Uploader.h"
@@ -22,8 +24,15 @@ typedef void (^CompletionHandler)(void);
 
 @implementation ReactNativeFs
 static NSMutableDictionary *completionHandlers;
+NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
 RCT_EXPORT_MODULE()
+
+- (instancetype) init
+{
+  pendingPickFilePromises = [NSMutableDictionary dictionaryWithCapacity:1];
+  return [super init];
+}
 
 RCT_EXPORT_METHOD(readDir:(NSString *)dirPath
                   resolve:(RCTPromiseResolveBlock)resolve
@@ -1052,6 +1061,101 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (void)setReadable:(NSString *)filepath readable:(BOOL)readable ownerOnly:(BOOL)ownerOnly resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"setReadable()"];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)picker
+didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
+{
+  NSValue *id = [NSValue valueWithPointer:(void*)picker];
+  NSArray *promise = pendingPickFilePromises[id];
+  if (promise != nil) {
+    [pendingPickFilePromises removeObjectForKey:id];
+    RCTPromiseResolveBlock resolve = promise[0];
+    NSMutableArray *res = [NSMutableArray arrayWithCapacity:urls.count];
+    for (int i = 0; i < urls.count; ++i) {
+      [res addObject:urls[i].absoluteString];
+    }
+    resolve(res);
+  }
+  // TODO: Should crash here, as it is a fatal error.
+}
+
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)picker
+{
+  NSValue *id = [NSValue valueWithPointer:(void*)picker];
+  NSArray *promise = pendingPickFilePromises[id];
+  if (promise != nil) {
+    [pendingPickFilePromises removeObjectForKey:id];
+    RCTPromiseResolveBlock resolve = promise[0];
+    resolve(@[]);
+  }
+  // TODO: Should crash here, as it is a fatal error.
+}
+
+RCT_EXPORT_METHOD(
+#ifdef RCT_NEW_ARCH_ENABLED
+                  pickFile:(JS::NativeReactNativeFs::PickFileOptionsT &)options
+#else
+                  pickFile:(NSDictionary*)options
+#endif
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject
+) {
+  if (TARGET_OS_MACCATALYST) {
+    [[RNFSException NOT_IMPLEMENTED]
+     reject:reject
+     details:@"pickFile() does not work on macOS yet"];
+    return;
+  }
+
+  dispatch_async(dispatch_get_main_queue(), ^() {
+    UIDocumentPickerViewController *picker;
+
+#   ifdef RCT_NEW_ARCH_ENABLED
+    facebook::react::LazyVector<NSString*> mimeTypes = options.mimeTypes();
+    int numMimeTypes = mimeTypes.size();
+#   else
+    NSArray<NSString*>* mimeTypes = options[@"mimeTypes"];
+    int numMimeTypes = mimeTypes.count;
+#   endif
+
+    if (@available(iOS 14.0, *)) {
+      NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:numMimeTypes];
+      for (int i = 0; i < numMimeTypes; ++i) {
+        NSString *mime = mimeTypes[i];
+        UTType *type;
+        if ([mime isEqual:@"*/*"]) type = UTTypeItem;
+        else type = [UTType typeWithMIMEType:mime];
+        [types addObject:type];
+      }
+      picker = [[UIDocumentPickerViewController alloc]
+                initForOpeningContentTypes:types];
+    } else {
+      // TODO: There is no UTType object on iOS < 14.0, just UTType strings that
+      // can be found here:
+      // https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html#//apple_ref/doc/uid/TP40009259-SW1
+      // though I have not found a function for converting MIME types into UTTypes
+      // on iOS < 14.0. If the only option is to implement this conversion ourselves,
+      // at least for now we can leave without iOS < 14.0 support (RN presumably
+      // supports iOS 13.4 and above, but according to Wiki iOS 13.x are considered
+      // obsolete by now, and presumably all devices running iOS 13.x originally
+      // have been upgraded to iOS 14+ by now).
+      [[RNFSException NOT_IMPLEMENTED]
+       reject:reject details:@"pickFile() is implemented for iOS 14+ only"];
+      return;
+    }
+
+    UIViewController *root = RCTPresentedViewController();
+
+    // Note: This is needed because the module overall runs on a dedicated queue
+    // (see its methodQueue() method below), while interaction with UI should be
+    // done on the main thread queue.
+
+    picker.delegate = self;
+    [pendingPickFilePromises setObject:@[resolve, reject]
+                                forKey:[NSValue valueWithPointer:(void*)picker]];
+    [root presentViewController:picker animated:YES completion:nil];
+  });
 }
 
 +(void)setCompletionHandlerForIdentifier: (NSString *)identifier completionHandler: (CompletionHandler)completionHandler
