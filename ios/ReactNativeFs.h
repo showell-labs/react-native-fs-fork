@@ -80,7 +80,11 @@ namespace JS {
     struct NativeUploadFileOptionsT {
       double jobId() const { return [_v[@"jobId"] doubleValue]; }
       NSString *toUrl() const { return _v[@"toUrl"]; }
-      std::optional<bool> binaryStreamOnly() const { return _v[@"binaryStreamOnly"]; }
+
+      std::optional<bool> binaryStreamOnly() const {
+        return ((NSNumber*)_v[@"binaryStreamOnly"]).boolValue;
+      }
+
       id<NSObject>  files() const { return _v[@"files"]; }
       id<NSObject> _Nullable headers() const { return _v[@"headers"]; }
       id<NSObject> _Nullable fields() const { return _v[@"fields"]; }
