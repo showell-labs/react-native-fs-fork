@@ -10,7 +10,7 @@ import { Platform } from 'react-native';
 // NOTE: The path resolved for server by resolveAssetsPath()
 // from react-native-static-server is non-writable on iOS / macOS.§
 export const FILE_DIR = Platform.select({
-  windows:  `${TemporaryDirectoryPath}\\test-server`,
+  windows: `${TemporaryDirectoryPath}\\test-server`,
   default: `${TemporaryDirectoryPath}test-server`,
 });
 
