@@ -59,6 +59,14 @@ GÖÖÐ
 
 `;
 
+const UPLOAD_FILES_CONTROL_WINDOWS = `-------
+Content-Length: 8
+Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
+
+GÖÖÐ
+
+`;
+
 // TODO: Why these messages are different I am not sure. Perhaps WebDAV module
 // of the static server outputs dumps incoming messages in different formats on
 // different platforms. Should be double-checked at some point.
@@ -66,7 +74,7 @@ const UPLOAD_FILES_CONTROL = Platform.select({
   android: UPLOAD_FILES_CONTROL_ANDROID,
   ios: UPLOAD_FILES_CONTROL_IOS,
   macos: UPLOAD_FILES_CONTROL_IOS,
-  windows: UPLOAD_FILES_CONTROL_IOS, // TODO: It will be different.
+  windows: UPLOAD_FILES_CONTROL_WINDOWS,
   default: '',
 });
 
@@ -138,6 +146,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         await unlink(path);
       } catch {}
       await mkdir(`${path}/folder`);
+      await mkdir(`${path}/dest`);
       await writeFile(
         `${path}/folder/another-test-file.txt`,
         'Another dummy content',
@@ -145,10 +154,10 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       // Can it copy a folder with its content?
       try {
-        await copyFolder(`${path}/folder`, `${path}/moved-folder`);
+        await copyFolder(`${path}/folder`, `${path}/dest`);
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
-        return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
+        return ['android'].includes(Platform.OS) ? 'fail' : 'pass';
       } catch (e: any) {
         if (Platform.OS === 'windows') {
           if (

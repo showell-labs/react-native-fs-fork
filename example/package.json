@@ -7,7 +7,8 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "pods": "pod-install --quiet",
-    "windows": "react-native run-windows"
+    "windows": "react-native run-windows",
+    "windows:autolink": "react-native autolink-windows --sln \"windows\\ReactNativeFsExample.sln\" --proj \"windows\\ReactNativeFsExample\\ReactNativeFsExample.vcxproj\""
   },
   "dependencies": {
     "@dr.pogodin/react-native-static-server": "^0.8.4",

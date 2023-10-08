@@ -920,13 +920,15 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
                 headersMap[to_string(header.Key())] = to_string(header.Value());
             }
 
-            m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadBegin",
-                JSValueObject{
-                    { "jobId", jobId },
-                    { "statusCode", (int)response.StatusCode() },
-                    { "contentLength", contentLength.Type() == PropertyType::UInt64 ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                    { "headers", std::move(headersMap) },
-                });
+            emitDownloadBegin(
+              JSValueObject{
+                { "jobId", jobId },
+                { "statusCode", (int)response.StatusCode() },
+                { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
+                  ? JSValue(contentLength.Value())
+                  : JSValue{nullptr} },
+                { "headers", std::move(headersMap) },
+            });
         }
 
         uint64_t totalRead{ 0 };
@@ -939,7 +941,7 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
         IOutputStream outputStream{ stream.GetOutputStreamAt(0) };
 
         auto contentStream = co_await response.Content().ReadAsInputStreamAsync();
-        auto contentLengthForProgress = contentLength.Type() == PropertyType::UInt64 ? contentLength.Value() : -1;
+        auto contentLengthForProgress = contentLength && contentLength.Type() == PropertyType::UInt64 ? contentLength.Value() : -1;
         
         Buffer buffer{ 8 * 1024 };
         uint32_t read = 0;
@@ -968,7 +970,8 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
                     m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                         JSValueObject{
                             { "jobId", jobId },
-                            { "contentLength", contentLength.Type() == PropertyType::UInt64 ? JSValue(contentLength.Value()) : JSValue{nullptr} },
+                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
+                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
                             { "bytesWritten", totalRead },
                         });
                     initialProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
@@ -979,7 +982,8 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
                 m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                     JSValueObject{
                         { "jobId", jobId },
-                        { "contentLength", contentLength.Type() == PropertyType::UInt64 ? JSValue(contentLength.Value()) : JSValue{nullptr} },
+                        { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
+                          ? JSValue(contentLength.Value()) : JSValue{nullptr} },
                         { "bytesWritten", totalRead },
                     });
             }
@@ -990,7 +994,8 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
                     m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                         JSValueObject{
                             { "jobId", jobId },
-                            { "contentLength", contentLength.Type() == PropertyType::UInt64 ? JSValue(contentLength.Value()) : JSValue{nullptr} },
+                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
+                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
                             { "bytesWritten", totalRead },
                         });
                 }

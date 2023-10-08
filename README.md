@@ -466,7 +466,7 @@ it exists.
 ```ts
 copyFolder(from: string, into: string): Promise<void>;
 ```
-**VERIFIED**: **NOT SUPPORTED**: Android, iOS
+**VERIFIED**: Windows **NOT SUPPORTED**: Android, iOS, macOS
 
 Windows only. Copies content to a new location in a Windows-efficient way,
 compared to [copyFile()].
@@ -482,7 +482,7 @@ function downloadFile(options: DownloadFileOptionsT): {
   promise: Promise<DownloadResultT>;
 };
 ```
-**VERIFIED:** Android, iOS\
+**VERIFIED:** Android, iOS, macOS, Windows \
 **BEWARE:** Only basic functionality has been verified.
 
 Downloads a  file from `options.fromUrl` to `options.toFile`. It Will overwrite
@@ -744,7 +744,7 @@ function uploadFiles(options: UploadFileOptionsT): {
   promise: Promise<UploadResultT>;
 }
 ```
-**VERIFIED**: Android, iOS, macOS
+**VERIFIED**: Android, iOS, macOS, Windows
 
 Uploads files to a remote location.
 

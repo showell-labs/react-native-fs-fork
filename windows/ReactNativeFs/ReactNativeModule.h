@@ -158,6 +158,9 @@ struct ReactNativeModule
     REACT_EVENT(TimedEvent, L"TimedEventCpp");
     std::function<void(int)> TimedEvent;
 
+    REACT_EVENT(emitDownloadBegin, L"DownloadBegin");
+    std::function<void(JSValue)> emitDownloadBegin;
+
 private:
     void splitPath(const std::string& fullPath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept;
 
