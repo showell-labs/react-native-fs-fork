@@ -3,18 +3,26 @@ import { type EmitterSubscription, NativeEventEmitter } from 'react-native';
 import RNFS from './ReactNativeFs';
 
 import {
-  type DownloadFileOptions,
-  type DownloadResult,
+  type DownloadBeginCallbackResultT,
+  type DownloadFileOptionsT,
+  type DownloadProgressCallbackResultT,
+  type DownloadResultT,
   type FSInfoResultT,
   type FileOptionsT,
   type MkdirOptionsT,
-  type NativeDownloadFileOptions,
+  type NativeDownloadFileOptionsT,
   type NativeReadDirResItemT,
+  type NativeUploadFileOptionsT,
+  type PickFileOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StatResultT,
-  type UploadFileOptions,
-  type UploadResult,
+  type StringMapT,
+  type UploadBeginCallbackArgT,
+  type UploadFileOptionsT,
+  type UploadFileItemT,
+  type UploadProgressCallbackArgT,
+  type UploadResultT,
 } from './NativeReactNativeFs';
 
 import {
@@ -80,9 +88,9 @@ export function copyFile(
   );
 }
 
-export function downloadFile(options: DownloadFileOptions): {
+export function downloadFile(options: DownloadFileOptionsT): {
   jobId: number;
-  promise: Promise<DownloadResult>;
+  promise: Promise<DownloadResultT>;
 } {
   if (typeof options !== 'object') {
     throw new Error('downloadFile: Invalid value for argument `options`');
@@ -159,7 +167,7 @@ export function downloadFile(options: DownloadFileOptions): {
     );
   }
 
-  var nativeOptions: NativeDownloadFileOptions = {
+  var nativeOptions: NativeDownloadFileOptionsT = {
     jobId: jobId,
     fromUrl: options.fromUrl,
     toFile: normalizeFilePath(options.toFile),
@@ -215,6 +223,14 @@ export function moveFile(
     normalizeFilePath(destPath),
     options,
   );
+}
+
+export function pickFile(
+  options: Partial<PickFileOptionsT> = {},
+): Promise<string[]> {
+  return RNFS.pickFile({
+    mimeTypes: options.mimeTypes || ['*/*'],
+  });
 }
 
 export type ReadFileOptionsT = {
@@ -291,9 +307,9 @@ export function unlink(path: string): Promise<void> {
   return RNFS.unlink(normalizeFilePath(path));
 }
 
-export function uploadFiles(options: UploadFileOptions): {
+export function uploadFiles(options: UploadFileOptionsT): {
   jobId: number;
-  promise: Promise<UploadResult>;
+  promise: Promise<UploadResultT>;
 } {
   const jobId = ++lastJobId;
   const subscriptions: EmitterSubscription[] = [];
@@ -342,7 +358,7 @@ export function uploadFiles(options: UploadFileOptions): {
     );
   }
 
-  var nativeOptions = {
+  var nativeOptions: NativeUploadFileOptionsT = {
     jobId: jobId,
     toUrl: options.toUrl,
     files: options.files,
@@ -360,7 +376,7 @@ export function uploadFiles(options: UploadFileOptions): {
 
   return {
     jobId,
-    promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResult) => {
+    promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResultT) => {
       subscriptions.forEach((sub) => sub.remove());
       return res;
     }),
@@ -504,11 +520,8 @@ export const stopUpload: (jobId: number) => void = RNFS.stopUpload;
 // Windows-specific.
 
 // Windows workaround for slow copying of large folders of files
-export function copyFolder(filepath: string, destPath: string): Promise<void> {
-  return RNFS.copyFolder(
-    normalizeFilePath(filepath),
-    normalizeFilePath(destPath),
-  );
+export function copyFolder(from: string, into: string): Promise<void> {
+  return RNFS.copyFolder(normalizeFilePath(from), normalizeFilePath(into));
 }
 
 const {
@@ -527,12 +540,22 @@ const {
 } = RNFS.getConstants();
 
 export {
+  type DownloadBeginCallbackResultT,
+  type DownloadFileOptionsT,
+  type DownloadProgressCallbackResultT,
+  type DownloadResultT,
   type EncodingT,
   type FileOptionsT,
   type FSInfoResultT,
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
+  type StringMapT,
+  type UploadBeginCallbackArgT,
+  type UploadFileItemT,
+  type UploadFileOptionsT,
+  type UploadProgressCallbackArgT,
+  type UploadResultT,
   type WriteFileOptionsT,
   MainBundlePath,
   CachesDirectoryPath,

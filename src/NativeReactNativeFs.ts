@@ -5,14 +5,14 @@ import { TurboModuleRegistry } from 'react-native';
 // module, however as of its current version RN's Codegen does not seem to handle
 // type imports correctly.
 
-export type DownloadBeginCallbackResult = {
+export type DownloadBeginCallbackResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
   statusCode: number; // The HTTP status code
   contentLength: number; // The total size in bytes of the download resource
-  headers: Headers; // The HTTP response headers from the server
+  headers: StringMapT; // The HTTP response headers from the server
 };
 
-export type DownloadProgressCallbackResult = {
+export type DownloadProgressCallbackResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
   contentLength: number; // The total size in bytes of the download resource
   bytesWritten: number; // The number of bytes written to the file so far
@@ -22,7 +22,7 @@ export type DownloadProgressCallbackResult = {
  * These are options expected by native implementations of downloadFile()
  * function.
  */
-export type NativeDownloadFileOptions = {
+export type NativeDownloadFileOptionsT = {
   jobId: number;
   fromUrl: string; // URL to download file from
   toFile: string; // Local filesystem path to save the file to
@@ -31,7 +31,7 @@ export type NativeDownloadFileOptions = {
   cacheable: boolean; // Whether the download can be stored in the shared NSURLCache (iOS only)
   connectionTimeout: number; // only supported on Android yet
   discretionary: boolean; // Allow the OS to control the timing and speed of the download to improve perceived performance  (iOS only)
-  headers: Headers; // An object of headers to be passed to the server
+  headers: StringMapT; // An object of headers to be passed to the server
   progressDivider: number;
   progressInterval: number;
   readTimeout: number; // supported on Android and iOS
@@ -40,7 +40,11 @@ export type NativeDownloadFileOptions = {
   hasResumableCallback: boolean;
 };
 
-export type DownloadFileOptions = {
+export type PickFileOptionsT = {
+  mimeTypes: string[];
+};
+
+export type DownloadFileOptionsT = {
   fromUrl: string; // URL to download file from
   toFile: string; // Local filesystem path to save the file to
   background?: boolean; // Continue the download in the background after the app terminates (iOS only)
@@ -48,13 +52,13 @@ export type DownloadFileOptions = {
   cacheable?: boolean; // Whether the download can be stored in the shared NSURLCache (iOS only)
   connectionTimeout?: number; // only supported on Android yet
   discretionary?: boolean; // Allow the OS to control the timing and speed of the download to improve perceived performance  (iOS only)
-  headers?: Headers; // An object of headers to be passed to the server
+  headers?: StringMapT; // An object of headers to be passed to the server
   progressDivider?: number;
   progressInterval?: number;
   readTimeout?: number; // supported on Android and iOS
 
-  begin?: (res: DownloadBeginCallbackResult) => void;
-  progress?: (res: DownloadProgressCallbackResult) => void;
+  begin?: (res: DownloadBeginCallbackResultT) => void;
+  progress?: (res: DownloadProgressCallbackResultT) => void;
 
   // TODO: Yeah, original typing did not have "res" argument at all,
   // but the code using this type actually passes an argument to
@@ -63,7 +67,7 @@ export type DownloadFileOptions = {
   resumable?: (res: unknown) => void; // only supported on iOS yet
 };
 
-export type DownloadResult = {
+export type DownloadResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
   statusCode: number; // The HTTP status code
   bytesWritten: number; // The number of bytes written to the file
@@ -81,10 +85,7 @@ export type FSInfoResultT = {
   freeSpaceEx: number;
 };
 
-// TODO: Are these names really needed, can be just called
-// smth like a Map?
-export type Headers = { [name: string]: string };
-export type Fields = { [name: string]: string };
+export type StringMapT = { [key: string]: string };
 
 export type MkdirOptionsT = {
   // iOS-specific.
@@ -177,49 +178,55 @@ type NativeStatResultT = {
   originalFilepath: string;
 };
 
-export type UploadFileItem = {
-  name: string; // Name of the file, if not defined then filename is used
+export type UploadFileItemT = {
+  name?: string; // Name of the file, if not defined then filename is used
   filename: string; // Name of file
   filepath: string; // Path to file
-  filetype: string; // The mimetype of the file to be uploaded, if not defined it will get mimetype from `filepath` extension
+  filetype?: string; // The mimetype of the file to be uploaded, if not defined it will get mimetype from `filepath` extension
 };
 
-export type UploadBeginCallbackResult = {
+export type UploadBeginCallbackArgT = {
   jobId: number; // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
 };
 
-export type UploadProgressCallbackResult = {
+export type UploadProgressCallbackArgT = {
   jobId: number; // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
   totalBytesExpectedToSend: number; // The total number of bytes that will be sent to the server
   totalBytesSent: number; // The number of bytes sent to the server
 };
 
-export type UploadFileOptions = {
+export type UploadFileOptionsT = {
   toUrl: string; // URL to upload file to
   binaryStreamOnly?: boolean; // Allow for binary data stream for file to be uploaded without extra headers, Default is 'false'
-  files: UploadFileItem[]; // An array of objects with the file information to be uploaded.
-  headers?: Headers; // An object of headers to be passed to the server
-  fields?: Fields; // An object of fields to be passed to the server
+  files: UploadFileItemT[]; // An array of objects with the file information to be uploaded.
+  headers?: StringMapT; // An object of headers to be passed to the server
+  fields?: StringMapT; // An object of fields to be passed to the server
   method?: string; // Default is 'POST', supports 'POST' and 'PUT'
-  beginCallback?: (res: UploadBeginCallbackResult) => void; // deprecated
-  progressCallback?: (res: UploadProgressCallbackResult) => void; // deprecated
-  begin?: (res: UploadBeginCallbackResult) => void;
-  progress?: (res: UploadProgressCallbackResult) => void;
+
+  // TODO: Remove these future versions.
+  beginCallback?: (res: UploadBeginCallbackArgT) => void; // deprecated
+  progressCallback?: (res: UploadProgressCallbackArgT) => void; // deprecated
+
+  begin?: (res: UploadBeginCallbackArgT) => void;
+  progress?: (res: UploadProgressCallbackArgT) => void;
 };
 
-type NativeUploadFileOptions = {
+export type NativeUploadFileOptionsT = {
+  jobId: number;
   toUrl: string; // URL to upload file to
   binaryStreamOnly?: boolean; // Allow for binary data stream for file to be uploaded without extra headers, Default is 'false'
-  files: UploadFileItem[]; // An array of objects with the file information to be uploaded.
-  headers?: Headers; // An object of headers to be passed to the server
-  fields?: Fields; // An object of fields to be passed to the server
+  files: object[]; // An array of objects with the file information to be uploaded.
+  headers?: StringMapT; // An object of headers to be passed to the server
+  fields?: StringMapT; // An object of fields to be passed to the server
   method?: string; // Default is 'POST', supports 'POST' and 'PUT'
+  hasBeginCallback: boolean;
+  hasProgressCallback: boolean;
 };
 
-export type UploadResult = {
+export type UploadResultT = {
   jobId: number; // The upload job ID, required if one wishes to cancel the upload. See `stopUpload`.
   statusCode: number; // The HTTP status code
-  headers: Headers; // The HTTP response headers from the server
+  headers: StringMapT; // The HTTP response headers from the server
   body: string; // The HTTP response body
 };
 
@@ -267,12 +274,13 @@ export interface Spec extends TurboModule {
   // Common.
   appendFile(path: string, b64: string): Promise<void>;
   copyFile(from: string, into: string, options: FileOptionsT): Promise<void>;
-  downloadFile(options: NativeDownloadFileOptions): Promise<DownloadResult>;
+  downloadFile(options: NativeDownloadFileOptionsT): Promise<DownloadResultT>;
   exists(path: string): Promise<boolean>;
   getFSInfo(): Promise<FSInfoResultT>;
   hash(path: string, algorithm: string): Promise<string>;
   mkdir(path: string, options: MkdirOptionsT): Promise<void>;
   moveFile(from: string, into: string, options: FileOptionsT): Promise<void>;
+  pickFile(options: PickFileOptionsT): Promise<string[]>;
 
   read(path: string, length: number, position: number): Promise<string>;
   readFile(path: string): Promise<string>;
@@ -285,7 +293,7 @@ export interface Spec extends TurboModule {
   stopUpload(jobId: number): void;
   touch(path: string, options: TouchOptions): Promise<void>;
   unlink(path: string): Promise<void>;
-  uploadFiles(options: NativeUploadFileOptions): Promise<UploadResult>;
+  uploadFiles(options: NativeUploadFileOptionsT): Promise<UploadResultT>;
   write(path: string, b64: string, position: number): Promise<void>;
   writeFile(path: string, b64: string, options: FileOptionsT): Promise<void>;
 

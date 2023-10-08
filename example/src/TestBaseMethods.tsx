@@ -5,6 +5,8 @@ import { Platform, Text, View } from 'react-native';
 import {
   copyFile,
   copyFileAssets,
+  copyFolder,
+  downloadFile,
   exists,
   existsAssets,
   getFSInfo,
@@ -19,10 +21,12 @@ import {
   stat,
   TemporaryDirectoryPath,
   unlink,
+  uploadFiles,
   writeFile,
 } from '@dr.pogodin/react-native-fs';
 
 import TestCase, { type StatusOrEvaluator } from './TestCase';
+import { FILE_DIR, waitServer } from './testServer';
 
 import styles from './styles';
 
@@ -35,6 +39,44 @@ function logCharCodes(datum: string) {
 */
 
 const SEP = Platform.OS === 'windows' ? '\\' : '/';
+
+const UPLOAD_FILES_CONTROL_ANDROID = `--*****
+Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
+Content-Type: null
+Content-length: 8
+
+GÖÖÐ
+
+
+--*****--
+`;
+
+const UPLOAD_FILES_CONTROL_IOS = `Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
+Content-Type: text/plain
+Content-Length: 8
+
+GÖÖÐ
+
+`;
+
+const UPLOAD_FILES_CONTROL_WINDOWS = `-------
+Content-Length: 8
+Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
+
+GÖÖÐ
+
+`;
+
+// TODO: Why these messages are different I am not sure. Perhaps WebDAV module
+// of the static server outputs dumps incoming messages in different formats on
+// different platforms. Should be double-checked at some point.
+const UPLOAD_FILES_CONTROL = Platform.select({
+  android: UPLOAD_FILES_CONTROL_ANDROID,
+  ios: UPLOAD_FILES_CONTROL_IOS,
+  macos: UPLOAD_FILES_CONTROL_IOS,
+  windows: UPLOAD_FILES_CONTROL_WINDOWS,
+  default: '',
+});
 
 const tests: { [name: string]: StatusOrEvaluator } = {
   'copyFile()': async () => {
@@ -93,6 +135,53 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'copyFolder()': async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      const path = `${TemporaryDirectoryPath}/copy-folder-test`;
+      try {
+        await unlink(path);
+      } catch {}
+      await mkdir(`${path}/folder`);
+      await mkdir(`${path}/dest`);
+      await writeFile(
+        `${path}/folder/another-test-file.txt`,
+        'Another dummy content',
+      );
+
+      // Can it copy a folder with its content?
+      try {
+        await copyFolder(`${path}/folder`, `${path}/dest`);
+        // TODO: For platforms that allow to copy folders, we should do more
+        // checks here, similar to moveFile() checks.
+        return ['android'].includes(Platform.OS) ? 'fail' : 'pass';
+      } catch (e: any) {
+        if (Platform.OS === 'windows') {
+          if (
+            e.code !== 'EUNSPECIFIED' ||
+            e.message !== 'The parameter is incorrect.'
+          ) {
+            return 'fail';
+          }
+        } else {
+          if (
+            e.code !== 'EISDIR' ||
+            e.message !==
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+          ) {
+            return 'fail';
+          }
+        }
+      }
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'copyFileAssets()': async () => {
     const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
     try {
@@ -103,6 +192,37 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       await copyFileAssets('test/good-utf8.txt', path);
       const res = await readFile(path);
       if (res !== 'GÖÖÐ\n') return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  // TODO: This should live in a dedicated module, with a bunch of tests needed
+  // to cover all download-related functions & scenarious; however, to get this
+  // function checked faster, placing it here for now.
+  'downloadFile()': async () => {
+    const url =
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+    const path = `${TemporaryDirectoryPath}/download-file-01`;
+    const good = 'GÖÖÐ\n';
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      const { jobId, promise } = downloadFile({
+        fromUrl: url,
+        toFile: path,
+      });
+      const res = await promise;
+      if (
+        typeof jobId !== 'number' ||
+        res.bytesWritten !== 8 ||
+        res.statusCode !== 200
+      ) {
+        return 'fail';
+      }
+      const file = await readFile(path);
+      if (file !== good) return 'fail';
       return 'pass';
     } catch {
       return 'fail';
@@ -617,6 +737,45 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       } catch {}
       return 'pass';
     } catch {
+      return 'fail';
+    }
+  },
+  'uploadFiles()': async () => {
+    try {
+      const server = await waitServer();
+
+      const good = 'GÖÖÐ\n';
+      const path = `${TemporaryDirectoryPath}/upload-files.txt`;
+      await writeFile(path, good);
+
+      const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
+
+      try {
+        unlink(targetDevicePath);
+      } catch {}
+
+      const res = uploadFiles({
+        toUrl: `${server?.origin!}/dav/upload-files.txt`,
+        method: 'PUT',
+        files: [
+          {
+            name: 'upload-files-source-file',
+            filename: 'upload-files-source-file.txt',
+            filepath: path,
+          },
+        ],
+      });
+      await res.promise;
+
+      let uploadedFile = await readFile(targetDevicePath);
+      uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
+
+      if (uploadedFile !== UPLOAD_FILES_CONTROL) {
+        console.log('MISMATCH', uploadedFile, UPLOAD_FILES_CONTROL);
+      }
+
+      return uploadedFile.includes(UPLOAD_FILES_CONTROL) ? 'pass' : 'fail';
+    } catch (e) {
       return 'fail';
     }
   },

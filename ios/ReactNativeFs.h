@@ -3,7 +3,7 @@
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RNReactNativeFsSpec.h"
 
-@interface ReactNativeFs : RCTEventEmitter <NativeReactNativeFsSpec>
+@interface ReactNativeFs : RCTEventEmitter <NativeReactNativeFsSpec,UIDocumentPickerDelegate>
 #else
 #import <optional>
 #import <React/RCTCxxConvert.h>
@@ -36,7 +36,7 @@ namespace JS {
       NSDictionary *_v;
     };
 
-    struct NativeDownloadFileOptions {
+    struct NativeDownloadFileOptionsT {
       double jobId() const { return [_v[@"jobId"] doubleValue]; }
       NSString *fromUrl() const  { return _v[@"fromUrl"]; }
       NSString *toFile() const  { return _v[@"toFile"]; }
@@ -53,7 +53,7 @@ namespace JS {
       bool hasProgressCallback() const  { return _v[@"hasProgressCallback"]; }
       bool hasResumableCallback() const  { return _v[@"hasResumableCallback"]; }
 
-      NativeDownloadFileOptions(NSDictionary *const v) : _v(v) {}
+      NativeDownloadFileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
       NSDictionary *_v;
     };
@@ -75,19 +75,29 @@ namespace JS {
 
     template <typename T>
     using LazyVector = FB::LazyVector<T,id>;
+     */
 
-    struct NativeUploadFileOptions {
-      NSString *toUrl() const;
-      std::optional<bool> binaryStreamOnly() const;
-      LazyVector<UploadFileItem> files() const;
-      id<NSObject> _Nullable headers() const;
-      id<NSObject> _Nullable fields() const;
-      NSString *method() const;
+    struct NativeUploadFileOptionsT {
+      double jobId() const { return [_v[@"jobId"] doubleValue]; }
+      NSString *toUrl() const { return _v[@"toUrl"]; }
 
-      NativeUploadFileOptions(NSDictionary *const v) : _v(v) {}
+      std::optional<bool> binaryStreamOnly() const {
+        return ((NSNumber*)_v[@"binaryStreamOnly"]).boolValue;
+      }
+
+      id<NSObject>  files() const { return _v[@"files"]; }
+      id<NSObject> _Nullable headers() const { return _v[@"headers"]; }
+      id<NSObject> _Nullable fields() const { return _v[@"fields"]; }
+      NSString *method() const { return _v[@"method"]; }
+      bool hasBeginCallback() const { return _v[@"hasBeginCallback"]; }
+      bool hasProgressCallback() const { return _v[@"hasProgressCallback"]; }
+
+      NativeUploadFileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
       NSDictionary *_v;
     };
+
+    /*
 
     struct TouchOptions {
       std::optional<double> ctime() const;
@@ -113,8 +123,21 @@ namespace JS {
   return facebook::react::managedPointer<JS::NativeReactNativeFs::MkdirOptionsT>(json);
 }
 @end
+@implementation RCTCxxConvert (NativeReactNativeFs_NativeDownloadFileOptionsT)
++ (RCTManagedPointer *)JS_NativeReactNativeFs_NativeDownloadFileOptionsT:(id)json
+{
+  return facebook::react::managedPointer<JS::NativeReactNativeFs::NativeDownloadFileOptionsT>(json);
+}
+@end
 
-@interface ReactNativeFs : RCTEventEmitter <RCTBridgeModule>
+@implementation RCTCxxConvert (NativeReactNativeFs_NativeUploadFileOptionsT)
++ (RCTManagedPointer *)JS_NativeReactNativeFs_NativeUploadFileOptionsT:(id)json
+{
+  return facebook::react::managedPointer<JS::NativeReactNativeFs::NativeUploadFileOptionsT>(json);
+}
+@end
+
+@interface ReactNativeFs : RCTEventEmitter <RCTBridgeModule,UIDocumentPickerDelegate>
 #endif
 
 @property (retain) NSMutableDictionary* downloaders;
