@@ -970,13 +970,17 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
       } catch (Exception ex) {
         return ex;
       } finally {
-        try {
-          in.close();
-        } catch (IOException ignored) {
+        if (in != null) {
+          try {
+            in.close();
+          } catch (IOException ignored) {
+          }
         }
-        try {
-          out.close();
-        } catch (IOException ignored) {
+        if (out != null) {
+          try {
+            out.close();
+          } catch (IOException ignored) {
+          }
         }
       }
     }
@@ -1151,8 +1155,8 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 }
 
 /**
- * TODO: This is the original module file 
- * 
+ * TODO: This is the original module file
+ *
 -
 -
 -
