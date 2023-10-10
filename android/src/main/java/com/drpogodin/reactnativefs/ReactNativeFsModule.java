@@ -37,6 +37,7 @@ import com.facebook.react.ReactActivity;
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -62,6 +63,18 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   private ArrayDeque<Promise> pendingPickFilePromises = new ArrayDeque<Promise>();
   private ActivityResultLauncher<String[]> pickFileLauncher;
+
+  /**
+   * Attempts to close given object, discarting possible exception. Does nothing
+   * if given argument is null.
+   * @param closeable
+   */
+  static private void closeIgnoringException(Closeable closeable) {
+    if (closeable != null) {
+      try { closeable.close(); }
+      catch (Exception e) {}
+    }
+  }
 
   ReactNativeFsModule(ReactApplicationContext context) {
     super(context);
@@ -137,12 +150,9 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void appendFile(String filepath, String base64Content, Promise promise) {
-    try {
+    try (OutputStream outputStream = getOutputStream(filepath, true)) {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
-
-      OutputStream outputStream = getOutputStream(filepath, true);
       outputStream.write(bytes);
-      outputStream.close();
 
       promise.resolve(null);
     } catch (Exception ex) {
@@ -333,19 +343,10 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
       }
 
       // Attempt to open file (win = exists)
-      InputStream fileStream = null;
-      try {
-        fileStream = assetManager.open(filepath);
+      try (InputStream fileStream = assetManager.open(filepath)) {
         promise.resolve(true);
       } catch (Exception ex) {
         promise.resolve(false); // don't throw an error, resolve false
-      } finally {
-        if (fileStream != null) {
-          try {
-            fileStream.close();
-          } catch (Exception ignored) {
-          }
-        }
       }
     } catch (Exception ex) {
       ex.printStackTrace();
@@ -409,6 +410,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void hash(String filepath, String algorithm, Promise promise) {
+    FileInputStream inputStream = null;
     try {
       Map<String, String> algorithms = new HashMap<>();
 
@@ -435,7 +437,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
       MessageDigest md = MessageDigest.getInstance(algorithms.get(algorithm));
 
-      FileInputStream inputStream = new FileInputStream(filepath);
+      inputStream = new FileInputStream(filepath);
       byte[] buffer = new byte[1024 * 10]; // 10 KB Buffer
 
       int read;
@@ -451,6 +453,8 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     } catch (Exception ex) {
       ex.printStackTrace();
       reject(promise, filepath, ex);
+    } finally {
+      closeIgnoringException(inputStream);
     }
   }
 
@@ -539,8 +543,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     double position,
     Promise promise
   ) {
-    try {
-      InputStream inputStream = getInputStream(filepath);
+    try (InputStream inputStream = getInputStream(filepath)) {
       byte[] buffer = new byte[(int)length];
       inputStream.skip((int)position);
       int bytesRead = inputStream.read(buffer, 0, (int)length);
@@ -624,8 +627,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void readFile(String filepath, Promise promise) {
-    try {
-      InputStream inputStream = getInputStream(filepath);
+    try (InputStream inputStream = getInputStream(filepath)) {
       byte[] inputData = getInputStreamBytes(inputStream);
       String base64Content = Base64.encodeToString(inputData, Base64.NO_WRAP);
 
@@ -656,12 +658,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
       ex.printStackTrace();
       reject(promise, filepath, ex);
     } finally {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (IOException ignored) {
-        }
-      }
+      closeIgnoringException(stream);
     }
   }
 
@@ -684,12 +681,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
       ex.printStackTrace();
       reject(promise, filename, ex);
     } finally {
-      if (stream != null) {
-        try {
-          stream.close();
-        } catch (IOException ignored) {
-        }
-      }
+      closeIgnoringException(stream);
     }
   }
 
@@ -794,7 +786,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
       promise.resolve(file.setLastModified((long) mtime));
     } catch (Exception ex) {
       ex.printStackTrace();
-     reject(promise, filepath, ex);
+      reject(promise, filepath, ex);
     }
   }
 
@@ -899,35 +891,35 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     double position,
     Promise promise
   ) {
+    OutputStream outputStream = null;
+    RandomAccessFile file = null;
     try {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
 
       if (position < 0) {
-        OutputStream outputStream = getOutputStream(filepath, true);
+        outputStream = getOutputStream(filepath, true);
         outputStream.write(bytes);
-        outputStream.close();
       } else {
-        RandomAccessFile file = new RandomAccessFile(filepath, "rw");
+        file = new RandomAccessFile(filepath, "rw");
         file.seek((long)position);
         file.write(bytes);
-        file.close();
       }
 
       promise.resolve(null);
     } catch (Exception ex) {
       ex.printStackTrace();
       reject(promise, filepath, ex);
+    } finally {
+      closeIgnoringException(outputStream);
+      closeIgnoringException(file);
     }
   }
 
   @ReactMethod
   public void writeFile(String filepath, String base64Content, ReadableMap options, Promise promise) {
-    try {
+    try (OutputStream outputStream = getOutputStream(filepath, false)) {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
-
-      OutputStream outputStream = getOutputStream(filepath, false);
       outputStream.write(bytes);
-      outputStream.close();
 
       promise.resolve(null);
     } catch (Exception ex) {
@@ -938,12 +930,14 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   private class CopyFileTask extends AsyncTask<String, Void, Exception> {
     protected Exception doInBackground(String... paths) {
+      InputStream in = null;
+      OutputStream out = null;
       try {
         String filepath = paths[0];
         String destPath = paths[1];
 
-        InputStream in = getInputStream(filepath);
-        OutputStream out = getOutputStream(destPath, false);
+        in = getInputStream(filepath);
+        out = getOutputStream(destPath, false);
 
         byte[] buffer = new byte[1024];
         int length;
@@ -951,11 +945,12 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
           out.write(buffer, 0, length);
           Thread.yield();
         }
-        in.close();
-        out.close();
         return null;
       } catch (Exception ex) {
         return ex;
+      } finally {
+        closeIgnoringException(in);
+        closeIgnoringException(out);
       }
     }
   }
@@ -984,18 +979,8 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     } catch (Exception ex) {
       reject(promise, source, new Exception(String.format("Failed to copy '%s' to %s (%s)", source, destination, ex.getLocalizedMessage())));
     } finally {
-      if (in != null) {
-        try {
-          in.close();
-        } catch (IOException ignored) {
-        }
-      }
-      if (out != null) {
-        try {
-          out.close();
-        } catch (IOException ignored) {
-        }
-      }
+      closeIgnoringException(in);
+      closeIgnoringException(out);
     }
   }
 
@@ -1038,20 +1023,14 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   private static byte[] getInputStreamBytes(InputStream inputStream) throws IOException {
     byte[] bytesResult;
-    ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
     int bufferSize = 1024;
     byte[] buffer = new byte[bufferSize];
-    try {
+    try (ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream()) {
       int len;
       while ((len = inputStream.read(buffer)) != -1) {
         byteBuffer.write(buffer, 0, len);
       }
       bytesResult = byteBuffer.toByteArray();
-    } finally {
-      try {
-        byteBuffer.close();
-      } catch (IOException ignored) {
-      }
     }
     return bytesResult;
   }
@@ -1127,57 +1106,3 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     emitter.emit(eventName, params);
   }
 }
-
-/**
- * TODO: This is the original module file 
- * 
--
--
--
--
--
--
--
--
--
--
--
--
--
--import com.facebook.react.bridge.Promise;
--import com.facebook.react.bridge.ReactApplicationContext;
--
--import com.facebook.react.bridge.ReactContextBaseJavaModule;
--import com.facebook.react.bridge.ReactMethod;
--
-
--
--
--import com.facebook.react.module.annotations.ReactModule;
--
--
--
--
--
--import java.util.HashMap;
--import java.util.Map;
--
--  private static final String RNFSDocumentDirectoryPath = "RNFSDocumentDirectoryPath";
--  private static final String RNFSExternalDirectoryPath = "RNFSExternalDirectoryPath";
--  private static final String RNFSExternalStorageDirectoryPath = "RNFSExternalStorageDirectoryPath";
--  private static final String RNFSPicturesDirectoryPath = "RNFSPicturesDirectoryPath";
--  private static final String RNFSDownloadDirectoryPath = "RNFSDownloadDirectoryPath";
--  private static final String RNFSTemporaryDirectoryPath = "RNFSTemporaryDirectoryPath";
--  private static final String RNFSCachesDirectoryPath = "RNFSCachesDirectoryPath";
--  private static final String RNFSExternalCachesDirectoryPath = "RNFSExternalCachesDirectoryPath";
--  private static final String RNFSDocumentDirectory = "RNFSDocumentDirectory";
--
--  private static final String RNFSFileTypeRegular = "RNFSFileTypeRegular";
--  private static final String RNFSFileTypeDirectory = "RNFSFileTypeDirectory";
--
--  private SparseArray<Downloader> downloaders = new SparseArray<>();
--  private SparseArray<Uploader> uploaders = new SparseArray<>();
--
--  private ReactApplicationContext reactContext;
--
- */
