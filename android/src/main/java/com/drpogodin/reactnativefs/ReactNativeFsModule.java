@@ -137,12 +137,9 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void appendFile(String filepath, String base64Content, Promise promise) {
-    try {
+    try (OutputStream outputStream = getOutputStream(filepath, true)) {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
-
-      OutputStream outputStream = getOutputStream(filepath, true);
       outputStream.write(bytes);
-      outputStream.close();
 
       promise.resolve(null);
     } catch (Exception ex) {
@@ -409,6 +406,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void hash(String filepath, String algorithm, Promise promise) {
+    FileInputStream inputStream = null;
     try {
       Map<String, String> algorithms = new HashMap<>();
 
@@ -435,7 +433,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
       MessageDigest md = MessageDigest.getInstance(algorithms.get(algorithm));
 
-      FileInputStream inputStream = new FileInputStream(filepath);
+      inputStream = new FileInputStream(filepath);
       byte[] buffer = new byte[1024 * 10]; // 10 KB Buffer
 
       int read;
@@ -451,6 +449,13 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     } catch (Exception ex) {
       ex.printStackTrace();
       reject(promise, filepath, ex);
+    } finally {
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException ignored) {
+        }
+      }
     }
   }
 
@@ -539,8 +544,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     double position,
     Promise promise
   ) {
-    try {
-      InputStream inputStream = getInputStream(filepath);
+    try (InputStream inputStream = getInputStream(filepath)) {
       byte[] buffer = new byte[(int)length];
       inputStream.skip((int)position);
       int bytesRead = inputStream.read(buffer, 0, (int)length);
@@ -624,8 +628,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   @ReactMethod
   public void readFile(String filepath, Promise promise) {
-    try {
-      InputStream inputStream = getInputStream(filepath);
+    try (InputStream inputStream = getInputStream(filepath)) {
       byte[] inputData = getInputStreamBytes(inputStream);
       String base64Content = Base64.encodeToString(inputData, Base64.NO_WRAP);
 
@@ -899,35 +902,45 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     double position,
     Promise promise
   ) {
+    OutputStream outputStream = null;
+    RandomAccessFile file = null;
     try {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
 
       if (position < 0) {
-        OutputStream outputStream = getOutputStream(filepath, true);
+        outputStream = getOutputStream(filepath, true);
         outputStream.write(bytes);
-        outputStream.close();
       } else {
-        RandomAccessFile file = new RandomAccessFile(filepath, "rw");
+        file = new RandomAccessFile(filepath, "rw");
         file.seek((long)position);
         file.write(bytes);
-        file.close();
       }
 
       promise.resolve(null);
     } catch (Exception ex) {
       ex.printStackTrace();
       reject(promise, filepath, ex);
+    } finally {
+      if (outputStream != null) {
+        try {
+          outputStream.close();
+        } catch (IOException ignored) {
+        }
+      }
+      if (file != null) {
+        try {
+          file.close();
+        } catch (IOException ignored) {
+        }
+      }
     }
   }
 
   @ReactMethod
   public void writeFile(String filepath, String base64Content, ReadableMap options, Promise promise) {
-    try {
+    try (OutputStream outputStream = getOutputStream(filepath, false)) {
       byte[] bytes = Base64.decode(base64Content, Base64.DEFAULT);
-
-      OutputStream outputStream = getOutputStream(filepath, false);
       outputStream.write(bytes);
-      outputStream.close();
 
       promise.resolve(null);
     } catch (Exception ex) {
@@ -938,12 +951,14 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   private class CopyFileTask extends AsyncTask<String, Void, Exception> {
     protected Exception doInBackground(String... paths) {
+      InputStream in = null;
+      OutputStream out = null;
       try {
         String filepath = paths[0];
         String destPath = paths[1];
 
-        InputStream in = getInputStream(filepath);
-        OutputStream out = getOutputStream(destPath, false);
+        in = getInputStream(filepath);
+        out = getOutputStream(destPath, false);
 
         byte[] buffer = new byte[1024];
         int length;
@@ -951,11 +966,18 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
           out.write(buffer, 0, length);
           Thread.yield();
         }
-        in.close();
-        out.close();
         return null;
       } catch (Exception ex) {
         return ex;
+      } finally {
+        try {
+          in.close();
+        } catch (IOException ignored) {
+        }
+        try {
+          out.close();
+        } catch (IOException ignored) {
+        }
       }
     }
   }
