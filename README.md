@@ -1,4 +1,4 @@
-# react-native-fs
+# React Native File System
 
 <!-- Collection of hyperlinks. -->
 [Date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
