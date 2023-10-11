@@ -571,6 +571,8 @@ on other platforms it works fine.
 ```ts
 function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 ```
+**SUPPORTED**: Android, iOS. **NOT YET SUPPORTED**: macOS, Windows.
+
 Prompts the user to select file(s) using a platform-provided file picker UI,
 which also allows to access files outside the app sandbox.
 
