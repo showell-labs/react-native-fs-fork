@@ -12,11 +12,11 @@
     "windows:autolink": "react-native autolink-windows --sln \"windows\\ReactNativeFsExample.sln\" --proj \"windows\\ReactNativeFsExample\\ReactNativeFsExample.vcxproj\""
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.8.4",
+    "@dr.pogodin/react-native-static-server": "^0.9.0",
     "@types/lodash": "^4.14.199",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
-    "react-native": "^0.72.5",
+    "react-native": "^0.72.6",
     "react-native-windows": "^0.72.10"
   },
   "devDependencies": {

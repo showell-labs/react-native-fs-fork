@@ -40,7 +40,12 @@ export async function start() {
             timeouts: true,
           },
 
-          webdav: ['dav'],
+          extraConfig: `
+            server.modules += ("mod_webdav")
+            $HTTP["url"] =~ "^/dav/" {
+              webdav.activate = "enable"
+            }
+          `,
         });
         await server.start();
         resolve(server);
