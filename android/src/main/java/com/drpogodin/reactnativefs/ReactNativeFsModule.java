@@ -78,26 +78,31 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
 
   ReactNativeFsModule(ReactApplicationContext context) {
     super(context);
+  }
 
-    ReactActivity activity = (ReactActivity)getCurrentActivity();
-    ActivityResultRegistry registry = activity.getActivityResultRegistry();
-    pickFileLauncher = registry.register(
-      "RNFS_pickFile",
-      new OpenDocument(),
-      new ActivityResultCallback<Uri>() {
-        @Override
-        public void onActivityResult(Uri uri) {
-          WritableArray res = Arguments.createArray();
-          res.pushString(uri.toString());
-          pendingPickFilePromises.pop().resolve(res);
+  private ActivityResultLauncher<String[]> getPickFileLauncher() {
+    if (pickFileLauncher == null) {
+      ReactActivity activity = (ReactActivity)getCurrentActivity();
+      ActivityResultRegistry registry = activity.getActivityResultRegistry();
+      pickFileLauncher = registry.register(
+        "RNFS_pickFile",
+        new OpenDocument(),
+        new ActivityResultCallback<Uri>() {
+          @Override
+          public void onActivityResult(Uri uri) {
+            WritableArray res = Arguments.createArray();
+            res.pushString(uri.toString());
+            pendingPickFilePromises.pop().resolve(res);
+          }
         }
-      }
-    );
+      );
+    }
+    return pickFileLauncher;
   }
 
   @Override
   protected void finalize() throws Throwable {
-    pickFileLauncher.unregister();
+    if (pickFileLauncher != null) pickFileLauncher.unregister();
     super.finalize();
   }
 
@@ -533,7 +538,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
     // promises in FILO stack we should be able to resolve them in the correct
     // order.
     pendingPickFilePromises.push(promise);
-    pickFileLauncher.launch(mimeTypes);
+    getPickFileLauncher().launch(mimeTypes);
   }
 
   @ReactMethod
