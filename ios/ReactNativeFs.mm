@@ -69,32 +69,47 @@ RCT_EXPORT_METHOD(exists:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
-  BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  resolve([NSNumber numberWithBool:fileExists]);
+  @try {
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    resolve([NSNumber numberWithBool:fileExists]);
+  }
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
+  }
 }
 
 RCT_EXPORT_METHOD(stat:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSError *error = nil;
-  NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  if (error) {
-    return [self reject:reject withError:error];
+  @try {
+    NSError *error = nil;
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+
+    if (error) {
+      return [self reject:reject withError:error];
+    }
+
+    attributes = @{
+                   @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
+                   @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
+                   @"size": [attributes objectForKey:NSFileSize],
+                   @"type": [attributes objectForKey:NSFileType],
+                   @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
+                   @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
+                   };
+
+    resolve(attributes);
   }
-
-  attributes = @{
-                 @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
-                 @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
-                 @"size": [attributes objectForKey:NSFileSize],
-                 @"type": [attributes objectForKey:NSFileType],
-                 @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
-                 @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
-                 };
-
-  resolve(attributes);
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
+  }
 }
 
 RCT_EXPORT_METHOD(writeFile:(NSString *)filepath
@@ -125,37 +140,45 @@ RCT_EXPORT_METHOD(appendFile:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Content options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
-  NSFileManager *fM = [NSFileManager defaultManager];
-
-  if (![fM fileExistsAtPath:filepath])
-  {
-    BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:data attributes:nil];
-
-    if (!success) {
-      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
-    } else {
-      return resolve(nil);
-    }
-  }
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
-    NSFileHandle *fH = [NSFileHandle fileHandleForUpdatingAtPath:filepath];
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Content options:NSDataBase64DecodingIgnoreUnknownCharacters];
 
-    [fH seekToEndOfFile];
-    [fH writeData:data];
+    NSFileManager *fM = [NSFileManager defaultManager];
 
-    return resolve(nil);
-  } @catch (NSException *exception) {
-    NSMutableDictionary * info = [NSMutableDictionary dictionary];
-    [info setValue:exception.name forKey:@"ExceptionName"];
-    [info setValue:exception.reason forKey:@"ExceptionReason"];
-    [info setValue:exception.callStackReturnAddresses forKey:@"ExceptionCallStackReturnAddresses"];
-    [info setValue:exception.callStackSymbols forKey:@"ExceptionCallStackSymbols"];
-    [info setValue:exception.userInfo forKey:@"ExceptionUserInfo"];
-    NSError *err = [NSError errorWithDomain:@"RNFS" code:0 userInfo:info];
-    return [self reject:reject withError:err];
+    if (![fM fileExistsAtPath:filepath])
+    {
+      BOOL success = [[NSFileManager defaultManager] createFileAtPath:filepath contents:data attributes:nil];
+
+      if (!success) {
+        return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+      } else {
+        return resolve(nil);
+      }
+    }
+
+    @try {
+      NSFileHandle *fH = [NSFileHandle fileHandleForUpdatingAtPath:filepath];
+
+      [fH seekToEndOfFile];
+      [fH writeData:data];
+
+      return resolve(nil);
+    } @catch (NSException *exception) {
+      NSMutableDictionary * info = [NSMutableDictionary dictionary];
+      [info setValue:exception.name forKey:@"ExceptionName"];
+      [info setValue:exception.reason forKey:@"ExceptionReason"];
+      [info setValue:exception.callStackReturnAddresses forKey:@"ExceptionCallStackReturnAddresses"];
+      [info setValue:exception.callStackSymbols forKey:@"ExceptionCallStackSymbols"];
+      [info setValue:exception.userInfo forKey:@"ExceptionUserInfo"];
+      NSError *err = [NSError errorWithDomain:@"RNFS" code:0 userInfo:info];
+      return [self reject:reject withError:err];
+    }
+  }
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
   }
 }
 
@@ -200,21 +223,29 @@ RCT_EXPORT_METHOD(unlink:(NSString*)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSFileManager *manager = [NSFileManager defaultManager];
-  BOOL exists = [manager fileExistsAtPath:filepath isDirectory:NULL];
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  if (!exists) {
-    return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+  @try {
+    NSFileManager *manager = [NSFileManager defaultManager];
+    BOOL exists = [manager fileExistsAtPath:filepath isDirectory:NULL];
+
+    if (!exists) {
+      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+    }
+
+    NSError *error = nil;
+    BOOL success = [manager removeItemAtPath:filepath error:&error];
+
+    if (!success) {
+      return [self reject:reject withError:error];
+    }
+
+    resolve(nil);
   }
-
-  NSError *error = nil;
-  BOOL success = [manager removeItemAtPath:filepath error:&error];
-
-  if (!success) {
-    return [self reject:reject withError:error];
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
   }
-
-  resolve(nil);
 }
 
 RCT_EXPORT_METHOD(mkdir:(NSString *)filepath
@@ -255,28 +286,36 @@ RCT_EXPORT_METHOD(readFile:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  if (!fileExists) {
-    return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+  @try {
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+
+    if (!fileExists) {
+      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+    }
+
+    NSError *error = nil;
+
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+
+    if (error) {
+      return [self reject:reject withError:error];
+    }
+
+    if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
+      return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
+    }
+
+    NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
+    NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
+
+    resolve(base64Content);
   }
-
-  NSError *error = nil;
-
-  NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
-
-  if (error) {
-    return [self reject:reject withError:error];
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
   }
-
-  if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
-    return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
-  }
-
-  NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
-  NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-
-  resolve(base64Content);
 }
 
 RCT_EXPORT_METHOD(read:(NSString *)path
@@ -285,6 +324,10 @@ RCT_EXPORT_METHOD(read:(NSString *)path
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
+  NSURL *url = [NSURL fileURLWithPath:path];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
+
+  @try{
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:path];
 
     if (!fileExists) {
@@ -322,6 +365,10 @@ RCT_EXPORT_METHOD(read:(NSString *)path
     NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
 
     resolve(base64Content);
+  }
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
+  }
 }
 
 RCT_EXPORT_METHOD(hash:(NSString *)filepath
@@ -329,68 +376,76 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+  NSURL *url = [NSURL fileURLWithPath:filepath];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  if (!fileExists) {
-    return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+  @try {
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+
+    if (!fileExists) {
+      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+    }
+
+    NSError *error = nil;
+
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+
+    if (error) {
+      return [self reject:reject withError:error];
+    }
+
+    if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
+      return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
+    }
+
+    NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
+
+    NSArray *keys = [NSArray arrayWithObjects:@"md5", @"sha1", @"sha224", @"sha256", @"sha384", @"sha512", nil];
+
+    NSArray *digestLengths = [NSArray arrayWithObjects:
+      @CC_MD5_DIGEST_LENGTH,
+      @CC_SHA1_DIGEST_LENGTH,
+      @CC_SHA224_DIGEST_LENGTH,
+      @CC_SHA256_DIGEST_LENGTH,
+      @CC_SHA384_DIGEST_LENGTH,
+      @CC_SHA512_DIGEST_LENGTH,
+      nil];
+
+    NSDictionary *keysToDigestLengths = [NSDictionary dictionaryWithObjects:digestLengths forKeys:keys];
+
+    int digestLength = [[keysToDigestLengths objectForKey:algorithm] intValue];
+
+    if (!digestLength) {
+      return reject(@"Error", [NSString stringWithFormat:@"Invalid hash algorithm '%@'", algorithm], nil);
+    }
+
+    unsigned char buffer[digestLength];
+
+    if ([algorithm isEqualToString:@"md5"]) {
+      CC_MD5(content.bytes, (CC_LONG)content.length, buffer);
+    } else if ([algorithm isEqualToString:@"sha1"]) {
+      CC_SHA1(content.bytes, (CC_LONG)content.length, buffer);
+    } else if ([algorithm isEqualToString:@"sha224"]) {
+      CC_SHA224(content.bytes, (CC_LONG)content.length, buffer);
+    } else if ([algorithm isEqualToString:@"sha256"]) {
+      CC_SHA256(content.bytes, (CC_LONG)content.length, buffer);
+    } else if ([algorithm isEqualToString:@"sha384"]) {
+      CC_SHA384(content.bytes, (CC_LONG)content.length, buffer);
+    } else if ([algorithm isEqualToString:@"sha512"]) {
+      CC_SHA512(content.bytes, (CC_LONG)content.length, buffer);
+    } else {
+      return reject(@"Error", [NSString stringWithFormat:@"Invalid hash algorithm '%@'", algorithm], nil);
+    }
+
+    NSMutableString *output = [NSMutableString stringWithCapacity:digestLength * 2];
+    for(int i = 0; i < digestLength; i++)
+      [output appendFormat:@"%02x",buffer[i]];
+
+    resolve(output);
   }
-
-  NSError *error = nil;
-
-  NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
-
-  if (error) {
-    return [self reject:reject withError:error];
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
   }
-
-  if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
-    return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
-  }
-
-  NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
-
-  NSArray *keys = [NSArray arrayWithObjects:@"md5", @"sha1", @"sha224", @"sha256", @"sha384", @"sha512", nil];
-
-  NSArray *digestLengths = [NSArray arrayWithObjects:
-    @CC_MD5_DIGEST_LENGTH,
-    @CC_SHA1_DIGEST_LENGTH,
-    @CC_SHA224_DIGEST_LENGTH,
-    @CC_SHA256_DIGEST_LENGTH,
-    @CC_SHA384_DIGEST_LENGTH,
-    @CC_SHA512_DIGEST_LENGTH,
-    nil];
-
-  NSDictionary *keysToDigestLengths = [NSDictionary dictionaryWithObjects:digestLengths forKeys:keys];
-
-  int digestLength = [[keysToDigestLengths objectForKey:algorithm] intValue];
-
-  if (!digestLength) {
-    return reject(@"Error", [NSString stringWithFormat:@"Invalid hash algorithm '%@'", algorithm], nil);
-  }
-
-  unsigned char buffer[digestLength];
-
-  if ([algorithm isEqualToString:@"md5"]) {
-    CC_MD5(content.bytes, (CC_LONG)content.length, buffer);
-  } else if ([algorithm isEqualToString:@"sha1"]) {
-    CC_SHA1(content.bytes, (CC_LONG)content.length, buffer);
-  } else if ([algorithm isEqualToString:@"sha224"]) {
-    CC_SHA224(content.bytes, (CC_LONG)content.length, buffer);
-  } else if ([algorithm isEqualToString:@"sha256"]) {
-    CC_SHA256(content.bytes, (CC_LONG)content.length, buffer);
-  } else if ([algorithm isEqualToString:@"sha384"]) {
-    CC_SHA384(content.bytes, (CC_LONG)content.length, buffer);
-  } else if ([algorithm isEqualToString:@"sha512"]) {
-    CC_SHA512(content.bytes, (CC_LONG)content.length, buffer);
-  } else {
-    return reject(@"Error", [NSString stringWithFormat:@"Invalid hash algorithm '%@'", algorithm], nil);
-  }
-
-  NSMutableString *output = [NSMutableString stringWithCapacity:digestLength * 2];
-  for(int i = 0; i < digestLength; i++)
-    [output appendFormat:@"%02x",buffer[i]];
-
-  resolve(output);
 }
 
 
@@ -400,26 +455,34 @@ RCT_EXPORT_METHOD(moveFile:(NSString *)from
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSFileManager *manager = [NSFileManager defaultManager];
+  NSURL *url = [NSURL fileURLWithPath:from];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  NSError *error = nil;
-  BOOL success = [manager moveItemAtPath:from toPath:into error:&error];
+  @try {
+    NSFileManager *manager = [NSFileManager defaultManager];
 
-  if (!success) {
-    return [self reject:reject withError:error];
-  }
+    NSError *error = nil;
+    BOOL success = [manager moveItemAtPath:from toPath:into error:&error];
 
-  if (options.NSFileProtectionKey()) {
-    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
-    [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
-    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
-
-    if (!updateSuccess) {
+    if (!success) {
       return [self reject:reject withError:error];
     }
-  }
 
-  resolve(nil);
+    if (options.NSFileProtectionKey()) {
+      NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
+      [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
+      BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
+
+      if (!updateSuccess) {
+        return [self reject:reject withError:error];
+      }
+    }
+
+    resolve(nil);
+  }
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
+  }
 }
 
 
@@ -429,26 +492,34 @@ RCT_EXPORT_METHOD(copyFile:(NSString *)from
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSFileManager *manager = [NSFileManager defaultManager];
+  NSURL *url = [NSURL fileURLWithPath:from];
+  BOOL allowed = [url startAccessingSecurityScopedResource];
 
-  NSError *error = nil;
-  BOOL success = [manager copyItemAtPath:from toPath:into error:&error];
+  @try {
+    NSFileManager *manager = [NSFileManager defaultManager];
 
-  if (!success) {
-    return [self reject:reject withError:error];
-  }
+    NSError *error = nil;
+    BOOL success = [manager copyItemAtPath:from toPath:into error:&error];
 
-  if (options.NSFileProtectionKey()) {
-    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
-    [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
-    BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
-
-    if (!updateSuccess) {
+    if (!success) {
       return [self reject:reject withError:error];
     }
-  }
 
-  resolve(nil);
+    if (options.NSFileProtectionKey()) {
+      NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
+      [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
+      BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
+
+      if (!updateSuccess) {
+        return [self reject:reject withError:error];
+      }
+    }
+
+    resolve(nil);
+  }
+  @finally {
+    if (allowed) [url stopAccessingSecurityScopedResource];
+  }
 }
 
 - (NSArray<NSString *> *)supportedEvents

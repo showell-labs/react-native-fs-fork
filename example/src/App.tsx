@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 import { Alert, Button, SafeAreaView, ScrollView } from 'react-native';
 
-import { pickFile } from '@dr.pogodin/react-native-fs';
+import { pickFile, read } from '@dr.pogodin/react-native-fs';
 
 import TestBaseMethods from './TestBaseMethods';
 import TestConstants from './TestConstants';
@@ -26,6 +26,9 @@ export default function App() {
           onPress={async () => {
             const res = await pickFile();
             Alert.alert('Picked files', res.join('; '));
+
+            const begin = await read(res[0]!, 10);
+            Alert.alert('First file starts with', begin);
           }}
           title="pickFile()"
         />
