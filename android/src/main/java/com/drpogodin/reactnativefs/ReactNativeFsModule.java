@@ -91,7 +91,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
           @Override
           public void onActivityResult(Uri uri) {
             WritableArray res = Arguments.createArray();
-            res.pushString(uri.toString());
+            if (uri != null) res.pushString(uri.toString());
             pendingPickFilePromises.pop().resolve(res);
           }
         }

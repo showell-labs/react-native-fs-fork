@@ -25,10 +25,12 @@ export default function App() {
         <Button
           onPress={async () => {
             const res = await pickFile();
-            Alert.alert('Picked files', res.join('; '));
+            Alert.alert(`Picked ${res.length} file(s)`, res.join('; '));
 
-            const begin = await read(res[0]!, 10);
-            Alert.alert('First file starts with', begin);
+            for (let i = 0; i < res.length; ++i) {
+              const begin = await read(res[0]!, 10);
+              Alert.alert(`File #{i + 1} starts with`, begin);
+            }
           }}
           title="pickFile()"
         />
