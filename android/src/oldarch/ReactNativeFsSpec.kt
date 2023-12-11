@@ -17,3 +17,9 @@ abstract class ReactNativeFsSpec extends ReactContextBaseJavaModule {
     return this.getTypedExportedConstants();
   }
 }
+
+/*
+abstract class ReactNativeFsSpec internal constructor(context: ReactApplicationContext) :
+  NativeReactNativeFsSpec(context) {
+}
+*/

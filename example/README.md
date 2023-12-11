@@ -9,21 +9,24 @@ a package in `node_modules`, installed from NPM registry; this example consumes
 it directly from the source code in the parent folder. Because of this, be sure
 to install NPM dependencies in the parent folder as well._
 
--  Install NPM dependencies both in the `example` folder, and in its parent
-   folder, executing in both places the command
+-  Since its **v2.22.0-alpha.0** the library codebase and its example app rely
+   on [Yarn] as the package manager, and their development setup won't work with
+   [NPM].
+
+-  Install NPM dependencies executing in the library codebase root
    ```shell
-   $ npm install
+   yarn install
    ```
 
--  Start RN development server executing in the `example` folder
+-  Start RN development server executing in the library codebase root
    ```shell
-   npm start
+   yarn example start
    ```
 
--  For **Android** target: Deploy example by executing in the `example` folder
-   the command
+-  For **Android** target: Deploy example by executing in the codebase root
+   folder the command
    ```shell
-   npm run android
+   yarn example android
    ```
 
 -  For **iOS** target:
@@ -48,3 +51,5 @@ to install NPM dependencies in the parent folder as well._
    -  Open, build, and run example project in MS Visual Studio.
 
 [@dr.pogodin/react-native-fs]: https://www.npmjs.com/package/@dr.pogodin/react-native-fs
+[NPM]: https://www.npmjs.com
+[Yarn]: https://yarnpkg.com
