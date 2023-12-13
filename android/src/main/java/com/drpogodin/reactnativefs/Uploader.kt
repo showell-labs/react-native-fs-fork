@@ -19,16 +19,16 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
     private var mParams: UploadParams? = null
     private var res: UploadResult? = null
     private val mAbort = AtomicBoolean(false)
-    protected override fun doInBackground(vararg uploadParams: UploadParams): UploadResult {
+    protected override fun doInBackground(vararg uploadParams: UploadParams?): UploadResult {
         mParams = uploadParams[0]
         res = UploadResult()
         Thread {
             try {
                 upload(mParams, res!!)
-                mParams!!.onUploadComplete.onUploadComplete(res)
+                mParams!!.onUploadComplete?.onUploadComplete(res!!)
             } catch (e: Exception) {
                 res!!.exception = e
-                mParams!!.onUploadComplete.onUploadComplete(res)
+                mParams!!.onUploadComplete?.onUploadComplete(res!!)
             }
         }.start()
         return res!!
@@ -55,38 +55,32 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         var filename: String
         var filetype: String
         try {
-            val files: Array<Any> = params!!.files.toTypedArray()
+            val files: Array<Any> = params!!.files!!.toTypedArray()
             val binaryStreamOnly = params.binaryStreamOnly
-            connection = params.src.openConnection() as HttpURLConnection
+            connection = params.src!!.openConnection() as HttpURLConnection
             connection!!.doOutput = true
-            val headerIterator = params.headers.keySetIterator()
+            val headerIterator = params.headers!!.keySetIterator()
             connection.requestMethod = params.method
             if (!binaryStreamOnly) {
                 connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
             }
             while (headerIterator.hasNextKey()) {
                 val key = headerIterator.nextKey()
-                val value = params.headers.getString(key)
+                val value = params.headers!!.getString(key)
                 connection.setRequestProperty(key, value)
             }
-            val fieldsIterator = params.fields.keySetIterator()
+            val fieldsIterator = params.fields!!.keySetIterator()
             while (fieldsIterator.hasNextKey()) {
                 val key = fieldsIterator.nextKey()
-                val value = params.fields.getString(key)
+                val value = params.fields!!.getString(key)
                 metaData += twoHyphens + boundary + crlf + "Content-Disposition: form-data; name=\"" + key + "\"" + crlf + crlf + value + crlf
             }
             stringData += metaData
             fileHeader = arrayOfNulls(files.size)
-            for (map in params.files) {
-                try {
-                    name = map.getString("name")
-                    filename = map.getString("filename")
-                    filetype = map.getString("filetype")
-                } catch (e: NoSuchKeyException) {
-                    name = map.getString("name")
-                    filename = map.getString("filename")
-                    filetype = getMimeType(map.getString("filepath"))
-                }
+            for (map in params.files!!) {
+                name = map.getString("name")!!
+                filename = map.getString("filename")!!
+                filetype = map.getString("filetype") ?: getMimeType(map.getString("filepath"))
                 val file = File(map.getString("filepath"))
                 val fileLength = file.length()
                 totalFileLength += fileLength
@@ -104,9 +98,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 fileCount++
             }
             fileCount = 0
-            if (mParams!!.onUploadBegin != null) {
-                mParams!!.onUploadBegin.onUploadBegin()
-            }
+            mParams!!.onUploadBegin?.onUploadBegin()
             if (!binaryStreamOnly) {
                 var requestLength = totalFileLength
                 requestLength += (stringData.length + files.size * crlf.length).toLong()
@@ -120,7 +112,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 request.writeBytes(metaData)
             }
             byteSentTotal = 0
-            for (map in params.files) {
+            for (map in params.files!!) {
                 if (!binaryStreamOnly) {
                     request.writeBytes(fileHeader[fileCount])
                 }
@@ -133,10 +125,8 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 while (bytesRead < fileLength) {
                     val transferredBytes = fileChannel.transferTo(bytesRead, bufferSize, requestChannel)
                     bytesRead += transferredBytes
-                    if (mParams!!.onUploadProgress != null) {
-                        byteSentTotal += transferredBytes.toInt()
-                        mParams!!.onUploadProgress.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
-                    }
+                    byteSentTotal += transferredBytes.toInt()
+                    mParams!!.onUploadProgress?.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
                 }
                 if (!binaryStreamOnly) {
                     request.writeBytes(crlf)

@@ -15,16 +15,16 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
     private var mParam: DownloadParams? = null
     private val mAbort = AtomicBoolean(false)
     var res: DownloadResult? = null
-    protected override fun doInBackground(vararg params: DownloadParams): DownloadResult {
+    protected override fun doInBackground(vararg params: DownloadParams?): DownloadResult {
         mParam = params[0]
         res = DownloadResult()
         Thread {
             try {
                 download(mParam, res!!)
-                mParam!!.onTaskCompleted.onTaskCompleted(res)
+                mParam!!.onTaskCompleted?.onTaskCompleted(res)
             } catch (ex: Exception) {
                 res!!.exception = ex
-                mParam!!.onTaskCompleted.onTaskCompleted(res)
+                mParam!!.onTaskCompleted?.onTaskCompleted(res)
             }
         }.start()
         return res!!
@@ -36,11 +36,11 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
         var output: OutputStream? = null
         var connection: HttpURLConnection? = null
         try {
-            connection = param!!.src.openConnection() as HttpURLConnection
-            val iterator = param.headers.keySetIterator()
+            connection = param!!.src!!.openConnection() as HttpURLConnection
+            val iterator = param.headers!!.keySetIterator()
             while (iterator.hasNextKey()) {
                 val key = iterator.nextKey()
-                val value = param.headers.getString(key)
+                val value = param.headers!!.getString(key)
                 connection.setRequestProperty(key, value)
             }
             connection.connectTimeout = param.connectionTimeout
@@ -68,9 +68,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                         headersFlat[headerKey] = valueKey
                     }
                 }
-                if (mParam!!.onDownloadBegin != null) {
-                    mParam!!.onDownloadBegin.onDownloadBegin(statusCode, lengthOfFile, headersFlat)
-                }
+                mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, headersFlat)
                 input = BufferedInputStream(connection.inputStream, 8 * 1024)
                 output = FileOutputStream(param.dest)
                 val data = ByteArray(8 * 1024)
@@ -87,17 +85,17 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                             val timestamp = System.currentTimeMillis()
                             if (timestamp - lastProgressEmitTimestamp > param.progressInterval) {
                                 lastProgressEmitTimestamp = timestamp
-                                publishProgress(*longArrayOf(lengthOfFile, total))
+                                publishProgress(longArrayOf(lengthOfFile, total))
                             }
                         } else if (param.progressDivider <= 0) {
-                            publishProgress(*longArrayOf(lengthOfFile, total))
+                            publishProgress(longArrayOf(lengthOfFile, total))
                         } else {
                             val progress = Math.round(total.toDouble() * 100 / lengthOfFile).toDouble()
                             if (progress % param.progressDivider == 0.0) {
                                 if (progress != lastProgressValue || total == lengthOfFile) {
                                     Log.d("Downloader", "EMIT: $progress, TOTAL:$total")
                                     lastProgressValue = progress
-                                    publishProgress(*longArrayOf(lengthOfFile, total))
+                                    publishProgress(longArrayOf(lengthOfFile, total))
                                 }
                             }
                         }
@@ -125,11 +123,9 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
         mAbort.set(true)
     }
 
-    protected override fun onProgressUpdate(vararg values: LongArray) {
+    protected fun onProgressUpdate(vararg values: LongArray) {
         super.onProgressUpdate(*values)
-        if (mParam!!.onDownloadProgress != null) {
-            mParam!!.onDownloadProgress.onDownloadProgress(values[0][0], values[0][1])
-        }
+        mParam!!.onDownloadProgress?.onDownloadProgress(values[0][0], values[0][1])
     }
 
     protected fun onPostExecute(ex: Exception?) {}

@@ -13,12 +13,10 @@ import android.provider.MediaStore
 import android.util.Base64
 import android.util.SparseArray
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import com.drpogodin.reactnativefs.DownloadParams.OnDownloadBegin
 import com.drpogodin.reactnativefs.DownloadParams.OnDownloadProgress
 import com.drpogodin.reactnativefs.DownloadParams.OnTaskCompleted
-import com.drpogodin.reactnativefs.UploadParams.onUploadBegin
-import com.drpogodin.reactnativefs.UploadParams.onUploadComplete
-import com.drpogodin.reactnativefs.UploadParams.onUploadProgress
 import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -50,12 +48,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     private val downloaders = SparseArray<Downloader>()
     private val uploaders = SparseArray<Uploader>()
     private val pendingPickFilePromises = ArrayDeque<Promise>()
-    private var pickFileLauncher: ActivityResultLauncher<Array<String?>>? = null
-    private fun getPickFileLauncher(): ActivityResultLauncher<Array<String?>> {
+    private var pickFileLauncher: ActivityResultLauncher<Array<String>>? = null
+    private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
         if (pickFileLauncher == null) {
             val activity = getCurrentActivity() as ReactActivity
             val registry = activity.activityResultRegistry
-            pickFileLauncher = registry.register<Array<String?>, Uri>(
+            pickFileLauncher = registry.register<Array<String>, Uri>(
                     "RNFS_pickFile",
                     OpenDocument()
             ) { uri ->
@@ -64,54 +62,36 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 pendingPickFilePromises.pop().resolve(res)
             }
         }
-        return pickFileLauncher
+        return pickFileLauncher!!
     }
 
-    @Throws(Throwable::class)
     protected fun finalize() {
         if (pickFileLauncher != null) pickFileLauncher!!.unregister()
-        super.finalize()
     }
 
-    val typedExportedConstants: Map<String, Any?>
-        get() {
-            val constants: MutableMap<String, Any?> = HashMap()
-            constants["DocumentDirectory"] = 0
-            constants["DocumentDirectoryPath"] = this.getReactApplicationContext().getFilesDir().getAbsolutePath()
-            constants["TemporaryDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
-            constants["PicturesDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
-            constants["CachesDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
-            constants["DownloadDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
-            constants["FileTypeRegular"] = 0
-            constants["FileTypeDirectory"] = 1
-            val externalStorageDirectory = Environment.getExternalStorageDirectory()
-            if (externalStorageDirectory != null) {
-                constants["ExternalStorageDirectoryPath"] = externalStorageDirectory.absolutePath
-            } else {
-                constants["ExternalStorageDirectoryPath"] = null
-            }
-            val externalDirectory: File = this.getReactApplicationContext().getExternalFilesDir(null)
-            if (externalDirectory != null) {
-                constants["ExternalDirectoryPath"] = externalDirectory.absolutePath
-            } else {
-                constants["ExternalDirectoryPath"] = null
-            }
-            val externalCachesDirectory: File = this.getReactApplicationContext().getExternalCacheDir()
-            if (externalCachesDirectory != null) {
-                constants["ExternalCachesDirectoryPath"] = externalCachesDirectory.absolutePath
-            } else {
-                constants["ExternalCachesDirectoryPath"] = null
-            }
-            return constants
-        }
+    override fun getTypedExportedConstants(): Map<String, Object> {
+        val constants: MutableMap<String, Any?> = HashMap()
+        constants["DocumentDirectory"] = 0
+        constants["DocumentDirectoryPath"] = this.getReactApplicationContext().getFilesDir().getAbsolutePath()
+        constants["TemporaryDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
+        constants["PicturesDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
+        constants["CachesDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
+        constants["DownloadDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
+        constants["FileTypeRegular"] = 0
+        constants["FileTypeDirectory"] = 1
+        constants["ExternalStorageDirectoryPath"] = Environment.getExternalStorageDirectory()?.absolutePath
+        constants["ExternalDirectoryPath"] = this.getReactApplicationContext().getExternalFilesDir(null)?.absolutePath
+        constants["ExternalCachesDirectoryPath"] = this.getReactApplicationContext().getExternalCacheDir()?.absolutePath
+        return constants as MutableMap<String, Object>
+    }
 
     @ReactMethod
-    fun addListener(eventName: String?) {
+    override fun addListener(eventName: String?) {
         // NOOP
     }
 
     @ReactMethod
-    fun appendFile(filepath: String, base64Content: String?, promise: Promise) {
+    override fun appendFile(filepath: String, base64Content: String?, promise: Promise) {
         try {
             getOutputStream(filepath, true).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
@@ -125,7 +105,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun copyAssetsFileIOS(
+    override fun copyAssetsFileIOS(
             imageUri: String?,
             destPath: String?,
             width: Double,
@@ -139,20 +119,20 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun copyAssetsVideoIOS(imageUri: String?, destPath: String?, promise: Promise?) {
+    override fun copyAssetsVideoIOS(imageUri: String?, destPath: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "copyAssetsVideoIOS()")
     }
 
     @ReactMethod
-    fun completeHandlerIOS(jobId: Double) {
+    override fun completeHandlerIOS(jobId: Double) {
         // TODO: It is iOS-only. We need at least Promise here,
         // to reject.
     }
 
     @ReactMethod
-    fun copyFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
+    override fun copyFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
         object : CopyFileTask() {
-            protected override fun onPostExecute(ex: Exception) {
+            protected override fun onPostExecute(ex: Exception?) {
                 if (ex == null) {
                     promise.resolve(null)
                 } else {
@@ -164,7 +144,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun copyFileAssets(assetPath: String, destination: String, promise: Promise) {
+    override fun copyFileAssets(assetPath: String, destination: String, promise: Promise) {
         val assetManager: AssetManager = getReactApplicationContext().getAssets()
         try {
             val `in` = assetManager.open(assetPath)
@@ -176,7 +156,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun copyFileRes(filename: String, destination: String, promise: Promise) {
+    override fun copyFileRes(filename: String, destination: String, promise: Promise) {
         try {
             val res = getResIdentifier(filename)
             val `in`: InputStream = getReactApplicationContext().getResources().openRawResource(res)
@@ -188,12 +168,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     // TODO: As of now it is meant to be Windows-only.
     @ReactMethod
-    fun copyFolder(from: String?, to: String?, promise: Promise?) {
+    override fun copyFolder(from: String?, to: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "copyFolder()")
     }
 
     @ReactMethod
-    fun downloadFile(options: ReadableMap, promise: Promise) {
+    override fun downloadFile(options: ReadableMap, promise: Promise) {
         try {
             val file = File(options.getString("toFile"))
             val url = URL(options.getString("fromUrl"))
@@ -228,7 +208,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             }
             if (hasBeginCallback) {
                 params.onDownloadBegin = object : OnDownloadBegin {
-                    override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: Map<String?, String?>?) {
+                    override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: Map<String, String?>?) {
                         val headersMap = Arguments.createMap()
                         for ((key, value) in headers!!) {
                             headersMap.putString(key!!, value)
@@ -263,7 +243,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun exists(filepath: String?, promise: Promise) {
+    override fun exists(filepath: String?, promise: Promise) {
         try {
             val file = File(filepath)
             promise.resolve(file.exists())
@@ -274,7 +254,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun existsAssets(filepath: String?, promise: Promise) {
+    override fun existsAssets(filepath: String?, promise: Promise) {
         try {
             val assetManager: AssetManager = getReactApplicationContext().getAssets()
             try {
@@ -300,7 +280,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun existsRes(filename: String, promise: Promise) {
+    override fun existsRes(filename: String, promise: Promise) {
         try {
             val res = getResIdentifier(filename)
             if (res > 0) {
@@ -315,7 +295,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun getAllExternalFilesDirs(promise: Promise) {
+    override fun getAllExternalFilesDirs(promise: Promise) {
         val allExternalFilesDirs: Array<File> = this.getReactApplicationContext().getExternalFilesDirs(null)
         val fs = Arguments.createArray()
         for (f in allExternalFilesDirs) {
@@ -327,7 +307,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun getFSInfo(promise: Promise) {
+    override fun getFSInfo(promise: Promise) {
         val path = Environment.getDataDirectory()
         val stat = StatFs(path.path)
         val statEx = StatFs(Environment.getExternalStorageDirectory().path)
@@ -354,7 +334,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun hash(filepath: String?, algorithm: String, promise: Promise) {
+    override fun hash(filepath: String?, algorithm: String, promise: Promise) {
         var inputStream: FileInputStream? = null
         try {
             val algorithms: MutableMap<String, String> = HashMap()
@@ -393,12 +373,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun isResumable(jobId: Double, promise: Promise?) {
+    override fun isResumable(jobId: Double, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "isResumable()")
     }
 
     @ReactMethod
-    fun mkdir(filepath: String?, options: ReadableMap?, promise: Promise) {
+    override fun mkdir(filepath: String?, options: ReadableMap?, promise: Promise) {
         try {
             val file = File(filepath)
             file.mkdirs()
@@ -412,12 +392,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun moveFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
+    override fun moveFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
         try {
             val inFile = File(filepath)
             if (!inFile.renameTo(File(destPath))) {
                 object : CopyFileTask() {
-                    protected override fun onPostExecute(ex: Exception) {
+                    protected override fun onPostExecute(ex: Exception?) {
                         if (ex == null) {
                             inFile.delete()
                             promise.resolve(true)
@@ -437,17 +417,17 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun pathForBundle(bundle: String?, promise: Promise?) {
+    override fun pathForBundle(bundle: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "pathForBundle()")
     }
 
     @ReactMethod
-    fun pathForGroup(group: String?, promise: Promise?) {
+    override fun pathForGroup(group: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "pathForGroup()")
     }
 
     @ReactMethod
-    fun pickFile(options: ReadableMap, promise: Promise) {
+    override fun pickFile(options: ReadableMap, promise: Promise) {
         val mimeTypesArray = options.getArray("mimeTypes")
         val mimeTypes = arrayOfNulls<String>(mimeTypesArray!!.size())
         for (i in 0 until mimeTypesArray.size()) {
@@ -461,11 +441,11 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         // promises in FILO stack we should be able to resolve them in the correct
         // order.
         pendingPickFilePromises.push(promise)
-        getPickFileLauncher().launch(mimeTypes)
+        getPickFileLauncher().launch(mimeTypes as Array<String>)
     }
 
     @ReactMethod
-    fun read(
+    override fun read(
             filepath: String,
             length: Double,
             position: Double,
@@ -486,7 +466,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun readDir(directory: String?, promise: Promise) {
+    override fun readDir(directory: String?, promise: Promise) {
         try {
             val file = File(directory)
             if (!file.exists()) throw Exception("Folder does not exist")
@@ -509,7 +489,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun readDirAssets(directory: String, promise: Promise) {
+    override fun readDirAssets(directory: String, promise: Promise) {
         try {
             val assetManager: AssetManager = getReactApplicationContext().getAssets()
             val list = assetManager.list(directory)
@@ -543,7 +523,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun readFile(filepath: String, promise: Promise) {
+    override fun readFile(filepath: String, promise: Promise) {
         try {
             getInputStream(filepath).use { inputStream ->
                 val inputData = getInputStreamBytes(inputStream!!)
@@ -557,7 +537,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun readFileAssets(filepath: String?, promise: Promise) {
+    override fun readFileAssets(filepath: String?, promise: Promise) {
         var stream: InputStream? = null
         try {
             // ensure isn't a directory
@@ -580,7 +560,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun readFileRes(filename: String, promise: Promise) {
+    override fun readFileRes(filename: String, promise: Promise) {
         var stream: InputStream? = null
         try {
             val res = getResIdentifier(filename)
@@ -602,12 +582,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun removeListeners(count: Double) {
+    override fun removeListeners(count: Double) {
         // NOOP
     }
 
     @ReactMethod
-    fun resumeDownload(jobId: Double) {
+    override fun resumeDownload(jobId: Double) {
         // TODO: This is currently iOS-only method,
         // and worse it does not return a promise,
         // thus we even can't cleanly reject it here.
@@ -615,7 +595,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun scanFile(path: String, promise: Promise) {
+    override fun scanFile(path: String, promise: Promise) {
         MediaScannerConnection.scanFile(this.getReactApplicationContext(), arrayOf<String>(path),
                 null,
                 object : MediaScannerConnectionClient {
@@ -628,7 +608,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun setReadable(
+    override fun setReadable(
             filepath: String?,
             readable: Boolean,
             ownerOnly: Boolean,
@@ -646,7 +626,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun stat(filepath: String, promise: Promise) {
+    override fun stat(filepath: String, promise: Promise) {
         try {
             val originalFilepath = getOriginalFilepath(filepath, true)
             val file = File(originalFilepath)
@@ -665,19 +645,19 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun stopDownload(jobId: Double) {
+    override fun stopDownload(jobId: Double) {
         val downloader = downloaders[jobId.toInt()]
         downloader?.stop()
     }
 
     @ReactMethod
-    fun stopUpload(jobId: Double) {
+    override fun stopUpload(jobId: Double) {
         val uploader = uploaders[jobId.toInt()]
         uploader?.stop()
     }
 
     @ReactMethod
-    fun touch(filepath: String?, options: ReadableMap, promise: Promise) {
+    override fun touch(filepath: String?, options: ReadableMap, promise: Promise) {
         try {
             val file = File(filepath)
             val mtime = options.getDouble("mtime").toLong()
@@ -692,7 +672,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun unlink(filepath: String?, promise: Promise) {
+    override fun unlink(filepath: String?, promise: Promise) {
         try {
             val file = File(filepath)
             if (!file.exists()) throw Exception("File does not exist")
@@ -705,7 +685,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun uploadFiles(options: ReadableMap, promise: Promise) {
+    override fun uploadFiles(options: ReadableMap, promise: Promise) {
         try {
             val files = options.getArray("files")
             val url = URL(options.getString("toUrl"))
@@ -727,8 +707,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             params.method = method
             params.fields = fields
             params.binaryStreamOnly = binaryStreamOnly
-            params.onUploadComplete = object : onUploadComplete {
-                fun onUploadComplete(res: UploadResult) {
+            params.onUploadComplete = object : UploadParams.OnUploadComplete {
+                override fun onUploadComplete(res: UploadResult) {
                     if (res.exception == null) {
                         val infoMap = Arguments.createMap()
                         infoMap.putInt("jobId", jobId)
@@ -742,8 +722,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 }
             }
             if (hasBeginCallback) {
-                params.onUploadBegin = object : onUploadBegin {
-                    fun onUploadBegin() {
+                params.onUploadBegin = object : UploadParams.OnUploadBegin {
+                    override fun onUploadBegin() {
                         val data = Arguments.createMap()
                         data.putInt("jobId", jobId)
                         sendEvent(getReactApplicationContext(), "UploadBegin", data)
@@ -751,8 +731,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 }
             }
             if (hasProgressCallback) {
-                params.onUploadProgress = object : onUploadProgress {
-                    fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int) {
+                params.onUploadProgress = object : UploadParams.OnUploadProgress {
+                    override fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int) {
                         val data = Arguments.createMap()
                         data.putInt("jobId", jobId)
                         data.putInt("totalBytesExpectedToSend", totalBytesExpectedToSend)
@@ -772,7 +752,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     // TODO: position arg should be double.
     @ReactMethod
-    fun write(
+    override fun write(
             filepath: String,
             base64Content: String?,
             position: Double,
@@ -801,7 +781,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    fun writeFile(filepath: String, base64Content: String?, options: ReadableMap?, promise: Promise) {
+    override fun writeFile(filepath: String, base64Content: String?, options: ReadableMap?, promise: Promise) {
         try {
             getOutputStream(filepath, false).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
@@ -815,12 +795,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     private open inner class CopyFileTask : AsyncTask<String?, Void?, Exception?>() {
-        protected override fun doInBackground(vararg paths: String): Exception? {
+        protected override fun doInBackground(vararg paths: String?): Exception? {
             var `in`: InputStream? = null
             var out: OutputStream? = null
             return try {
-                val filepath = paths[0]
-                val destPath = paths[1]
+                val filepath = paths[0]!!
+                val destPath = paths[1]!!
                 `in` = getInputStream(filepath)
                 out = getOutputStream(destPath, false)
                 val buffer = ByteArray(1024)
@@ -893,7 +873,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @Throws(IORejectionException::class)
     private fun getInputStream(filepath: String): InputStream? {
         val uri = getFileUri(filepath, false)
-        val stream: InputStream
+        val stream: InputStream?
         stream = try {
             getReactApplicationContext().getContentResolver().openInputStream(uri)
         } catch (ex: FileNotFoundException) {
@@ -911,7 +891,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         var originalFilepath = filepath
         if (uri.scheme == "content") {
             try {
-                val cursor: Cursor = getReactApplicationContext().getContentResolver().query(uri, null, null, null, null)
+                val cursor: Cursor = getReactApplicationContext().getContentResolver().query(uri, null, null, null, null)!!
                 if (cursor.moveToFirst()) {
                     originalFilepath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA))
                 }
@@ -925,7 +905,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @Throws(IORejectionException::class)
     private fun getOutputStream(filepath: String, append: Boolean): OutputStream? {
         val uri = getFileUri(filepath, false)
-        val stream: OutputStream
+        val stream: OutputStream?
         stream = try {
             getReactApplicationContext().getContentResolver().openOutputStream(uri, if (append) "wa" else writeAccessByAPILevel)
         } catch (ex: FileNotFoundException) {
@@ -977,7 +957,6 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     companion object {
         const val NAME = "ReactNativeFs"
-            get() = Companion.field
 
         /**
          * Attempts to close given object, discarting possible exception. Does nothing

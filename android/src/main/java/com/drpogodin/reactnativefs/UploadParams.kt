@@ -4,16 +4,16 @@ import com.facebook.react.bridge.ReadableMap
 import java.net.URL
 
 class UploadParams {
-    interface onUploadComplete {
-        constructor(res: UploadResult?)
+    interface OnUploadComplete {
+        fun onUploadComplete(res: UploadResult)
     }
 
-    interface onUploadProgress {
-        constructor(totalBytesExpectedToSend: Int, totalBytesSent: Int)
+    interface OnUploadProgress {
+        fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int)
     }
 
-    interface onUploadBegin {
-        constructor()
+    interface OnUploadBegin {
+        fun onUploadBegin()
     }
 
     @JvmField
@@ -30,9 +30,9 @@ class UploadParams {
     @JvmField
     var method: String? = null
     @JvmField
-    var onUploadComplete: onUploadComplete? = null
+    var onUploadComplete: OnUploadComplete? = null
     @JvmField
-    var onUploadProgress: onUploadProgress? = null
+    var onUploadProgress: OnUploadProgress? = null
     @JvmField
-    var onUploadBegin: onUploadBegin? = null
+    var onUploadBegin: OnUploadBegin? = null
 }
