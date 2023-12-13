@@ -12,7 +12,7 @@ jobs:
           key: node-modules-{{ checksum "yarn.lock" }}
       - run: yarn install
       - save_cache:
-          key: node-modules-{{ checksum "yarn.json" }}
+          key: node-modules-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - example/node_modules
