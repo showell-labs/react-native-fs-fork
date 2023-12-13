@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This project was created with react-native-windows 0.72.4 -->
+<!-- This project was created with react-native-windows 0.73.2 -->
 <Project ToolsVersion="Current" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(SolutionDir)\ExperimentalFeatures.props" Condition="Exists('$(SolutionDir)\ExperimentalFeatures.props')" />
   <PropertyGroup Label="Globals">
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <MinimalCoreWin>true</MinimalCoreWin>
-    <ProjectGuid>{48df99f7-56c6-4e01-9ad8-4f1e91da79c6}</ProjectGuid>
+    <ProjectGuid>{f912ebdd-f19a-48c7-a32c-49d2956fce22}</ProjectGuid>
     <ProjectName>ReactNativeFs</ProjectName>
     <RootNamespace>ReactNativeFs</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
