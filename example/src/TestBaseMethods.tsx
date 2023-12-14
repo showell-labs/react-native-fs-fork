@@ -42,7 +42,7 @@ const SEP = Platform.OS === 'windows' ? '\\' : '/';
 
 const UPLOAD_FILES_CONTROL_ANDROID = `--*****
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
-Content-Type: null
+Content-Type: text/plain
 Content-length: 8
 
 GÖÖÐ

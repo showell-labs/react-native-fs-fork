@@ -47,11 +47,13 @@ import {
 _When installing the library into a new project no additional steps are required._
 
 **ROADMAP:**
-- In the nearest future there will be a bunch of **v2.21.0-alpha.X** releases,
-  taking care that more and more functions of the original library work as per
-  documentation.
+- There were a bunch of **v2.21.0-alpha.X** releases taking care that more and
+  more functions of the original library work as per documentation. With release
+  of RN v0.73 this work moves to **v2.22.0-alpha.X** releases, which are upgraded
+  to work with RN v0.73.
 
-- The aim for upcoming **v2.21.0** release is to be a drop-in replacement for
+- The aim for upcoming ~~**v2.21.0**~~ **v2.22.0** release is to be a drop-in
+  replacement (beside being upgraded to a newer RN v0.73) for
   the latest **v2.20.0** release of the original library. It will have matching
   functionality and API, with exception of any minor changes needed to fix
   inconsistencies between **v2.20.0** and its documentation, and any changes
@@ -78,6 +80,85 @@ _When installing the library into a new project no additional steps are required
 ## Table of Contents
 - [Getting Started]
 - [API Reference]
+  - [Constants]
+    - [CachesDirectoryPath] &mdash; The absolute path to the caches directory.
+    - [DocumentDirectoryPath] &mdash; The absolute path to the document directory.
+    - [DownloadDirectoryPath] &mdash; (Android & Windows) The absolute path to
+      the download directory (on android and Windows only).
+    - [ExternalCachesDirectoryPath] &mdash; (Android) The absolute path to
+      the external caches directory.
+    - [ExternalDirectoryPath] &mdash; (Android) The absolute path to
+      the external files, shared directory.
+    - [ExternalStorageDirectoryPath] &mdash; (Android) The absolute path to
+      the external storage, shared directory.
+    - [LibraryDirectoryPath] &mdash; (iOS) The absolute path to
+      the NSLibraryDirectory.
+    - [MainBundlePath] &mdash; (non-Android) The absolute path to
+      the main bundle directory.
+    - [PicturesDirectoryPath] &mdash; The absolute path to the pictures directory.
+    - [RoamingDirectoryPath] &mdash; (Windows) The absolute path to the roaming
+      directory.
+    - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
+      directory.
+  - [Functions]
+    - [copyFile()] &mdash; Copies a file to a new destination.
+    - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
+      the given destination.
+    - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
+      in a Windows-efficient way.
+    - [downloadFile()] &mdash; Downloads a file from network.
+    - [exists()] &mdash; Checks if an item exists at the given path.
+    - [existsAssets()] &mdash; (Android only) Checks if an item exists at
+      the given path inside
+      the Android assets folder.
+    - [getFSInfo()] &mdash; Gets info on the free and total storage space
+      on the device, and its external storage.
+    - [mkdir()] &mdash; Creates folder(s) at the given path.
+    - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+    - [pickFile()] &mdash; Prompts user to select file(s) with help of
+      a platform-provided file picker UI.
+    - [read()] &mdash; Reads a fragment of file content.
+    - [readdir()] &mdash; Lists the content of a folder (names only).
+    - [readDir()] &mdash; Lists the content of a folder (with item details).
+    - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
+      the given path inside the Android assets folder.
+    - [readFile()] &mdash; Reads entire file content.
+    - [readFileAssets()] &mdash; (Android only) Reads the file at a path in
+      the Android app's assets folder.
+    - [stat()] &mdash; Returns info on a file system item.
+    - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
+  and return its contents.
+    - [uploadFiles()] &mdash; Uploads files to a remote location.
+    - [writeFile()] &mdash; Writes content into a file.
+  - [Types]
+    - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
+      to `begin` callback in [DownloadFileOptionsT].
+    - [DownloadFileOptionsT] &mdash; Options for [downloadFile()].
+    - [DownloadProgressCallbackResultT] &mdash; The type of argument passed to
+      the `progress` callback in [DownloadFileOptionsT].
+    - [DownloadResultT] &mdash; Return type of [downloadFile()].
+    - [EncodingT] &mdash; Union of valid file encoding values.
+    - [FileOptionsT] &mdash; Extra options for [copyFile()].
+    - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
+    - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
+    - [PickFileOptionsT] &mdash; Optional parameters for [pickFile()].
+    - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
+    - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
+    - [ReadFileOptionsT] &mdash; The type of extra options argument of
+      the [readFile()] function.
+    - [StatResultT] &mdash; The type of result resolved by [stat()].
+    - [StringMapT] &mdash; Just a simple **string**-to-**string** mapping.
+    - [UploadBeginCallbackArgT] &mdash; The type of `begin` callback argument in [UploadFileOptionsT].
+    - [UploadFileItemT] &mdash; The type of `files` elements in
+      [UploadFileOptionsT] objects.
+    - [UploadFileOptionsT] &mdash; Options for [uploadFiles()].
+    - [UploadProgressCallbackArgT] &mdash; The type of `progress` callback
+      argument in [UploadFileOptionsT], and a few other places.
+    - [UploadResultT] &mdash; The type of resolved [uploadFiles()] promise.
+    - [WriteFileOptionsT] &mdash; The type of extra options argument of
+      the [writeFile()] function.
+- [Legacy] &mdash; Everything else inherited from the original library,
+  but not yet correctly verified to work and match the documentation.
 - [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
 - [Test / Demo App](#test--demo-app)
 
@@ -229,86 +310,6 @@ RNFS.uploadFiles({
 
 ## API Reference
 [API Reference]: #api-reference
-
-- [Constants]
-  - [CachesDirectoryPath] &mdash; The absolute path to the caches directory.
-  - [DocumentDirectoryPath] &mdash; The absolute path to the document directory.
-  - [DownloadDirectoryPath] &mdash; (Android & Windows) The absolute path to
-    the download directory (on android and Windows only).
-  - [ExternalCachesDirectoryPath] &mdash; (Android) The absolute path to
-    the external caches directory.
-  - [ExternalDirectoryPath] &mdash; (Android) The absolute path to
-    the external files, shared directory.
-  - [ExternalStorageDirectoryPath] &mdash; (Android) The absolute path to
-    the external storage, shared directory.
-  - [LibraryDirectoryPath] &mdash; (iOS) The absolute path to
-    the NSLibraryDirectory.
-  - [MainBundlePath] &mdash; (non-Android) The absolute path to
-    the main bundle directory.
-  - [PicturesDirectoryPath] &mdash; The absolute path to the pictures directory.
-  - [RoamingDirectoryPath] &mdash; (Windows) The absolute path to the roaming
-    directory.
-  - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
-    directory.
-- [Functions]
-  - [copyFile()] &mdash; Copies a file to a new destination.
-  - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
-    the given destination.
-  - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
-    in a Windows-efficient way.
-  - [downloadFile()] &mdash; Downloads a file from network.
-  - [exists()] &mdash; Checks if an item exists at the given path.
-  - [existsAssets()] &mdash; (Android only) Checks if an item exists at
-    the given path inside
-    the Android assets folder.
-  - [getFSInfo()] &mdash; Gets info on the free and total storage space
-    on the device, and its external storage.
-  - [mkdir()] &mdash; Creates folder(s) at the given path.
-  - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
-  - [pickFile()] &mdash; Prompts user to select file(s) with help of
-    a platform-provided file picker UI.
-  - [read()] &mdash; Reads a fragment of file content.
-  - [readdir()] &mdash; Lists the content of a folder (names only).
-  - [readDir()] &mdash; Lists the content of a folder (with item details).
-  - [readDirAssets()] &mdash; (Android only) Lists the content of a folder at
-    the given path inside the Android assets folder.
-  - [readFile()] &mdash; Reads entire file content.
-  - [readFileAssets()] &mdash; (Android only) Reads the file at a path in
-    the Android app's assets folder.
-  - [stat()] &mdash; Returns info on a file system item.
-  - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
-and return its contents.
-  - [uploadFiles()] &mdash; Uploads files to a remote location.
-  - [writeFile()] &mdash; Writes content into a file.
-- [Types]
-  - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
-    to `begin` callback in [DownloadFileOptionsT].
-  - [DownloadFileOptionsT] &mdash; Options for [downloadFile()].
-  - [DownloadProgressCallbackResultT] &mdash; The type of argument passed to
-    the `progress` callback in [DownloadFileOptionsT].
-  - [DownloadResultT] &mdash; Return type of [downloadFile()].
-  - [EncodingT] &mdash; Union of valid file encoding values.
-  - [FileOptionsT] &mdash; Extra options for [copyFile()].
-  - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
-  - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
-  - [PickFileOptionsT] &mdash; Optional parameters for [pickFile()].
-  - [ReadDirResItemT] &mdash; Elements returned by [readDir()].
-  - [ReadDirAssetsResItemT] &mdash; Elements returned by [readDirAssets()].
-  - [ReadFileOptionsT] &mdash; The type of extra options argument of
-    the [readFile()] function.
-  - [StatResultT] &mdash; The type of result resolved by [stat()].
-  - [StringMapT] &mdash; Just a simple **string**-to-**string** mapping.
-  - [UploadBeginCallbackArgT] &mdash; The type of `begin` callback argument in [UploadFileOptionsT].
-  - [UploadFileItemT] &mdash; The type of `files` elements in
-    [UploadFileOptionsT] objects.
-  - [UploadFileOptionsT] &mdash; Options for [uploadFiles()].
-  - [UploadProgressCallbackArgT] &mdash; The type of `progress` callback
-    argument in [UploadFileOptionsT], and a few other places.
-  - [UploadResultT] &mdash; The type of resolved [uploadFiles()] promise.
-  - [WriteFileOptionsT] &mdash; The type of extra options argument of
-    the [writeFile()] function.
-- [Legacy] &mdash; Everything else inherited from the original library,
-  but not yet correctly verified to work and match the documentation.
 
 ## Constants
 [Constants]: #constants
