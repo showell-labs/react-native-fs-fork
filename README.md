@@ -332,6 +332,10 @@ const DocumentDirectoryPath: string;
 
 The absolute path to the document directory.
 
+**IMPORTANT**: `DocumentDirectoryPath` (iOS) will include an ID in the path that changes each build e.g `...Application/BCE32988-4C51-483B-892B-16671E3771C2/Documents`. 
+
+Use relative paths and resolve the full path at runtime to avoid files not being found on new builds.
+
 ### DownloadDirectoryPath
 [DownloadDirectoryPath]: #downloaddirectorypath
 ```ts
