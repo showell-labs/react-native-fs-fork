@@ -125,6 +125,8 @@ _When installing the library into a new project no additional steps are required
     - [readFile()] &mdash; Reads entire file content.
     - [readFileAssets()] &mdash; (Android only) Reads the file at a path in
       the Android app's assets folder.
+    - [readFileRes()] &mdash; (Android only) Reads specified file in
+      the Android app's resource folder and return its contents.
     - [stat()] &mdash; Returns info on a file system item.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
@@ -696,7 +698,7 @@ of 1-to-4 bytes of the source file).
 ### readFileAssets()
 [readFileAssets()]: #readfileassets
 ```ts
-function readFileAssets(path:string, encoding?: EncodingT | ReadFileOptionsT): Promise<string>;
+function readFileAssets(path: string, encoding?: EncodingT | ReadFileOptionsT): Promise<string>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
@@ -709,6 +711,26 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
   Optional. Encoding, or extra options object, which currently only supports
   specifying the encoding.
 - Resolves to **string** &mdash; the asset content.
+
+### readFileRes
+[readFileRes()]: #readfileres
+```ts
+function readFileRes(filename: string, encoding?: EncodingT): Promise<string>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Reads the file named `filename` in the Android app's `res` folder
+and return contents. Only the file name (not folder) needs to be specified.
+
+Original docs say: _The file type will be detected from the extension and
+automatically located within `res/drawable` (for image files) or `res/raw`
+(for everything else)._ Good luck with it. The test in the example app does not
+work if the file extension is not included into the filename... but perhaps
+I've overlooked something.
+
+- `filename` &mdash; **string** &mdash; Resouce file name.
+- `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
+- Resolves to **string** &mdash; the resource content.
 
 ### stat()
 [stat()]: #stat
@@ -1222,12 +1244,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `readFileRes(filename:string, encoding?: string): Promise<string>`
-
-Reads the file named `filename` in the Android app's `res` folder and return contents. Only the file name (not folder) needs to be specified. The file type will be detected from the extension and automatically located within `res/drawable` (for image files) or `res/raw` (for everything else). `encoding` can be one of `utf8` (default), `ascii`, `base64`. Use `base64` for reading binary files.
-
-Note: Android only.
 
 ### `appendFile(filepath: string, contents: string, encoding?: string): Promise<void>`
 

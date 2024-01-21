@@ -18,6 +18,7 @@ import {
   readDirAssets,
   readFile,
   readFileAssets,
+  readFileRes,
   stat,
   TemporaryDirectoryPath,
   unlink,
@@ -590,6 +591,31 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (res !== 'R9bW0Ao=') return 'fail';
 
       res = await readFileAssets('test/good-utf8.txt', 'base64');
+      if (res !== 'R8OWw5bDkAo=') return 'fail';
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'readFileRes()': async () => {
+    try {
+      let res = await readFileRes('good_latin1.txt', 'ascii');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'ascii');
+      if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'utf8');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_utf8.txt');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_latin1.txt', 'base64');
+      if (res !== 'R9bW0Ao=') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'base64');
       if (res !== 'R8OWw5bDkAo=') return 'fail';
 
       return 'pass';
