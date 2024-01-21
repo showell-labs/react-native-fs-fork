@@ -485,6 +485,7 @@ the source parent folder for image files, `res/raw` for everything else.
 
 - `filename` &mdash; **string** &mdash; Resource name.
 - `destPath` &mdash; **string** &mdash; Destination.
+- Resolves once completed.
 
 ### copyFolder()
 [copyFolder()]: #copyfolder
@@ -543,6 +544,21 @@ folder.
 - `path` &mdash; **string** &mdash; Path, relative to the root of the Android
   assets folder.
 - Resolves _true_ if the item exists; _false_ otherwise.
+
+### existsRes()
+[existsRes()]: #existsres
+```ts
+function existsRes(filename: string): Promise<boolean>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Check if the specified resource exists.
+`res/drawable` is used as the parent folder for image files,
+`res/raw` for everything else.
+
+- `filename` &mdash; **string** &mdash; Resource name.
+- Resolves to **boolean** &mdash; _true_ if the resource exists;
+  _false_ otherwise.
 
 ### getFSInfo()
 [getFSInfo()]: #getfsinfo
@@ -1331,12 +1347,6 @@ The promise will on success return the final destination of the file, as it was 
 *Not available on Mac Catalyst.*
 
 Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
-
-### `existsRes(filename: string): Promise<boolean>`
-
-Check in the Android res folder if the item named `filename` exists. `res/drawable` is used as the parent folder for image files, `res/raw` for everything else. If the item does not exist, return false.
-
-Note: Android only.
 
 ### `hash(filepath: string, algorithm: string): Promise<string>`
 

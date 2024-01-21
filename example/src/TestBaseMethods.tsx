@@ -10,6 +10,7 @@ import {
   downloadFile,
   exists,
   existsAssets,
+  existsRes,
   getFSInfo,
   mkdir,
   moveFile,
@@ -265,6 +266,15 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await existsAssets('test/non-existing.txt')) return 'fail';
       return 'pass';
     } catch {
+      return 'fail';
+    }
+  },
+  'existsRes()': async () => {
+    try {
+      if (!(await existsRes('good_utf8.txt'))) return 'fail';
+      if (await existsRes('non_existing.txt')) return 'fail';
+      return 'pass';
+    } catch (e) {
       return 'fail';
     }
   },
