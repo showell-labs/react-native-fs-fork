@@ -113,6 +113,8 @@ _When installing the library into a new project no additional steps are required
     - [existsAssets()] &mdash; (Android only) Checks if an item exists at
       the given path inside
       the Android assets folder.
+    - [existsRes()] &mdash; (Android only) Checks if the resource exists.
+    - [hash()] &mdash; Calculates file hash.
     - [getFSInfo()] &mdash; Gets info on the free and total storage space
       on the device, and its external storage.
     - [mkdir()] &mdash; Creates folder(s) at the given path.
