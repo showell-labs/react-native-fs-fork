@@ -5,6 +5,7 @@ import { Platform, Text, View } from 'react-native';
 import {
   copyFile,
   copyFileAssets,
+  copyFileRes,
   copyFolder,
   downloadFile,
   exists,
@@ -191,6 +192,21 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     try {
       if (await exists(path)) return 'fail';
       await copyFileAssets('test/good-utf8.txt', path);
+      const res = await readFile(path);
+      if (res !== 'GÖÖÐ\n') return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'copyFileRes()': async () => {
+    const path = `${TemporaryDirectoryPath}/res_good_utf8.txt`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      if (await exists(path)) return 'fail';
+      await copyFileRes('good_utf8.txt', path);
       const res = await readFile(path);
       if (res !== 'GÖÖÐ\n') return 'fail';
       return 'pass';

@@ -104,6 +104,8 @@ _When installing the library into a new project no additional steps are required
     - [copyFile()] &mdash; Copies a file to a new destination.
     - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
       the given destination.
+    - [copyFileRes()] &mdash; (Android only) Copies specified resource to
+      the given destination.
     - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
       in a Windows-efficient way.
     - [downloadFile()] &mdash; Downloads a file from network.
@@ -467,6 +469,22 @@ it exists.
   folder's root).
 - `to` &mdash; **string** &mdash; Destination path.
 - Resolves once completed.
+
+### copyFileRes()
+[copyFileRes()]: #copyfileres
+```ts
+function copyFileRes(filename: string, destPath: string): Promise<void>
+```
+**VERIFIED**: Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Copies the file named `filename` in the Android app's res folder
+and copies it to the given `destPath` path. `res/drawable` is used as
+the source parent folder for image files, `res/raw` for everything else.
+
+**BEWARE:** It will overwrite destPath if it already exists.
+
+- `filename` &mdash; **string** &mdash; Resource name.
+- `destPath` &mdash; **string** &mdash; Destination.
 
 ### copyFolder()
 [copyFolder()]: #copyfolder
@@ -1252,12 +1270,6 @@ Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), 
 ### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
 
 Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
-
-### `copyFileRes(filename: string, destPath: string): Promise<void>`
-
-Copies the file named `filename` in the Android app's res folder and copies it to the given `destPath ` path. `res/drawable` is used as the source parent folder for image files, `res/raw` for everything else.
-
-Note: Android only. Will overwrite destPath if it already exists.
 
 ### (iOS only) `copyAssetsFileIOS(imageUri: string, destPath: string, width: number, height: number, scale?: number, compression?: number, resizeMode?: string): Promise<string>`
 
