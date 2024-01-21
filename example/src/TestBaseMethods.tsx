@@ -12,6 +12,7 @@ import {
   existsAssets,
   existsRes,
   getFSInfo,
+  hash,
   mkdir,
   moveFile,
   read,
@@ -297,6 +298,51 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
 
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'hash()': async () => {
+    const path = `${TemporaryDirectoryPath}/hash`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      if (await exists(path)) return 'fail';
+      await writeFile(path, 'xxx');
+      if ((await hash(path, 'md5')) !== 'f561aaf6ef0bf14d4208bb46a4ccb3ad')
+        return 'fail';
+      if (
+        (await hash(path, 'sha1')) !==
+        'b60d121b438a380c343d5ec3c2037564b82ffef3'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha224')) !==
+        '1e75647b457de7b041b0bd786ac94c3ab53cf3b85243fbe8e97506db'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha256')) !==
+        'cd2eb0837c9b4c962c22d2ff8b5441b7b45805887f051d39bf133b583baf6860'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha384')) !==
+        '1249e15f035ed34786a328d9fdb2689ab24f7c7b253d1b7f66ed92a679d663dd502d7beda59973e8c91a728b929fc8cd'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha512')) !==
+        '9057ff1aa9509b2a0af624d687461d2bbeb07e2f37d953b1ce4a9dc921a7f19c45dc35d7c5363b373792add57d0d7dc41596e1c585d6ef7844cdf8ae87af443f'
+      ) {
+        return 'fail';
+      }
       return 'pass';
     } catch {
       return 'fail';

@@ -571,6 +571,19 @@ Provides information about free and total file system space.
 
 - Resolves to an [FSInfoResultT] object.
 
+### hash()
+[hash()]: #hash
+```ts
+function hash(path: string, algorithm: string): Promise<string>;
+```
+**VERIFIED:** Android.
+
+Calculates file's hash.
+- `path` &mdash; **string** &mdash; File path.
+- `algorithm` &mdash; **string** &mdash; One of `md5`, `sha1`, `sha224`,
+  `sha256`, `sha384`, `sha512`.
+- Resolves to **string** &mdash; file hash.
+
 ### mkdir()
 [mkdir()]: #mkdir
 ```ts
@@ -1347,10 +1360,6 @@ The promise will on success return the final destination of the file, as it was 
 *Not available on Mac Catalyst.*
 
 Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
-
-### `hash(filepath: string, algorithm: string): Promise<string>`
-
-Reads the file at `path` and returns its checksum as determined by `algorithm`, which can be one of `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`.
 
 ### `touch(filepath: string, mtime?: Date, ctime?: Date): Promise<string>`
 
