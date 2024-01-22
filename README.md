@@ -101,6 +101,7 @@ _When installing the library into a new project no additional steps are required
     - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
       directory.
   - [Functions]
+    - [appendFile()] &mdash; Appends content to a file.
     - [copyFile()] &mdash; Copies a file to a new destination.
     - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
       the given destination.
@@ -432,6 +433,17 @@ least, on Android this constant does not have a slash in the end; but on iOS
 
 ## Functions
 [Functions]: #functions
+
+### appendFile()
+[appendFile()]: #appendfile
+```ts
+function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
+```
+Appends content to a file.
+- `filepath` &mdash; **string** &mdash; File path.
+- `contents` &mdash; **string** &mdash; The content to add.
+- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding.
+- Resolves once the operation has been completed.
 
 ### copyFile()
 [copyFile()]: #copyfile
@@ -1293,10 +1305,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `appendFile(filepath: string, contents: string, encoding?: string): Promise<void>`
-
-Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
 
 ### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
 

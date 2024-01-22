@@ -3,6 +3,7 @@ import React from 'react';
 import { Platform, Text, View } from 'react-native';
 
 import {
+  appendFile,
   copyFile,
   copyFileAssets,
   copyFileRes,
@@ -83,6 +84,27 @@ const UPLOAD_FILES_CONTROL = Platform.select({
 });
 
 const tests: { [name: string]: StatusOrEvaluator } = {
+  'appendFile()': async () => {
+    // TODO: I guess, this test should be improved and elaborated...
+    // The current version is just copied & modified from the "readFile() and
+    // writeFile()" test, without much thinking about it.
+    const good = 'GÖÖÐ\n';
+    const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
+    const path = `${TemporaryDirectoryPath}/append-file-test`;
+    try {
+      await writeFile(path, utf8, 'ascii');
+      await appendFile(path, utf8, 'ascii');
+      let res = await readFile(path);
+      if (res !== `${good}${good}`) return 'fail';
+      await writeFile(path, good);
+      await appendFile(path, good);
+      res = await readFile(path);
+      if (res !== `${good}${good}`) return 'fail';
+      return 'pass';
+    } catch (e) {
+      return 'fail';
+    }
+  },
   'copyFile()': async () => {
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
