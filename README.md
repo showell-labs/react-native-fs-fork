@@ -133,6 +133,7 @@ _When installing the library into a new project no additional steps are required
     - [readFileRes()] &mdash; (Android only) Reads specified file in
       the Android app's resource folder and return its contents.
     - [stat()] &mdash; Returns info on a file system item.
+    - [stopDownload()] &mdash; Aborts a file download job.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
     - [uploadFiles()] &mdash; Uploads files to a remote location.
@@ -817,6 +818,18 @@ It thus requires more troubleshooting, but it is not a priority for now.
 - `path` &mdash; **string** &mdash; Item path.
 - Resolves to a [StatResultT] object.
 
+### stopDownload()
+[stopDownload()]: #stopdownload
+```ts
+function stopDownload(jobId: number): void;
+```
+**VERIFIED:** Android.
+
+Aborts a file download job. The partial file will remain on the filesystem,
+and the promise returned from the aborted [downloadFile()] call will reject
+with an error.
+- `jobId` &mdash; **number** &mdash; Download job ID (see [downloadFile()]).
+
 ### touch()
 [touch()]: #touch
 ```ts
@@ -1402,10 +1415,6 @@ The promise will on success return the final destination of the file, as it was 
 *Not available on Mac Catalyst.*
 
 Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
-
-### `stopDownload(jobId: number): void`
-
-Abort the current download job with this ID. The partial file will remain on the filesystem.
 
 ### (iOS only) `resumeDownload(jobId: number): void`
 

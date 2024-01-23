@@ -24,6 +24,7 @@ import {
   readFileAssets,
   readFileRes,
   stat,
+  stopDownload,
   TemporaryDirectoryPath,
   touch,
   unlink,
@@ -836,6 +837,30 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       }
 
       return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  // TODO: This is quite a sloppy test.
+  'stopDownload()': async () => {
+    const url =
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+    const path = `${TemporaryDirectoryPath}/stop-download-test`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      const { jobId, promise } = downloadFile({
+        fromUrl: url,
+        toFile: path,
+      });
+      stopDownload(jobId);
+      try {
+        await promise;
+      } catch (e: any) {
+        if (e.message === 'Download has been aborted') return 'pass';
+      }
+      return 'fail';
     } catch {
       return 'fail';
     }
