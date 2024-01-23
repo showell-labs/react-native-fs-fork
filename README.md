@@ -22,63 +22,11 @@ and [old][Old Architecture] [RN][React Native] architectures.
 
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
----
-
-_This is a work-in-progress fork of [react-native-fs], aiming to upgrade the library to the standards of the latest React Native v0.72, with support of the [New Architecture], backward compatibility to the [Old Architecture], clean-up and fixes of the library API and internal implementation, and further library development following the best industry practices._
-
-_To migrate from the legacy [react-native-fs] install this fork_
-```bash
-npm install --save @dr.pogodin/react-native-fs
-```
-_then upgrade its imports in the code:_
-```ts
-// The legacy RNFS was imported like this:
-import RNFS from 'react-native-fs';
-
-// Instead, this fork should be imported like this:
-import * as RNFS from '@dr.pogodin/react-native-fs';
-// or (preferrably) you should import separate constants / functions you need
-// like:
-import {
-  TemporaryDirectoryPath,
-  writeFile,
-} from '@dr.pogodin/react-native-fs';
-```
-_When installing the library into a new project no additional steps are required._
-
-**ROADMAP:**
-- There were a bunch of **v2.21.0-alpha.X** releases taking care that more and
-  more functions of the original library work as per documentation. With release
-  of RN v0.73 this work moves to **v2.22.0-alpha.X** releases, which are upgraded
-  to work with RN v0.73.
-
-- The aim for upcoming ~~**v2.21.0**~~ **v2.22.0** release is to be a drop-in
-  replacement (beside being upgraded to a newer RN v0.73) for
-  the latest **v2.20.0** release of the original library. It will have matching
-  functionality and API, with exception of any minor changes needed to fix
-  inconsistencies between **v2.20.0** and its documentation, and any changes
-  that just have to be done to satisfy latest React Native standards.
-
-- In further versions, **v2.X.Y**, we'll be taking care of improvements,
-  and optimizations of existing functionality, as well as adding new APIs,
-  and deprecating old ones (without yet dropping them out of the codebase),
-  with the ultimate goal to release **v3** version of the library.
-
-- The aims for **v3** release are the following:
-  - To unify library APIs for all platforms &mdash; the current library has
-    a lots of platform-dependent APIs, which goes against the purpose and spirit
-    of React Native &mdash; we'll abstract out and unify everything that is
-    possible, to allow smooth cross-plaform ride.
-  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
-  - To ensure that library has no intrinsic limitations (like now it is not efficient
-    for handling large files, _etc._)
-
-**IMPORTANT:** _Below is partially revised documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
-
----
-
 ## Table of Contents
 - [Getting Started]
+- [Project History & Roadmap]
+- [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
+- [Examples]
 - [API Reference]
   - [Constants]
     - [CachesDirectoryPath] &mdash; The absolute path to the caches directory.
@@ -123,6 +71,8 @@ _When installing the library into a new project no additional steps are required
       the Android assets folder.
     - [existsRes()] &mdash; (Android only) Checks if the resource exists.
     - [hash()] &mdash; Calculates file hash.
+    - [isResumable()] &mdash; (iOS only) Check if the the download job with this
+      ID is resumable with [resumeDownload()].
     - [getAllExternalFilesDirs()] &mdash; (Android only) Returns an array with
       the absolute paths to application-specific directories on all shared&nbsp;/
       external storage devices where the application can place persistent files
@@ -146,6 +96,7 @@ _When installing the library into a new project no additional steps are required
       the Android app's assets folder.
     - [readFileRes()] &mdash; (Android only) Reads specified file in
       the Android app's resource folder and return its contents.
+    - [resumeDownload()] &mdash; (iOS only) Resume an interrupted download job.
     - [scanFile()] &mdash; (Android-only) Scan the file using
       [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
@@ -185,9 +136,6 @@ _When installing the library into a new project no additional steps are required
     - [UploadResultT] &mdash; The type of resolved [uploadFiles()] promise.
     - [WriteFileOptionsT] &mdash; The type of extra options argument of
       the [writeFile()] function.
-- [Legacy] &mdash; Everything else inherited from the original library,
-  but not yet correctly verified to work and match the documentation.
-- [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
 
 ## Getting Started
 [Getting Started]: #getting-started
@@ -202,7 +150,85 @@ $ npm install --save @dr.pogodin/react-native-fs
 npx react-native autolink-windows --sln "windows\ReactNativeFsExample.sln" --proj "windows\ReactNativeFsExample\ReactNativeFsExample.vcxproj"
 ```
 
+## Project History & Roadmap
+[Project History & Roadmap]: #project-history--roadmap
+
+This project is a fork of the upstream [react-native-fs] library, which has been
+abandoned by its owners and maintainers. This forks aims to keep the library on
+par with the latest React Native standards, with support of the [New Architecture],
+backward compatibility with the [Old Architecture]; and to further develop
+the library according to the best industry practices.
+
+To migrate from the legacy [react-native-fs] install this fork_
+```bash
+npm install --save @dr.pogodin/react-native-fs
+```
+then upgrade its imports in the code:
+```ts
+// The legacy RNFS was imported like this:
+import RNFS from 'react-native-fs';
+
+// Instead, this fork should be imported like this:
+import * as RNFS from '@dr.pogodin/react-native-fs';
+// or (preferrably) you should import separate constants / functions you need
+// like:
+import {
+  TemporaryDirectoryPath,
+  writeFile,
+} from '@dr.pogodin/react-native-fs';
+```
+
+**ROADMAP:**
+- **v2.22.0** of this library is, presumably, a drop-in replacement for
+  the latest (**v2.20.0**) release of the original, upstream [react-native-fs]
+  (beside the need to upgrade host project to the lates RN v0.73).
+  It has matching functionality and API, with just a handfull of internal
+  fixes, and a few additions.
+
+- In further versions, **v2.X.Y**, we'll be taking care of improvements,
+  and optimizations of existing functionality, as well as adding new APIs,
+  and deprecating old ones (without yet dropping them out of the codebase),
+  with the ultimate goal to release **v3** version of the library.
+
+- The aims for **v3** release are the following:
+  - To unify library APIs for all platforms &mdash; the current library has
+    a lots of platform-dependent APIs, which goes against the purpose and spirit
+    of React Native &mdash; we'll abstract out and unify everything that is
+    possible, to allow smooth cross-plaform ride.
+  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
+  - To ensure that library has no intrinsic limitations (like now it is not efficient
+    for handling large files, _etc._)
+
+## Background Downloads Tutorial (iOS)
+
+Background downloads in iOS require a bit of a setup.
+
+First, in your `AppDelegate.m` file add the following:
+
+```js
+#import <RNFSManager.h>
+
+...
+
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
+{
+  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
+}
+
+```
+
+The `handleEventsForBackgroundURLSession` method is called when a background download is done and your app is not in the foreground.
+
+We need to pass the `completionHandler` to RNFS along with its `identifier`.
+
+The JavaScript will continue to work as usual when the download is done but now you must call `RNFS.completeHandlerIOS(jobId)` when you're done handling the download (show a notification etc.)
+
+**BE AWARE!** iOS will give about 30 sec. to run your code after `handleEventsForBackgroundURLSession` is called and until `completionHandler`
+is triggered so don't do anything that might take a long time (like unzipping), you will be able to do it after the user re-launces the app,
+otherwide iOS will terminate your app.
+
 ## Examples
+[Examples]: #examples
 _These are legacy examples, and should be revised, there is an Example app in the `/example` folder of the codebase, you probably should rather check it than these examples._
 
 ### Basic
@@ -731,6 +757,26 @@ Calculates file's hash.
   `sha256`, `sha384`, `sha512`.
 - Resolves to **string** &mdash; file hash.
 
+### isResumable()
+[isResumable()]: #isresumable
+```ts
+function isResumable(jobId: number): Promise<bool>;
+```
+
+iOS only. Check if the the download job with this ID is resumable with
+[resumeDownload()].
+
+Example:
+
+```js
+if (await RNFS.isResumable(jobId) {
+    RNFS.resumeDownload(jobId)
+}
+```
+
+- `jobId` &mdash; **number** &mdash; Download job ID.
+- Resolves to **boolean** &mdash; the result.
+
 ### mkdir()
 [mkdir()]: #mkdir
 ```ts
@@ -944,6 +990,16 @@ I've overlooked something.
 - `filename` &mdash; **string** &mdash; Resouce file name.
 - `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
 - Resolves to **string** &mdash; the resource content.
+
+### resumeDownload()
+[resumeDownload()]: #resumedownload
+```ts
+function resumeDownload(jobId: number): void;
+```
+
+iOS only. Resume the current download job with this ID.
+
+- `jobId` &mdash; **number** &mdash; Download job ID.
 
 ### scanFile()
 [scanFile()]: #scanfile
@@ -1522,54 +1578,3 @@ The type of extra options argument of the [writeFile()] function.
   to use. Defaults `utf8`.
 - `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
   iOS-only. See: https://developer.apple.com/documentation/foundation/nsfileprotectionkey
-
-## Legacy
-[Legacy]: #legacy
-Below is the original documentation for all other methods and types inherited
-from the original library. They are present in the codebase, but haven't been
-tested to work after refactoring for the new version of the library, and a few
-of them were commented out and marked as not yet supported on some platforms.
-
-### (iOS only) `resumeDownload(jobId: number): void`
-
-Resume the current download job with this ID.
-
-### (iOS only) `isResumable(jobId: number): Promise<bool>`
-
-Check if the the download job with this ID is resumable with `resumeDownload()`.
-
-Example:
-
-```js
-if (await RNFS.isResumable(jobId) {
-    RNFS.resumeDownload(jobId)
-}
-```
-
-## Background Downloads Tutorial (iOS)
-
-Background downloads in iOS require a bit of a setup.
-
-First, in your `AppDelegate.m` file add the following:
-
-```js
-#import <RNFSManager.h>
-
-...
-
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
-{
-  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
-}
-
-```
-
-The `handleEventsForBackgroundURLSession` method is called when a background download is done and your app is not in the foreground.
-
-We need to pass the `completionHandler` to RNFS along with its `identifier`.
-
-The JavaScript will continue to work as usual when the download is done but now you must call `RNFS.completeHandlerIOS(jobId)` when you're done handling the download (show a notification etc.)
-
-**BE AWARE!** iOS will give about 30 sec. to run your code after `handleEventsForBackgroundURLSession` is called and until `completionHandler`
-is triggered so don't do anything that might take a long time (like unzipping), you will be able to do it after the user re-launces the app,
-otherwide iOS will terminate your app.
