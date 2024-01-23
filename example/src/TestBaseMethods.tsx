@@ -25,6 +25,7 @@ import {
   readFileRes,
   stat,
   TemporaryDirectoryPath,
+  touch,
   unlink,
   uploadFiles,
   write,
@@ -834,6 +835,32 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         }
       }
 
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'touch()': async () => {
+    try {
+      const filePath = `${TemporaryDirectoryPath}/touch-test`;
+      try {
+        await unlink(filePath);
+      } catch {}
+      await writeFile(filePath, 'xxx');
+      const a = await stat(filePath);
+      const b = await stat(filePath);
+      if (
+        a.ctime.valueOf() !== b.ctime.valueOf() ||
+        a.mtime.valueOf() !== b.mtime.valueOf()
+      ) {
+        return 'fail';
+      }
+      const M_TIME = 1705969300000;
+      await touch(filePath, new Date(M_TIME), new Date(M_TIME));
+      const c = await stat(filePath);
+      if (c.ctime.valueOf() !== M_TIME || c.mtime.valueOf() !== M_TIME) {
+        return 'fail';
+      }
       return 'pass';
     } catch {
       return 'fail';

@@ -817,6 +817,22 @@ It thus requires more troubleshooting, but it is not a priority for now.
 - `path` &mdash; **string** &mdash; Item path.
 - Resolves to a [StatResultT] object.
 
+### touch()
+[touch()]: #touch
+```ts
+function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
+```
+**VERIFIED:** Android.
+
+Alters creation and modification timestamps of the given file.
+- `filepath` &mdash; **string** &mdash; File path.
+- `mtime` &mdash; **Date** | **undefined** &mdash; Optional. Modification
+  timestamp.
+- `ctime` &mdash; **Date** | **undefined** &mdash; Optional. Creation timestamp.
+  It is supported on iOS and Windows; Android always sets both timestamps equal
+  `mtime`.
+- Resolves once done.
+
 ### unlink()
 [unlink()]: #unlink
 ```ts
@@ -1386,10 +1402,6 @@ The promise will on success return the final destination of the file, as it was 
 *Not available on Mac Catalyst.*
 
 Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
-
-### `touch(filepath: string, mtime?: Date, ctime?: Date): Promise<string>`
-
-Sets the modification timestamp `mtime` and creation timestamp `ctime` of the file at `filepath`. Setting `ctime` is supported on iOS and Windows, android always sets both timestamps to `mtime`.
 
 ### `stopDownload(jobId: number): void`
 
