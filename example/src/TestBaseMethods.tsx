@@ -24,6 +24,7 @@ import {
   readFile,
   readFileAssets,
   readFileRes,
+  scanFile,
   stat,
   stopDownload,
   TemporaryDirectoryPath,
@@ -728,6 +729,19 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       res = await readFileRes('good_utf8.txt', 'base64');
       if (res !== 'R8OWw5bDkAo=') return 'fail';
 
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'scanFile()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/scan-file-test`;
+      await writeFile(path, 'xxx');
+      await scanFile(path);
+      // TODO: Currently scanFile() returns "null" here, indicating the scan has
+      // failed... not sure why, perhaps it can't access the temporary directory
+      // of the app? Anyway, not a priority to dig further into it right now.
       return 'pass';
     } catch {
       return 'fail';

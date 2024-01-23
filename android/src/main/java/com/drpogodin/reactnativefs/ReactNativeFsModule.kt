@@ -600,8 +600,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 null,
                 object : MediaScannerConnectionClient {
                     override fun onMediaScannerConnected() {}
-                    override fun onScanCompleted(path: String, uri: Uri) {
-                        promise.resolve(path)
+                    override fun onScanCompleted(path: String, uri: Uri?) {
+                        promise.resolve(uri.toString())
                     }
                 }
         )

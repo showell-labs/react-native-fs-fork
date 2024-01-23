@@ -136,6 +136,8 @@ _When installing the library into a new project no additional steps are required
       the Android app's assets folder.
     - [readFileRes()] &mdash; (Android only) Reads specified file in
       the Android app's resource folder and return its contents.
+    - [scanFile()] &mdash; (Android-only) Scan the file using
+      [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
     - [stopDownload()] &mdash; Aborts a file download job.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
@@ -815,6 +817,20 @@ I've overlooked something.
 - `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
 - Resolves to **string** &mdash; the resource content.
 
+### scanFile()
+[scanFile()]: #scanfile
+```ts
+function scanFile(path: string): Promise<string | null>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Scan the file using
+[Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
+- `path` &mdash; **string** &mdash; Path of the file to scan.
+- Resolve to **string** or **null** &mdash; URI of for the file if the scanning
+  operation succeeded and the file was added to the media database; or _null_
+  if scanning failed.
+
 ### stat()
 [stat()]: #stat
 ```ts
@@ -1458,10 +1474,6 @@ Read more about background downloads in the [Background Downloads Tutorial (iOS)
 ### (iOS only) `stopUpload(jobId: number): Promise<void>`
 
 Abort the current upload job with this ID.
-
-### (Android only) `scanFile(path: string): Promise<string[]>`
-
-Scan the file using [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
 
 ### (iOS only) `pathForGroup(groupIdentifier: string): Promise<string>`
 
