@@ -140,6 +140,7 @@ _When installing the library into a new project no additional steps are required
       [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
     - [stopDownload()] &mdash; Aborts a file download job.
+    - [touch()] &mdash; Alters creation and modification timestamps of the given file.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
     - [uploadFiles()] &mdash; Uploads files to a remote location.
@@ -447,7 +448,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
 ```
-**VERIFIED:** Android
+**VERIFIED:** Android, iOS (New Arch).
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -613,7 +614,7 @@ Provides information about free and total file system space.
 ```ts
 function hash(path: string, algorithm: string): Promise<string>;
 ```
-**VERIFIED:** Android.
+**VERIFIED:** Android, iOS (New Arch).
 
 Calculates file's hash.
 - `path` &mdash; **string** &mdash; File path.
@@ -855,7 +856,7 @@ It thus requires more troubleshooting, but it is not a priority for now.
 ```ts
 function stopDownload(jobId: number): void;
 ```
-**VERIFIED:** Android.
+**VERIFIED:** Android, iOS (New Arch).
 
 Aborts a file download job. The partial file will remain on the filesystem,
 and the promise returned from the aborted [downloadFile()] call will reject
@@ -867,7 +868,7 @@ with an error.
 ```ts
 function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
 ```
-**VERIFIED:** Android.
+**VERIFIED:** Android, iOS (New Arch).
 
 Alters creation and modification timestamps of the given file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -917,7 +918,7 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android.
+**VERIFIED:** Android, iOS (New Arch).
 
 Writes content to a file at the given random access position.
 
