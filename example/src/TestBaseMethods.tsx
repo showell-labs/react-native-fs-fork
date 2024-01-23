@@ -5,6 +5,7 @@ import { Platform, Text, View } from 'react-native';
 import {
   appendFile,
   // copyAssetsFileIOS,
+  // copyAssetsVideoIOS,
   copyFile,
   copyFileAssets,
   copyFileRes,
@@ -131,6 +132,24 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         640,
         640,
       );
+      return 'pass';
+    } catch (e) {
+      console.error(e);
+      return 'fail';
+    }
+  },
+  'copyAssetsVideoIOS()': async () => {
+    try {
+      // TODO: I even won't bother myself thinking how to automate this
+      // test; fine to have it as a manual test for a real device - introduce
+      // a valid asset name below, and it will try to copy and check it,
+      // otherwise it will just report the test as hanging.
+      const asset = 'IMG_6437';
+      const path = `${TemporaryDirectoryPath}/copy-assets-video-ios`;
+      try {
+        await unlink(path);
+      } catch {}
+      await copyAssetsVideoIOS(asset, path);
       return 'pass';
     } catch (e) {
       console.error(e);

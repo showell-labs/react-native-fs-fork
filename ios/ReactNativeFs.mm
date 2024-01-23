@@ -915,7 +915,7 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
  * To create a thumbnail from the video, refer to copyAssetsFileIOS
  */
 RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
-                  atFilepath: (NSString *) destination
+                  destPath: (NSString *) destination
                   resolve: (RCTPromiseResolveBlock) resolve
                   reject: (RCTPromiseRejectBlock) reject)
 {
@@ -1053,10 +1053,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (void)completeHandlerIOS:(double)jobId { 
 
-}
-
-- (void)copyAssetsVideoIOS:(NSString *)imageUri destPath:(NSString *)destPath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
-  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyAssetsVideoIOS()"];
 }
 
 - (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 

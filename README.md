@@ -105,6 +105,8 @@ _When installing the library into a new project no additional steps are required
     - [copyAssetsFileIOS()] &mdash; Reads an image file from Camera Roll and
       writes it to the specified location. It also can be used to get video
       thumbnails.
+    - [copyAssetsVideoIOS()] &mdash; Copies a video from the assets-library
+      to the specified destination.
     - [copyFile()] &mdash; Copies a file to a new destination.
     - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
       the given destination.
@@ -526,6 +528,24 @@ The promise will on success return the final destination of the file, as it was 
   Refer to [PHImageContentMode](https://developer.apple.com/documentation/photokit/phimagecontentmode).
 
 - Resolves to **string** &mdash; Copied file's URI.
+
+### copyAssetsVideoIOS()
+[copyAssetsVideoIOS()]: #copyassetsvideoios
+```ts
+function copyAssetsVideoIOS(videoUri: string, destPath: string): Promise<string>;
+```
+**BEWARE:** _Similarly to [copyAssetsFileIOS()] I believe it gets correctly called
+on iOS, but it crashes the example app in my naive test. Perhaps I use it wrong,
+or something should be patched in the original implementation._
+
+*Not available on Mac Catalyst.*
+
+Copies a video from assets-library, that is prefixed with
+'assets-library://asset/asset.MOV?...' to a specific destination.
+
+- `videoUri` &mdash; **string** &mdash; Video URI.
+- `destPath` &mdash; **string** &mdash; Destination.
+- Resolves to **string** &mdash; copied file path?
 
 ### copyFile()
 [copyFile()]: #copyfile
@@ -1458,12 +1478,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### (iOS only) `copyAssetsVideoIOS(videoUri: string, destPath: string): Promise<string>`
-
-*Not available on Mac Catalyst.*
-
-Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
 
 ### (iOS only) `resumeDownload(jobId: number): void`
 
