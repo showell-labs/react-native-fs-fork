@@ -485,7 +485,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
 ```
-**VERIFIED:** Android, iOS (New Arch).
+**VERIFIED:** Android, iOS.
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -749,7 +749,7 @@ Provides information about free and total file system space.
 ```ts
 function hash(path: string, algorithm: string): Promise<string>;
 ```
-**VERIFIED:** Android, iOS (New Arch).
+**VERIFIED:** Android, iOS.
 
 Calculates file's hash.
 - `path` &mdash; **string** &mdash; File path.
@@ -818,7 +818,7 @@ on other platforms it works fine.
 ```ts
 function pathForGroup(groupIdentifier: string): Promise<string>;
 ```
-**VERIFIED:** iOS (New Arch).
+**VERIFIED:** iOS.
 
 iOS only. Returns the absolute path to the directory shared for all applications
 with the same security group identifier. This directory can be used to to share
@@ -1040,7 +1040,7 @@ It thus requires more troubleshooting, but it is not a priority for now.
 ```ts
 function stopDownload(jobId: number): void;
 ```
-**VERIFIED:** Android, iOS (New Arch).
+**VERIFIED:** Android, iOS.
 
 Aborts a file download job. The partial file will remain on the filesystem,
 and the promise returned from the aborted [downloadFile()] call will reject
@@ -1052,7 +1052,7 @@ with an error.
 ```ts
 function stopUpload(jobId: number): void;
 ```
-**VERIFIED:** iOS (New Arch).
+**VERIFIED:** iOS.
 
 iOS only. Abort the current upload job with given ID.
 
@@ -1066,7 +1066,7 @@ to reject. Perhaps, we'll change it in future to behave similarly.
 ```ts
 function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
 ```
-**VERIFIED:** Android, iOS (New Arch).
+**VERIFIED:** Android, iOS.
 
 Alters creation and modification timestamps of the given file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -1116,7 +1116,7 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS (New Arch).
+**VERIFIED:** Android, iOS.
 
 Writes content to a file at the given random access position.
 

@@ -59,7 +59,6 @@ namespace JS {
     };
 
     typedef NSDictionary NativeUploadFileOptions;
-    typedef NSDictionary TouchOptions;
 
     /*
     struct UploadFileItem {
@@ -97,17 +96,14 @@ namespace JS {
       NSDictionary *_v;
     };
 
-    /*
-
     struct TouchOptions {
-      std::optional<double> ctime() const;
-      std::optional<double> mtime() const;
+      std::optional<double> ctime() const { return [_v[@"ctime"] doubleValue]; }
+      std::optional<double> mtime() const { return [_v[@"mtime"] doubleValue]; }
 
       TouchOptions(NSDictionary *const v) : _v(v) {}
     private:
       NSDictionary *_v;
     };
-     */
   }
 }
 
@@ -134,6 +130,14 @@ namespace JS {
 + (RCTManagedPointer *)JS_NativeReactNativeFs_NativeUploadFileOptionsT:(id)json
 {
   return facebook::react::managedPointer<JS::NativeReactNativeFs::NativeUploadFileOptionsT>(json);
+}
+@end
+
+@implementation RCTCxxConvert (TouchOptions)
++ (RCTManagedPointer *)JS_NativeReactNativeFs_TouchOptions:(id)json
+{
+  return
+  facebook::react::managedPointer<JS::NativeReactNativeFs::TouchOptions>(json);
 }
 @end
 
