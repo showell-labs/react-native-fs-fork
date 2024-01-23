@@ -413,7 +413,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (
         Platform.OS !== 'windows' &&
         (await hash(path, 'sha224')) !==
-        '1e75647b457de7b041b0bd786ac94c3ab53cf3b85243fbe8e97506db'
+          '1e75647b457de7b041b0bd786ac94c3ab53cf3b85243fbe8e97506db'
       ) {
         return 'fail';
       }
