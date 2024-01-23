@@ -828,12 +828,12 @@ RCT_EXPORT_METHOD(getFSInfo:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
  * width and height. Also the resizeMode will be considered.
  */
 RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
-                  toFilepath: (NSString *) destination
-                  width: (NSInteger) width
-                  height: (NSInteger) height
-                  scale: (CGFloat) scale
-                  compression: (CGFloat) compression
-                  resizeMode: (RCTResizeMode) resizeMode
+                  destPath: (NSString *) destination
+                  width: (double) width
+                  height: (double) height
+                  scale: (double) scale
+                  compression: (double) compression
+                  resizeMode: (NSString*) resizeMode
                   resolve: (RCTPromiseResolveBlock) resolve
                   reject: (RCTPromiseRejectBlock) reject)
 
@@ -880,7 +880,7 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
     }
 
     PHImageContentMode contentMode = PHImageContentModeAspectFill;
-    if (resizeMode == RCTResizeModeContain) {
+    if ([resizeMode compare:@"contain"] == NSOrderedSame) {
         contentMode = PHImageContentModeAspectFit;
     }
 
@@ -1053,10 +1053,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (void)completeHandlerIOS:(double)jobId { 
 
-}
-
-- (void)copyAssetsFileIOS:(NSString *)imageUri destPath:(NSString *)destPath width:(double)width height:(double)height scale:(double)scale compression:(double)compression resizeMode:(NSString *)resizeMode resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
-  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyAssetsFileIOS()"];
 }
 
 - (void)copyAssetsVideoIOS:(NSString *)imageUri destPath:(NSString *)destPath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 

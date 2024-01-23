@@ -4,6 +4,7 @@ import { Platform, Text, View } from 'react-native';
 
 import {
   appendFile,
+  // copyAssetsFileIOS,
   copyFile,
   copyFileAssets,
   copyFileRes,
@@ -110,6 +111,33 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  /*
+    This test actually crashes the app... though... I guess it is correctly
+    called, not sure what goes wrong inside it.
+  'copyAssetsFileIOS()': async () => {
+    try {
+      // TODO: I even won't bother myself thinking how to automate this
+      // test; fine to have it as a manual test for a real device - introduce
+      // a valid asset name below, and it will try to copy and check it,
+      // otherwise it will just report the test as hanging.
+      const asset = 'IMG_6437';
+      const path = `${TemporaryDirectoryPath}/copy-assets-file-ios`;
+      try {
+        await unlink(path);
+      } catch {}
+      await copyAssetsFileIOS(
+        `ph://assets-library://asset/asset.JPG?id=${asset}`,
+        path,
+        640,
+        640,
+      );
+      return 'pass';
+    } catch (e) {
+      console.error(e);
+      return 'fail';
+    }
+  },
+  */
   'copyFile()': async () => {
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
