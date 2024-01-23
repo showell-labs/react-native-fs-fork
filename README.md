@@ -136,6 +136,8 @@ _When installing the library into a new project no additional steps are required
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
     - [uploadFiles()] &mdash; Uploads files to a remote location.
+    - [write()] &mdash; Writes content to a file at the given random access
+      position.
     - [writeFile()] &mdash; Writes content into a file.
   - [Types]
     - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
@@ -439,6 +441,8 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
 ```
+**VERIFIED:** Android
+
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
 - `contents` &mdash; **string** &mdash; The content to add.
@@ -846,6 +850,22 @@ in this library fork.
 - Returns an object holding `jobId` **number** (can be used to manage
   in-progress download by corresponding functions) and `promise` resolving
   to [UploadResultT] once the download is completed.
+
+### write()
+[write()]: #write
+```ts
+function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
+```
+**VERIFIED:** Android.
+
+Writes content to a file at the given random access position.
+
+- `filepath` &mdash; **string** &mdash; File path.
+- `contents` &mdash; **string** &mdash; Content to write.
+- `position` &mdash; **number** | **undefined** &mdash; Write position.
+  If `undefined` or `-1` the contents is appended to the end of the file.
+- `encoding` &mdash; [EncodingT] &mdash; Write encoding.
+- Resolves once the operation has been completed.
 
 ### writeFile()
 [writeFile()]: #writefile
@@ -1305,10 +1325,6 @@ Below is the original documentation for all other methods and types inherited
 from the original library. They are present in the codebase, but haven't been
 tested to work after refactoring for the new version of the library, and a few
 of them were commented out and marked as not yet supported on some platforms.
-
-### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
-
-Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
 
 ### (iOS only) `copyAssetsFileIOS(imageUri: string, destPath: string, width: number, height: number, scale?: number, compression?: number, resizeMode?: string): Promise<string>`
 
