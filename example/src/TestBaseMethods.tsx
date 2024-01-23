@@ -12,6 +12,7 @@ import {
   exists,
   existsAssets,
   existsRes,
+  getAllExternalFilesDirs,
   getFSInfo,
   hash,
   mkdir,
@@ -301,6 +302,18 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (await existsRes('non_existing.txt')) return 'fail';
       return 'pass';
     } catch (e) {
+      return 'fail';
+    }
+  },
+  // TODO: This is not a very strict test.
+  'getAllExternalFilesDirs()': async () => {
+    try {
+      const res = await getAllExternalFilesDirs();
+      if (!Array.isArray(res) || res.some((x) => typeof x !== 'string')) {
+        return 'fail';
+      }
+      return 'pass';
+    } catch {
       return 'fail';
     }
   },

@@ -116,6 +116,10 @@ _When installing the library into a new project no additional steps are required
       the Android assets folder.
     - [existsRes()] &mdash; (Android only) Checks if the resource exists.
     - [hash()] &mdash; Calculates file hash.
+    - [getAllExternalFilesDirs()] &mdash; (Android only) Returns an array with
+      the absolute paths to application-specific directories on all shared&nbsp;/
+      external storage devices where the application can place persistent files
+      it owns.
     - [getFSInfo()] &mdash; Gets info on the free and total storage space
       on the device, and its external storage.
     - [mkdir()] &mdash; Creates folder(s) at the given path.
@@ -578,6 +582,19 @@ Android-only. Check if the specified resource exists.
 - `filename` &mdash; **string** &mdash; Resource name.
 - Resolves to **boolean** &mdash; _true_ if the resource exists;
   _false_ otherwise.
+
+### getAllExternalFilesDirs()
+[getAllExternalFilesDirs()]: #getallexternalfilesdirs
+```ts
+function getAllExternalFilesDirs(): Promise<string[]>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Returns an array with the absolute paths to application-specific
+directories on all shared/external storage devices where the application can
+place persistent files it owns.
+
+- Resolves to **string[]** &mdash; the array of external paths.
 
 ### getFSInfo()
 [getFSInfo()]: #getfsinfo
@@ -1445,10 +1462,6 @@ Abort the current upload job with this ID.
 ### (Android only) `scanFile(path: string): Promise<string[]>`
 
 Scan the file using [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
-
-### (Android only) `getAllExternalFilesDirs(): Promise<string[]>`
-
-Returns an array with the absolute paths to application-specific directories on all shared/external storage devices where the application can place persistent files it owns.
 
 ### (iOS only) `pathForGroup(groupIdentifier: string): Promise<string>`
 
