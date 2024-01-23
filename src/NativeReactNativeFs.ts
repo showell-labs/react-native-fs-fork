@@ -306,7 +306,7 @@ export interface Spec extends TurboModule {
   readFileAssets(path: string): Promise<string>;
   readFileRes(path: string): Promise<string>;
   readDirAssets(path: string): Promise<NativeReadDirResItemT[]>;
-  scanFile(path: string): Promise<string>;
+  scanFile(path: string): Promise<string | null>;
 
   setReadable(
     filepath: string,

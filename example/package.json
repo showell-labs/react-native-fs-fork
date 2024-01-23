@@ -13,22 +13,22 @@
     "build:ios": "cd ios && xcodebuild -workspace ReactNativeFsExample.xcworkspace -scheme ReactNativeFsExample -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.9.0",
-    "@types/lodash": "^4.14.199",
+    "@dr.pogodin/react-native-static-server": "^0.10.3",
+    "@types/lodash": "^4.14.202",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
-    "react-native": "0.73.0",
-    "react-native-windows": "^0.73.2"
+    "react-native": "0.73.2",
+    "react-native-windows": "^0.73.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.2",
-    "@babel/preset-env": "^7.23.2",
-    "@babel/runtime": "^7.23.2",
-    "@react-native/babel-preset": "^0.73.18",
-    "@react-native/metro-config": "^0.73.2",
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.8",
+    "@babel/runtime": "^7.23.8",
+    "@react-native/babel-preset": "^0.73.19",
+    "@react-native/metro-config": "^0.73.3",
     "@react-native/typescript-config": "^0.73.1",
     "babel-plugin-module-resolver": "^5.0.0",
-    "metro-config": "^0.80.1"
+    "metro-config": "^0.80.4"
   },
   "engines": {
     "node": ">=18"

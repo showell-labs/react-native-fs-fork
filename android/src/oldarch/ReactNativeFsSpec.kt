@@ -6,9 +6,9 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReadableMap
 
 abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactContextBaseJavaModule(context) {
-  abstract fun getTypedExportedConstants(): Map<String, Object>
+  abstract fun getTypedExportedConstants(): Map<String, Any?>
 
-  override fun getConstants(): Map<String, Any>? {
+  override fun getConstants(): Map<String, Any?> {
     return getTypedExportedConstants()
   }
 

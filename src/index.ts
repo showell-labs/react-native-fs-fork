@@ -432,6 +432,8 @@ export function existsRes(filename: string): Promise<boolean> {
 export const getAllExternalFilesDirs: () => Promise<string[]> =
   RNFS.getAllExternalFilesDirs;
 
+// TODO: algorithm should have a dedicated type, effectively enumerating all
+// correct values.
 export function hash(filepath: string, algorithm: string): Promise<string> {
   return RNFS.hash(normalizeFilePath(filepath), algorithm);
 }

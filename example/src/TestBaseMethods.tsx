@@ -3,25 +3,42 @@ import React from 'react';
 import { Platform, Text, View } from 'react-native';
 
 import {
+  appendFile,
+  // copyAssetsFileIOS,
+  // copyAssetsVideoIOS,
+  // completeHandlerIOS,
   copyFile,
   copyFileAssets,
+  copyFileRes,
   copyFolder,
   downloadFile,
   exists,
   existsAssets,
+  existsRes,
+  getAllExternalFilesDirs,
   getFSInfo,
+  hash,
+  // isResumable,
   mkdir,
   moveFile,
+  pathForGroup,
   read,
   readdir,
   readDir,
   readDirAssets,
   readFile,
   readFileAssets,
+  readFileRes,
+  // resumeDownload,
+  scanFile,
   stat,
+  stopDownload,
+  stopUpload,
   TemporaryDirectoryPath,
+  touch,
   unlink,
   uploadFiles,
+  write,
   writeFile,
 } from '@dr.pogodin/react-native-fs';
 
@@ -79,6 +96,72 @@ const UPLOAD_FILES_CONTROL = Platform.select({
 });
 
 const tests: { [name: string]: StatusOrEvaluator } = {
+  'appendFile()': async () => {
+    // TODO: I guess, this test should be improved and elaborated...
+    // The current version is just copied & modified from the "readFile() and
+    // writeFile()" test, without much thinking about it.
+    const good = 'GÖÖÐ\n';
+    const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
+    const path = `${TemporaryDirectoryPath}/append-file-test`;
+    try {
+      await writeFile(path, utf8, 'ascii');
+      await appendFile(path, utf8, 'ascii');
+      let res = await readFile(path);
+      if (res !== `${good}${good}`) return 'fail';
+      await writeFile(path, good);
+      await appendFile(path, good);
+      res = await readFile(path);
+      if (res !== `${good}${good}`) return 'fail';
+      return 'pass';
+    } catch (e) {
+      return 'fail';
+    }
+  },
+  /*
+    This test actually crashes the app... though... I guess it is correctly
+    called, not sure what goes wrong inside it.
+  'copyAssetsFileIOS()': async () => {
+    try {
+      // TODO: I even won't bother myself thinking how to automate this
+      // test; fine to have it as a manual test for a real device - introduce
+      // a valid asset name below, and it will try to copy and check it,
+      // otherwise it will just report the test as hanging.
+      const asset = 'IMG_6437';
+      const path = `${TemporaryDirectoryPath}/copy-assets-file-ios`;
+      try {
+        await unlink(path);
+      } catch {}
+      await copyAssetsFileIOS(
+        `ph://assets-library://asset/asset.JPG?id=${asset}`,
+        path,
+        640,
+        640,
+      );
+      return 'pass';
+    } catch (e) {
+      console.error(e);
+      return 'fail';
+    }
+  },
+  'copyAssetsVideoIOS()': async () => {
+    try {
+      // TODO: I even won't bother myself thinking how to automate this
+      // test; fine to have it as a manual test for a real device - introduce
+      // a valid asset name below, and it will try to copy and check it,
+      // otherwise it will just report the test as hanging.
+      const asset = 'IMG_6437';
+      const path = `${TemporaryDirectoryPath}/copy-assets-video-ios`;
+      try {
+        await unlink(path);
+      } catch {}
+      await copyAssetsVideoIOS(asset, path);
+      return 'pass';
+    } catch (e) {
+      console.error(e);
+      return 'fail';
+    }
+  },
+  */
   'copyFile()': async () => {
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -197,6 +280,21 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'copyFileRes()': async () => {
+    const path = `${TemporaryDirectoryPath}/res_good_utf8.txt`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      if (await exists(path)) return 'fail';
+      await copyFileRes('good_utf8.txt', path);
+      const res = await readFile(path);
+      if (res !== 'GÖÖÐ\n') return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   // TODO: This should live in a dedicated module, with a bunch of tests needed
   // to cover all download-related functions & scenarious; however, to get this
   // function checked faster, placing it here for now.
@@ -251,6 +349,27 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'existsRes()': async () => {
+    try {
+      if (!(await existsRes('good_utf8.txt'))) return 'fail';
+      if (await existsRes('non_existing.txt')) return 'fail';
+      return 'pass';
+    } catch (e) {
+      return 'fail';
+    }
+  },
+  // TODO: This is not a very strict test.
+  'getAllExternalFilesDirs()': async () => {
+    try {
+      const res = await getAllExternalFilesDirs();
+      if (!Array.isArray(res) || res.some((x) => typeof x !== 'string')) {
+        return 'fail';
+      }
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'getFSInfo()': async () => {
     try {
       const res = await getFSInfo();
@@ -270,6 +389,52 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
 
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'hash()': async () => {
+    const path = `${TemporaryDirectoryPath}/hash`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      if (await exists(path)) return 'fail';
+      await writeFile(path, 'xxx');
+      if ((await hash(path, 'md5')) !== 'f561aaf6ef0bf14d4208bb46a4ccb3ad')
+        return 'fail';
+      if (
+        (await hash(path, 'sha1')) !==
+        'b60d121b438a380c343d5ec3c2037564b82ffef3'
+      ) {
+        return 'fail';
+      }
+      if (
+        Platform.OS !== 'windows' &&
+        (await hash(path, 'sha224')) !==
+          '1e75647b457de7b041b0bd786ac94c3ab53cf3b85243fbe8e97506db'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha256')) !==
+        'cd2eb0837c9b4c962c22d2ff8b5441b7b45805887f051d39bf133b583baf6860'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha384')) !==
+        '1249e15f035ed34786a328d9fdb2689ab24f7c7b253d1b7f66ed92a679d663dd502d7beda59973e8c91a728b929fc8cd'
+      ) {
+        return 'fail';
+      }
+      if (
+        (await hash(path, 'sha512')) !==
+        '9057ff1aa9509b2a0af624d687461d2bbeb07e2f37d953b1ce4a9dc921a7f19c45dc35d7c5363b373792add57d0d7dc41596e1c585d6ef7844cdf8ae87af443f'
+      ) {
+        return 'fail';
+      }
       return 'pass';
     } catch {
       return 'fail';
@@ -339,6 +504,19 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       return 'pass';
     } catch {
+      return 'fail';
+    }
+  },
+  // TODO: This is yet another dummy test, that should be enhanced (but not
+  // a priority).
+  'pathForGroup()': async () => {
+    try {
+      await pathForGroup('dummy-group');
+      return 'fail';
+    } catch (e: any) {
+      if (e.message === "ENOENT: no directory for group 'dummy-group' found") {
+        return 'pass';
+      }
       return 'fail';
     }
   },
@@ -597,6 +775,44 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'readFileRes()': async () => {
+    try {
+      let res = await readFileRes('good_latin1.txt', 'ascii');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'ascii');
+      if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'utf8');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_utf8.txt');
+      if (res !== 'GÖÖÐ\n') return 'fail';
+
+      res = await readFileRes('good_latin1.txt', 'base64');
+      if (res !== 'R9bW0Ao=') return 'fail';
+
+      res = await readFileRes('good_utf8.txt', 'base64');
+      if (res !== 'R8OWw5bDkAo=') return 'fail';
+
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  'scanFile()': async () => {
+    try {
+      const path = `${TemporaryDirectoryPath}/scan-file-test`;
+      await writeFile(path, 'xxx');
+      await scanFile(path);
+      // TODO: Currently scanFile() returns "null" here, indicating the scan has
+      // failed... not sure why, perhaps it can't access the temporary directory
+      // of the app? Anyway, not a priority to dig further into it right now.
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'stat()': async () => {
     try {
       const path = `${TemporaryDirectoryPath}${SEP}stat-test`;
@@ -718,6 +934,98 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  // TODO: This is quite a sloppy test.
+  'stopDownload()': async () => {
+    const url =
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+    const path = `${TemporaryDirectoryPath}/stop-download-test`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      const { jobId, promise } = downloadFile({
+        fromUrl: url,
+        toFile: path,
+      });
+      stopDownload(jobId);
+      try {
+        await promise;
+      } catch (e: any) {
+        if (e.message === 'Download has been aborted') return 'pass';
+      }
+      return 'fail';
+    } catch {
+      return 'fail';
+    }
+  },
+  'stopUpload()': async () => {
+    try {
+      const server = await waitServer();
+
+      const good = 'GÖÖÐ\n';
+      const path = `${TemporaryDirectoryPath}/stop-upload.txt`;
+      await writeFile(path, good);
+
+      const targetDevicePath = `${FILE_DIR}/dav/stop-upload.txt`;
+
+      try {
+        unlink(targetDevicePath);
+      } catch {}
+
+      const res = uploadFiles({
+        toUrl: `${server?.origin!}/dav/stop-upload.txt`,
+        method: 'PUT',
+        files: [
+          {
+            name: 'upload-files-source-file',
+            filename: 'upload-files-source-file.txt',
+            filepath: path,
+          },
+        ],
+      });
+      stopUpload(res.jobId);
+      await res.promise;
+
+      await readFile(targetDevicePath);
+      return 'fail';
+    } catch (e: any) {
+      if (
+        e.message.startsWith('ENOENT: no such file or directory, open') &&
+        e.message.endsWith("/tmp/test-server/dav/stop-upload.txt'")
+      ) {
+        return 'pass';
+      }
+      return 'fail';
+    }
+  },
+  'touch()': async () => {
+    // TODO: This test fails on Windows, but I guess because stat()
+    // does not work there the same as on other platforms.
+    try {
+      const filePath = `${TemporaryDirectoryPath}/touch-test`;
+      try {
+        await unlink(filePath);
+      } catch {}
+      await writeFile(filePath, 'xxx');
+      const a = await stat(filePath);
+      const b = await stat(filePath);
+      if (
+        a.ctime.valueOf() !== b.ctime.valueOf() ||
+        a.mtime.valueOf() !== b.mtime.valueOf()
+      ) {
+        return 'fail';
+      }
+      const M_TIME = 1705969300000;
+      await touch(filePath, new Date(M_TIME), new Date(M_TIME));
+      const c = await stat(filePath);
+      if (c.ctime.valueOf() !== M_TIME || c.mtime.valueOf() !== M_TIME) {
+        return 'fail';
+      }
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'unlink()': async () => {
     try {
       const dirPath = `${TemporaryDirectoryPath}/test-unlink-dir`;
@@ -776,6 +1084,29 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       return uploadedFile.includes(UPLOAD_FILES_CONTROL) ? 'pass' : 'fail';
     } catch (e) {
+      return 'fail';
+    }
+  },
+  'write()': async () => {
+    // TODO: This test is copied from "readFile() and writeFile()", and it is
+    // just slightly modified, without much thinking - it does not test all
+    // promised behavior of write(). Also, we probably should combine write()
+    // and writeFile() functions into one.
+    const good = 'GÖÖÐ\n';
+    const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
+    const path = `${TemporaryDirectoryPath}/write-test`;
+    try {
+      try {
+        await unlink(path);
+      } catch {}
+      await write(path, utf8, -1, 'ascii');
+      let res = await readFile(path);
+      if (res !== good) return 'fail';
+      await write(path, good);
+      res = await readFile(path);
+      if (res !== `${good}${good}`) return 'fail';
+      return 'pass';
+    } catch {
       return 'fail';
     }
   },

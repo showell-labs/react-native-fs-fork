@@ -293,7 +293,7 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
       Method<void(std::string, Promise<std::string>) noexcept>{27, L"readFileAssets"},
       Method<void(std::string, Promise<std::string>) noexcept>{28, L"readFileRes"},
       Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{29, L"readDirAssets"},
-      Method<void(std::string, Promise<std::string>) noexcept>{30, L"scanFile"},
+      Method<void(std::string, Promise<std::optional<std::string>>) noexcept>{30, L"scanFile"},
       Method<void(std::string, bool, bool, Promise<bool>) noexcept>{31, L"setReadable"},
       Method<void(std::string, std::string, double, double, double, double, std::string, Promise<std::string>) noexcept>{32, L"copyAssetsFileIOS"},
       Method<void(std::string, std::string, Promise<std::string>) noexcept>{33, L"copyAssetsVideoIOS"},
@@ -469,8 +469,8 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
     REACT_SHOW_METHOD_SPEC_ERRORS(
           30,
           "scanFile",
-          "    REACT_METHOD(scanFile) void scanFile(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
-          "    REACT_METHOD(scanFile) static void scanFile(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
+          "    REACT_METHOD(scanFile) void scanFile(std::string path, ::React::ReactPromise<std::optional<std::string>> &&result) noexcept { /* implementation */ }\n"
+          "    REACT_METHOD(scanFile) static void scanFile(std::string path, ::React::ReactPromise<std::optional<std::string>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
           31,
           "setReadable",

@@ -69,7 +69,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         if (pickFileLauncher != null) pickFileLauncher!!.unregister()
     }
 
-    override fun getTypedExportedConstants(): Map<String, Object> {
+    override fun getTypedExportedConstants(): Map<String, Any?> {
         val constants: MutableMap<String, Any?> = HashMap()
         constants["DocumentDirectory"] = 0
         constants["DocumentDirectoryPath"] = this.getReactApplicationContext().getFilesDir().getAbsolutePath()
@@ -82,7 +82,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         constants["ExternalStorageDirectoryPath"] = Environment.getExternalStorageDirectory()?.absolutePath
         constants["ExternalDirectoryPath"] = this.getReactApplicationContext().getExternalFilesDir(null)?.absolutePath
         constants["ExternalCachesDirectoryPath"] = this.getReactApplicationContext().getExternalCacheDir()?.absolutePath
-        return constants as MutableMap<String, Object>
+        return constants
     }
 
     @ReactMethod
@@ -600,8 +600,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 null,
                 object : MediaScannerConnectionClient {
                     override fun onMediaScannerConnected() {}
-                    override fun onScanCompleted(path: String, uri: Uri) {
-                        promise.resolve(path)
+                    override fun onScanCompleted(path: String, uri: Uri?) {
+                        promise.resolve(uri.toString())
                     }
                 }
         )

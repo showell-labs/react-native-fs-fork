@@ -22,63 +22,11 @@ and [old][Old Architecture] [RN][React Native] architectures.
 
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
----
-
-_This is a work-in-progress fork of [react-native-fs], aiming to upgrade the library to the standards of the latest React Native v0.72, with support of the [New Architecture], backward compatibility to the [Old Architecture], clean-up and fixes of the library API and internal implementation, and further library development following the best industry practices._
-
-_To migrate from the legacy [react-native-fs] install this fork_
-```bash
-npm install --save @dr.pogodin/react-native-fs
-```
-_then upgrade its imports in the code:_
-```ts
-// The legacy RNFS was imported like this:
-import RNFS from 'react-native-fs';
-
-// Instead, this fork should be imported like this:
-import * as RNFS from '@dr.pogodin/react-native-fs';
-// or (preferrably) you should import separate constants / functions you need
-// like:
-import {
-  TemporaryDirectoryPath,
-  writeFile,
-} from '@dr.pogodin/react-native-fs';
-```
-_When installing the library into a new project no additional steps are required._
-
-**ROADMAP:**
-- There were a bunch of **v2.21.0-alpha.X** releases taking care that more and
-  more functions of the original library work as per documentation. With release
-  of RN v0.73 this work moves to **v2.22.0-alpha.X** releases, which are upgraded
-  to work with RN v0.73.
-
-- The aim for upcoming ~~**v2.21.0**~~ **v2.22.0** release is to be a drop-in
-  replacement (beside being upgraded to a newer RN v0.73) for
-  the latest **v2.20.0** release of the original library. It will have matching
-  functionality and API, with exception of any minor changes needed to fix
-  inconsistencies between **v2.20.0** and its documentation, and any changes
-  that just have to be done to satisfy latest React Native standards.
-
-- In further versions, **v2.X.Y**, we'll be taking care of improvements,
-  and optimizations of existing functionality, as well as adding new APIs,
-  and deprecating old ones (without yet dropping them out of the codebase),
-  with the ultimate goal to release **v3** version of the library.
-
-- The aims for **v3** release are the following:
-  - To unify library APIs for all platforms &mdash; the current library has
-    a lots of platform-dependent APIs, which goes against the purpose and spirit
-    of React Native &mdash; we'll abstract out and unify everything that is
-    possible, to allow smooth cross-plaform ride.
-  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
-  - To ensure that library has no intrinsic limitations (like now it is not efficient
-    for handling large files, _etc._)
-
-**IMPORTANT:** _Below is partially revised documentation for the library. It still has to be completely revised and updated. For now, for each constant / function that have been verified and tested to work in this fork there will be a **VERIFIED** note next to its description, certifying the state of its support in this fork._
-
----
-
 ## Table of Contents
 - [Getting Started]
+- [Project History & Roadmap]
+- [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
+- [Examples]
 - [API Reference]
   - [Constants]
     - [CachesDirectoryPath] &mdash; The absolute path to the caches directory.
@@ -101,8 +49,18 @@ _When installing the library into a new project no additional steps are required
     - [TemporaryDirectoryPath] &mdash; The absolute path to the temporary
       directory.
   - [Functions]
+    - [appendFile()] &mdash; Appends content to a file.
+    - [completeHandlerIOS()] &mdash; For use when using background downloads,
+      tell iOS you are done handling a completed download.
+    - [copyAssetsFileIOS()] &mdash; Reads an image file from Camera Roll and
+      writes it to the specified location. It also can be used to get video
+      thumbnails.
+    - [copyAssetsVideoIOS()] &mdash; Copies a video from the assets-library
+      to the specified destination.
     - [copyFile()] &mdash; Copies a file to a new destination.
     - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
+      the given destination.
+    - [copyFileRes()] &mdash; (Android only) Copies specified resource to
       the given destination.
     - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
       in a Windows-efficient way.
@@ -111,10 +69,21 @@ _When installing the library into a new project no additional steps are required
     - [existsAssets()] &mdash; (Android only) Checks if an item exists at
       the given path inside
       the Android assets folder.
+    - [existsRes()] &mdash; (Android only) Checks if the resource exists.
+    - [hash()] &mdash; Calculates file hash.
+    - [isResumable()] &mdash; (iOS only) Check if the the download job with this
+      ID is resumable with [resumeDownload()].
+    - [getAllExternalFilesDirs()] &mdash; (Android only) Returns an array with
+      the absolute paths to application-specific directories on all shared&nbsp;/
+      external storage devices where the application can place persistent files
+      it owns.
     - [getFSInfo()] &mdash; Gets info on the free and total storage space
       on the device, and its external storage.
     - [mkdir()] &mdash; Creates folder(s) at the given path.
     - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+    - [pathForGroup()] &mdash; (iOS only) Returns the absolute path to
+      the directory shared for all applications with the same security group
+      identifier.
     - [pickFile()] &mdash; Prompts user to select file(s) with help of
       a platform-provided file picker UI.
     - [read()] &mdash; Reads a fragment of file content.
@@ -125,10 +94,20 @@ _When installing the library into a new project no additional steps are required
     - [readFile()] &mdash; Reads entire file content.
     - [readFileAssets()] &mdash; (Android only) Reads the file at a path in
       the Android app's assets folder.
+    - [readFileRes()] &mdash; (Android only) Reads specified file in
+      the Android app's resource folder and return its contents.
+    - [resumeDownload()] &mdash; (iOS only) Resume an interrupted download job.
+    - [scanFile()] &mdash; (Android-only) Scan the file using
+      [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
+    - [stopDownload()] &mdash; Aborts a file download job.
+    - [stopUpload()] &mdash; (iOS only) Aborts file upload job.
+    - [touch()] &mdash; Alters creation and modification timestamps of the given file.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
     - [uploadFiles()] &mdash; Uploads files to a remote location.
+    - [write()] &mdash; Writes content to a file at the given random access
+      position.
     - [writeFile()] &mdash; Writes content into a file.
   - [Types]
     - [DownloadBeginCallbackResultT] &mdash; The type of argument passed
@@ -157,10 +136,6 @@ _When installing the library into a new project no additional steps are required
     - [UploadResultT] &mdash; The type of resolved [uploadFiles()] promise.
     - [WriteFileOptionsT] &mdash; The type of extra options argument of
       the [writeFile()] function.
-- [Legacy] &mdash; Everything else inherited from the original library,
-  but not yet correctly verified to work and match the documentation.
-- [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
-- [Test / Demo App](#test--demo-app)
 
 ## Getting Started
 [Getting Started]: #getting-started
@@ -175,7 +150,85 @@ $ npm install --save @dr.pogodin/react-native-fs
 npx react-native autolink-windows --sln "windows\ReactNativeFsExample.sln" --proj "windows\ReactNativeFsExample\ReactNativeFsExample.vcxproj"
 ```
 
+## Project History & Roadmap
+[Project History & Roadmap]: #project-history--roadmap
+
+This project is a fork of the upstream [react-native-fs] library, which has been
+abandoned by its owners and maintainers. This forks aims to keep the library on
+par with the latest React Native standards, with support of the [New Architecture],
+backward compatibility with the [Old Architecture]; and to further develop
+the library according to the best industry practices.
+
+To migrate from the legacy [react-native-fs] install this fork_
+```bash
+npm install --save @dr.pogodin/react-native-fs
+```
+then upgrade its imports in the code:
+```ts
+// The legacy RNFS was imported like this:
+import RNFS from 'react-native-fs';
+
+// Instead, this fork should be imported like this:
+import * as RNFS from '@dr.pogodin/react-native-fs';
+// or (preferrably) you should import separate constants / functions you need
+// like:
+import {
+  TemporaryDirectoryPath,
+  writeFile,
+} from '@dr.pogodin/react-native-fs';
+```
+
+**ROADMAP:**
+- **v2.22.0** of this library is, presumably, a drop-in replacement for
+  the latest (**v2.20.0**) release of the original, upstream [react-native-fs]
+  (beside the need to upgrade host project to the lates RN v0.73).
+  It has matching functionality and API, with just a handfull of internal
+  fixes, and a few additions.
+
+- In further versions, **v2.X.Y**, we'll be taking care of improvements,
+  and optimizations of existing functionality, as well as adding new APIs,
+  and deprecating old ones (without yet dropping them out of the codebase),
+  with the ultimate goal to release **v3** version of the library.
+
+- The aims for **v3** release are the following:
+  - To unify library APIs for all platforms &mdash; the current library has
+    a lots of platform-dependent APIs, which goes against the purpose and spirit
+    of React Native &mdash; we'll abstract out and unify everything that is
+    possible, to allow smooth cross-plaform ride.
+  - To make library API closer to [Node's File System API](https://nodejs.org/dist/latest-v18.x/docs/api/fs.html).
+  - To ensure that library has no intrinsic limitations (like now it is not efficient
+    for handling large files, _etc._)
+
+## Background Downloads Tutorial (iOS)
+
+Background downloads in iOS require a bit of a setup.
+
+First, in your `AppDelegate.m` file add the following:
+
+```js
+#import <RNFSManager.h>
+
+...
+
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
+{
+  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
+}
+
+```
+
+The `handleEventsForBackgroundURLSession` method is called when a background download is done and your app is not in the foreground.
+
+We need to pass the `completionHandler` to RNFS along with its `identifier`.
+
+The JavaScript will continue to work as usual when the download is done but now you must call `RNFS.completeHandlerIOS(jobId)` when you're done handling the download (show a notification etc.)
+
+**BE AWARE!** iOS will give about 30 sec. to run your code after `handleEventsForBackgroundURLSession` is called and until `completionHandler`
+is triggered so don't do anything that might take a long time (like unzipping), you will be able to do it after the user re-launces the app,
+otherwide iOS will terminate your app.
+
 ## Examples
+[Examples]: #examples
 _These are legacy examples, and should be revised, there is an Example app in the `/example` folder of the codebase, you probably should rather check it than these examples._
 
 ### Basic
@@ -427,6 +480,117 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ## Functions
 [Functions]: #functions
 
+### appendFile()
+[appendFile()]: #appendfile
+```ts
+function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Appends content to a file.
+- `filepath` &mdash; **string** &mdash; File path.
+- `contents` &mdash; **string** &mdash; The content to add.
+- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding.
+- Resolves once the operation has been completed.
+
+### completeHandlerIOS()
+[completeHandlerIOS()]: #completehandlerios
+```ts
+function completeHandlerIOS(jobId: number): void;
+```
+**VERIFIED:** well... not really verified, but is callable on iOS.
+
+iOS only. For use when using background downloads, tell iOS you are done
+handling a completed download.
+
+Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
+
+### copyAssetsFileIOS()
+[copyAssetsFileIOS()]: #copyassetsfileios
+```ts
+function copyAssetsFileIOS(
+  imageUri: string,
+  destPath: string,
+  width: number,
+  height: number,
+  scale?: number,
+  compression?: number,
+  resizeMode?: string,
+): Promise<string>;
+```
+**BEWARE:** _After ensuring this method gets called correctly on iOS, calling it
+just crashes the example app for me. Though, I don't have much interest to dig into
+it now (not for free :)_
+
+iOS only.
+
+*Not available on Mac Catalyst.*
+
+Reads an image file from Camera Roll and writes to `destPath`. This method
+[assumes the image file to be JPEG file](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L752-L753).
+This method will download the original from iCloud if necessary.
+
+One can use this method also to create a thumbNail from a video in a specific
+size. Currently it is impossible to specify a concrete position, the OS will
+decide which Thumbnail you'll get then.
+To copy a video from assets-library and save it as a mp4-file, refer to
+copyAssetsVideoIOS.
+
+Further information: https://developer.apple.com/reference/photos/phimagemanager/1616964-requestimageforasset
+The promise will on success return the final destination of the file, as it was defined in the destPath-parameter.
+
+- `imageUri` &mdash; **string** &mdash; URI of a file in Camera Roll.
+
+  Can be [either of the following formats](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L781-L785):
+  - `ph://CC95F08C-88C3-4012-9D6D-64A413D254B3/L0/001`
+  - `assets-library://asset/asset.JPG?id=CC95F08C-88C3-4012-9D6D-64A413D254B3&ext=JPG`
+
+- `destPath` &mdash; **string** &mdash; Destination to which the copied file
+    will be saved, e.g. `RNFS.TemporaryDirectoryPath + 'example.jpg'`.
+
+- `width` &mdash; **number** &mdash; Copied file's image width will be resized
+  to `width`. [If 0 is provided, width won't be resized.](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L808)
+
+- `height` &mdash; **number** &mdash; Copied file's image height will be resized
+  to `height`. [If 0 is provided, height won't be resized.](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L808)
+
+- `scale` &mdash; **number** | **undefined** &mdash; Optional. Copied file's
+  image will be scaled proportional to `scale` factor from `width` x `height`.
+  If both `width` and `height` are 0, the image won't scale. Range is [0.0, 1.0]
+  and default is 1.0.
+
+- `compression` &mdash; **number** | **undefined** &mdash; Optional. Quality of
+  copied file's image. The value 0.0 represents the maximum compression
+  (or lowest quality) while the value 1.0 represents the least compression
+  (or best quality). Range is [0.0, 1.0] and default is 1.0.
+
+- `resizeMode` &mdash; **string** | **undefined** &mdash; Optional.
+  If `resizeMode` is 'contain', copied file's image will be scaled so that its
+  larger dimension fits `width` x `height`. If `resizeMode` is other value than
+  'contain', the image will be scaled so that it completely fills
+  `width` x `height`. Default is 'contain'.
+  Refer to [PHImageContentMode](https://developer.apple.com/documentation/photokit/phimagecontentmode).
+
+- Resolves to **string** &mdash; Copied file's URI.
+
+### copyAssetsVideoIOS()
+[copyAssetsVideoIOS()]: #copyassetsvideoios
+```ts
+function copyAssetsVideoIOS(videoUri: string, destPath: string): Promise<string>;
+```
+**BEWARE:** _Similarly to [copyAssetsFileIOS()] I believe it gets correctly called
+on iOS, but it crashes the example app in my naive test. Perhaps I use it wrong,
+or something should be patched in the original implementation._
+
+*Not available on Mac Catalyst.*
+
+Copies a video from assets-library, that is prefixed with
+'assets-library://asset/asset.MOV?...' to a specific destination.
+
+- `videoUri` &mdash; **string** &mdash; Video URI.
+- `destPath` &mdash; **string** &mdash; Destination.
+- Resolves to **string** &mdash; copied file path?
+
 ### copyFile()
 [copyFile()]: #copyfile
 ```ts
@@ -464,6 +628,23 @@ it exists.
 - `from` &mdash; **string** &mdash; Source asset path (relative to the asset
   folder's root).
 - `to` &mdash; **string** &mdash; Destination path.
+- Resolves once completed.
+
+### copyFileRes()
+[copyFileRes()]: #copyfileres
+```ts
+function copyFileRes(filename: string, destPath: string): Promise<void>
+```
+**VERIFIED**: Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Copies the file named `filename` in the Android app's res folder
+and copies it to the given `destPath` path. `res/drawable` is used as
+the source parent folder for image files, `res/raw` for everything else.
+
+**BEWARE:** It will overwrite destPath if it already exists.
+
+- `filename` &mdash; **string** &mdash; Resource name.
+- `destPath` &mdash; **string** &mdash; Destination.
 - Resolves once completed.
 
 ### copyFolder()
@@ -524,16 +705,77 @@ folder.
   assets folder.
 - Resolves _true_ if the item exists; _false_ otherwise.
 
+### existsRes()
+[existsRes()]: #existsres
+```ts
+function existsRes(filename: string): Promise<boolean>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Check if the specified resource exists.
+`res/drawable` is used as the parent folder for image files,
+`res/raw` for everything else.
+
+- `filename` &mdash; **string** &mdash; Resource name.
+- Resolves to **boolean** &mdash; _true_ if the resource exists;
+  _false_ otherwise.
+
+### getAllExternalFilesDirs()
+[getAllExternalFilesDirs()]: #getallexternalfilesdirs
+```ts
+function getAllExternalFilesDirs(): Promise<string[]>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Returns an array with the absolute paths to application-specific
+directories on all shared/external storage devices where the application can
+place persistent files it owns.
+
+- Resolves to **string[]** &mdash; the array of external paths.
+
 ### getFSInfo()
 [getFSInfo()]: #getfsinfo
 ```ts
 function getFSInfo(): Promise<FSInfoResultT>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Provides information about free and total file system space.
 
 - Resolves to an [FSInfoResultT] object.
+
+### hash()
+[hash()]: #hash
+```ts
+function hash(path: string, algorithm: string): Promise<string>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Calculates file's hash.
+- `path` &mdash; **string** &mdash; File path.
+- `algorithm` &mdash; **string** &mdash; One of `md5`, `sha1`,
+  `sha224` (**currently it does not work on Windows!**),
+  `sha256`, `sha384`, `sha512`.
+- Resolves to **string** &mdash; file hash.
+
+### isResumable()
+[isResumable()]: #isresumable
+```ts
+function isResumable(jobId: number): Promise<bool>;
+```
+iOS only. Check if the the download job with this ID is resumable with
+[resumeDownload()].
+
+Example:
+
+```js
+if (await RNFS.isResumable(jobId) {
+    RNFS.resumeDownload(jobId)
+}
+```
+
+- `jobId` &mdash; **number** &mdash; Download job ID.
+- Resolves to **boolean** &mdash; the result.
 
 ### mkdir()
 [mkdir()]: #mkdir
@@ -570,6 +812,25 @@ on other platforms it works fine.
 - `from` &mdash; **string** &mdash; Old path of the item.
 - `into` &mdash; **string** &mdash; New path of the item.
 - Resolves once the operation is completed.
+
+### pathForGroup()
+[pathForGroup()]: #pathforgroup
+```ts
+function pathForGroup(groupIdentifier: string): Promise<string>;
+```
+**VERIFIED:** iOS.
+
+iOS only. Returns the absolute path to the directory shared for all applications
+with the same security group identifier. This directory can be used to to share
+files between application of the same developer.
+
+Invalid group identifier will cause a rejection.
+
+For more information read the [Adding an App to an App Group](https://developer.apple.com/library/content/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/EnablingAppSandbox.html#//apple_ref/doc/uid/TP40011195-CH4-SW19) section.
+
+- `groupIdentifier` &mdash; **string** &mdash; Any value from
+  the *com.apple.security.application-groups* entitlements list.
+- Resolves to **string** &mdash; the result path.
 
 ### pickFile()
 [pickFile()]: #pickfile
@@ -696,7 +957,7 @@ of 1-to-4 bytes of the source file).
 ### readFileAssets()
 [readFileAssets()]: #readfileassets
 ```ts
-function readFileAssets(path:string, encoding?: EncodingT | ReadFileOptionsT): Promise<string>;
+function readFileAssets(path: string, encoding?: EncodingT | ReadFileOptionsT): Promise<string>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
@@ -709,6 +970,50 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
   Optional. Encoding, or extra options object, which currently only supports
   specifying the encoding.
 - Resolves to **string** &mdash; the asset content.
+
+### readFileRes
+[readFileRes()]: #readfileres
+```ts
+function readFileRes(filename: string, encoding?: EncodingT): Promise<string>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Reads the file named `filename` in the Android app's `res` folder
+and return contents. Only the file name (not folder) needs to be specified.
+
+Original docs say: _The file type will be detected from the extension and
+automatically located within `res/drawable` (for image files) or `res/raw`
+(for everything else)._ Good luck with it. The test in the example app does not
+work if the file extension is not included into the filename... but perhaps
+I've overlooked something.
+
+- `filename` &mdash; **string** &mdash; Resouce file name.
+- `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
+- Resolves to **string** &mdash; the resource content.
+
+### resumeDownload()
+[resumeDownload()]: #resumedownload
+```ts
+function resumeDownload(jobId: number): void;
+```
+
+iOS only. Resume the current download job with this ID.
+
+- `jobId` &mdash; **number** &mdash; Download job ID.
+
+### scanFile()
+[scanFile()]: #scanfile
+```ts
+function scanFile(path: string): Promise<string | null>;
+```
+**VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
+
+Android-only. Scan the file using
+[Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
+- `path` &mdash; **string** &mdash; Path of the file to scan.
+- Resolve to **string** or **null** &mdash; URI of for the file if the scanning
+  operation succeeded and the file was added to the media database; or _null_
+  if scanning failed.
 
 ### stat()
 [stat()]: #stat
@@ -729,6 +1034,48 @@ It thus requires more troubleshooting, but it is not a priority for now.
 
 - `path` &mdash; **string** &mdash; Item path.
 - Resolves to a [StatResultT] object.
+
+### stopDownload()
+[stopDownload()]: #stopdownload
+```ts
+function stopDownload(jobId: number): void;
+```
+**VERIFIED:** Android, iOS.
+
+Aborts a file download job. The partial file will remain on the filesystem,
+and the promise returned from the aborted [downloadFile()] call will reject
+with an error.
+- `jobId` &mdash; **number** &mdash; Download job ID (see [downloadFile()]).
+
+### stopUpload()
+[stopUpload()]: #stopupload
+```ts
+function stopUpload(jobId: number): void;
+```
+**VERIFIED:** iOS.
+
+iOS only. Abort the current upload job with given ID.
+
+**NOTE:** Unlike [stopDownload()] it does not cause the pending upload promise
+to reject. Perhaps, we'll change it in future to behave similarly.
+
+- `jobId` &mdash; **number** &mdash; Upload job ID.
+
+### touch()
+[touch()]: #touch
+```ts
+function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows.
+
+Alters creation and modification timestamps of the given file.
+- `filepath` &mdash; **string** &mdash; File path.
+- `mtime` &mdash; **Date** | **undefined** &mdash; Optional. Modification
+  timestamp.
+- `ctime` &mdash; **Date** | **undefined** &mdash; Optional. Creation timestamp.
+  It is supported on iOS and Windows; Android always sets both timestamps equal
+  `mtime`.
+- Resolves once done.
 
 ### unlink()
 [unlink()]: #unlink
@@ -763,6 +1110,24 @@ in this library fork.
 - Returns an object holding `jobId` **number** (can be used to manage
   in-progress download by corresponding functions) and `promise` resolving
   to [UploadResultT] once the download is completed.
+
+### write()
+[write()]: #write
+```ts
+function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
+```
+**VERIFIED:** Android, iOS, macOS, Windows \
+**BEWARE:** On Windows it seems to work differently from other platforms,
+throwing if attempting to write to a non-existing file.
+
+Writes content to a file at the given random access position.
+
+- `filepath` &mdash; **string** &mdash; File path.
+- `contents` &mdash; **string** &mdash; Content to write.
+- `position` &mdash; **number** | **undefined** &mdash; Write position.
+  If `undefined` or `-1` the contents is appended to the end of the file.
+- `encoding` &mdash; [EncodingT] &mdash; Write encoding.
+- Resolves once the operation has been completed.
 
 ### writeFile()
 [writeFile()]: #writefile
@@ -1215,182 +1580,3 @@ The type of extra options argument of the [writeFile()] function.
   to use. Defaults `utf8`.
 - `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
   iOS-only. See: https://developer.apple.com/documentation/foundation/nsfileprotectionkey
-
-## Legacy
-[Legacy]: #legacy
-Below is the original documentation for all other methods and types inherited
-from the original library. They are present in the codebase, but haven't been
-tested to work after refactoring for the new version of the library, and a few
-of them were commented out and marked as not yet supported on some platforms.
-
-### `readFileRes(filename:string, encoding?: string): Promise<string>`
-
-Reads the file named `filename` in the Android app's `res` folder and return contents. Only the file name (not folder) needs to be specified. The file type will be detected from the extension and automatically located within `res/drawable` (for image files) or `res/raw` (for everything else). `encoding` can be one of `utf8` (default), `ascii`, `base64`. Use `base64` for reading binary files.
-
-Note: Android only.
-
-### `appendFile(filepath: string, contents: string, encoding?: string): Promise<void>`
-
-Append the `contents` to `filepath`. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
-
-### `write(filepath: string, contents: string, position?: number, encoding?: string): Promise<void>`
-
-Write the `contents` to `filepath` at the given random access position. When `position` is `undefined` or `-1` the contents is appended to the end of the file. `encoding` can be one of `utf8` (default), `ascii`, `base64`.
-
-### `copyFileRes(filename: string, destPath: string): Promise<void>`
-
-Copies the file named `filename` in the Android app's res folder and copies it to the given `destPath ` path. `res/drawable` is used as the source parent folder for image files, `res/raw` for everything else.
-
-Note: Android only. Will overwrite destPath if it already exists.
-
-### (iOS only) `copyAssetsFileIOS(imageUri: string, destPath: string, width: number, height: number, scale?: number, compression?: number, resizeMode?: string): Promise<string>`
-
-*Not available on Mac Catalyst.*
-
-Reads an image file from Camera Roll and writes to `destPath`. This method [assumes the image file to be JPEG file](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L752-L753). This method will download the original from iCloud if necessary.
-
-#### Parameters
-
-##### `imageUri` string (required)
-
-URI of a file in Camera Roll. Can be [either of the following formats](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L781-L785):
-
-- `ph://CC95F08C-88C3-4012-9D6D-64A413D254B3/L0/001`
-- `assets-library://asset/asset.JPG?id=CC95F08C-88C3-4012-9D6D-64A413D254B3&ext=JPG`
-
-##### `destPath` string (required)
-
-Destination to which the copied file will be saved, e.g. `RNFS.TemporaryDirectoryPath + 'example.jpg'`.
-
-##### `width` number (required)
-
-Copied file's image width will be resized to `width`. [If 0 is provided, width won't be resized.](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L808)
-
-##### `height` number (required)
-
-Copied file's image height will be resized to `height`. [If 0 is provided, height won't be resized.](https://github.com/itinance/react-native-fs/blob/f2f8f4a058cd9acfbcac3b8cf1e08fa1e9b09786/RNFSManager.m#L808)
-
-##### `scale` number (optional)
-
-Copied file's image will be scaled proportional to `scale` factor from `width` x `height`. If both `width` and `height` are 0, the image won't scale. Range is [0.0, 1.0] and default is 1.0.
-
-##### `compression` number (optional)
-
-Quality of copied file's image. The value 0.0 represents the maximum compression (or lowest quality) while the value 1.0 represents the least compression (or best quality). Range is [0.0, 1.0] and default is 1.0.
-
-##### `resizeMode` string (optional)
-
-If `resizeMode` is 'contain', copied file's image will be scaled so that its larger dimension fits `width` x `height`. If `resizeMode` is other value than 'contain', the image will be scaled so that it completely fills `width` x `height`. Default is 'contain'. Refer to [PHImageContentMode](https://developer.apple.com/documentation/photokit/phimagecontentmode).
-
-#### Return value
-
-##### `Promise<string>`
-
-Copied file's URI.
-
-#### Video-Support
-
-One can use this method also to create a thumbNail from a video in a specific size.
-Currently it is impossible to specify a concrete position, the OS will decide wich
-Thumbnail you'll get then.
-To copy a video from assets-library and save it as a mp4-file, refer to copyAssetsVideoIOS.
-
-Further information: https://developer.apple.com/reference/photos/phimagemanager/1616964-requestimageforasset
-The promise will on success return the final destination of the file, as it was defined in the destPath-parameter.
-
-### (iOS only) `copyAssetsVideoIOS(videoUri: string, destPath: string): Promise<string>`
-
-*Not available on Mac Catalyst.*
-
-Copies a video from assets-library, that is prefixed with 'assets-library://asset/asset.MOV?...' to a specific destination.
-
-### `existsRes(filename: string): Promise<boolean>`
-
-Check in the Android res folder if the item named `filename` exists. `res/drawable` is used as the parent folder for image files, `res/raw` for everything else. If the item does not exist, return false.
-
-Note: Android only.
-
-### `hash(filepath: string, algorithm: string): Promise<string>`
-
-Reads the file at `path` and returns its checksum as determined by `algorithm`, which can be one of `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`.
-
-### `touch(filepath: string, mtime?: Date, ctime?: Date): Promise<string>`
-
-Sets the modification timestamp `mtime` and creation timestamp `ctime` of the file at `filepath`. Setting `ctime` is supported on iOS and Windows, android always sets both timestamps to `mtime`.
-
-### `stopDownload(jobId: number): void`
-
-Abort the current download job with this ID. The partial file will remain on the filesystem.
-
-### (iOS only) `resumeDownload(jobId: number): void`
-
-Resume the current download job with this ID.
-
-### (iOS only) `isResumable(jobId: number): Promise<bool>`
-
-Check if the the download job with this ID is resumable with `resumeDownload()`.
-
-Example:
-
-```js
-if (await RNFS.isResumable(jobId) {
-    RNFS.resumeDownload(jobId)
-}
-```
-
-### (iOS only) `completeHandlerIOS(jobId: number): void`
-
-For use when using background downloads, tell iOS you are done handling a completed download.
-
-Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
-
-### (iOS only) `stopUpload(jobId: number): Promise<void>`
-
-Abort the current upload job with this ID.
-
-### (Android only) `scanFile(path: string): Promise<string[]>`
-
-Scan the file using [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
-
-### (Android only) `getAllExternalFilesDirs(): Promise<string[]>`
-
-Returns an array with the absolute paths to application-specific directories on all shared/external storage devices where the application can place persistent files it owns.
-
-### (iOS only) `pathForGroup(groupIdentifier: string): Promise<string>`
-
-`groupIdentifier` (`string`) Any value from the *com.apple.security.application-groups* entitlements list.
-
-Returns the absolute path to the directory shared for all applications with the same security group identifier.
-This directory can be used to to share files between application of the same developer.
-
-Invalid group identifier will cause a rejection.
-
-For more information read the [Adding an App to an App Group](https://developer.apple.com/library/content/documentation/Miscellaneous/Reference/EntitlementKeyReference/Chapters/EnablingAppSandbox.html#//apple_ref/doc/uid/TP40011195-CH4-SW19) section.
-
-## Background Downloads Tutorial (iOS)
-
-Background downloads in iOS require a bit of a setup.
-
-First, in your `AppDelegate.m` file add the following:
-
-```js
-#import <RNFSManager.h>
-
-...
-
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
-{
-  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
-}
-
-```
-
-The `handleEventsForBackgroundURLSession` method is called when a background download is done and your app is not in the foreground.
-
-We need to pass the `completionHandler` to RNFS along with its `identifier`.
-
-The JavaScript will continue to work as usual when the download is done but now you must call `RNFS.completeHandlerIOS(jobId)` when you're done handling the download (show a notification etc.)
-
-**BE AWARE!** iOS will give about 30 sec. to run your code after `handleEventsForBackgroundURLSession` is called and until `completionHandler`
-is triggered so don't do anything that might take a long time (like unzipping), you will be able to do it after the user re-launces the app,
-otherwide iOS will terminate your app.
