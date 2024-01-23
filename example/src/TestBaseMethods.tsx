@@ -30,6 +30,7 @@ import {
   scanFile,
   stat,
   stopDownload,
+  stopUpload,
   TemporaryDirectoryPath,
   touch,
   unlink,
@@ -950,6 +951,46 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       }
       return 'fail';
     } catch {
+      return 'fail';
+    }
+  },
+  'stopUpload()': async () => {
+    try {
+      const server = await waitServer();
+
+      const good = 'GÖÖÐ\n';
+      const path = `${TemporaryDirectoryPath}/stop-upload.txt`;
+      await writeFile(path, good);
+
+      const targetDevicePath = `${FILE_DIR}/dav/stop-upload.txt`;
+
+      try {
+        unlink(targetDevicePath);
+      } catch {}
+
+      const res = uploadFiles({
+        toUrl: `${server?.origin!}/dav/stop-upload.txt`,
+        method: 'PUT',
+        files: [
+          {
+            name: 'upload-files-source-file',
+            filename: 'upload-files-source-file.txt',
+            filepath: path,
+          },
+        ],
+      });
+      stopUpload(res.jobId);
+      await res.promise;
+
+      await readFile(targetDevicePath);
+      return 'fail';
+    } catch (e: any) {
+      if (
+        e.message.startsWith('ENOENT: no such file or directory, open') &&
+        e.message.endsWith("/tmp/test-server/dav/stop-upload.txt'")
+      ) {
+        return 'pass';
+      }
       return 'fail';
     }
   },

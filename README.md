@@ -148,6 +148,7 @@ _When installing the library into a new project no additional steps are required
       [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
     - [stopDownload()] &mdash; Aborts a file download job.
+    - [stopUpload()] &mdash; (iOS only) Aborts file upload job.
     - [touch()] &mdash; Alters creation and modification timestamps of the given file.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
@@ -976,6 +977,20 @@ and the promise returned from the aborted [downloadFile()] call will reject
 with an error.
 - `jobId` &mdash; **number** &mdash; Download job ID (see [downloadFile()]).
 
+### stopUpload()
+[stopUpload()]: #stopupload
+```ts
+function stopUpload(jobId: number): void;
+```
+**VERIFIED:** iOS (New Arch).
+
+iOS only. Abort the current upload job with given ID.
+
+**NOTE:** Unlike [stopDownload()] it does not cause the pending upload promise
+to reject. Perhaps, we'll change it in future to behave similarly.
+
+- `jobId` &mdash; **number** &mdash; Upload job ID.
+
 ### touch()
 [touch()]: #touch
 ```ts
@@ -1522,11 +1537,6 @@ if (await RNFS.isResumable(jobId) {
 For use when using background downloads, tell iOS you are done handling a completed download.
 
 Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
-
-### (iOS only) `stopUpload(jobId: number): Promise<void>`
-
-Abort the current upload job with this ID.
-
 
 ## Background Downloads Tutorial (iOS)
 
