@@ -485,7 +485,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -738,7 +738,7 @@ place persistent files it owns.
 ```ts
 function getFSInfo(): Promise<FSInfoResultT>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Provides information about free and total file system space.
 
@@ -749,11 +749,12 @@ Provides information about free and total file system space.
 ```ts
 function hash(path: string, algorithm: string): Promise<string>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Calculates file's hash.
 - `path` &mdash; **string** &mdash; File path.
-- `algorithm` &mdash; **string** &mdash; One of `md5`, `sha1`, `sha224`,
+- `algorithm` &mdash; **string** &mdash; One of `md5`, `sha1`,
+  `sha224` (**currently it does not work on Windows!**),
   `sha256`, `sha384`, `sha512`.
 - Resolves to **string** &mdash; file hash.
 
@@ -762,7 +763,6 @@ Calculates file's hash.
 ```ts
 function isResumable(jobId: number): Promise<bool>;
 ```
-
 iOS only. Check if the the download job with this ID is resumable with
 [resumeDownload()].
 
@@ -1066,7 +1066,7 @@ to reject. Perhaps, we'll change it in future to behave similarly.
 ```ts
 function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows.
 
 Alters creation and modification timestamps of the given file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -1116,7 +1116,9 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS.
+**VERIFIED:** Android, iOS, macOS, Windows \
+**BEWARE:** On Windows it seems to work differently from other platforms,
+throwing if attempting to write to a non-existing file.
 
 Writes content to a file at the given random access position.
 

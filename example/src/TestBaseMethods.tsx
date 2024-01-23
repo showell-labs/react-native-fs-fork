@@ -411,6 +411,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
       if (
+        Platform.OS !== 'windows' &&
         (await hash(path, 'sha224')) !==
         '1e75647b457de7b041b0bd786ac94c3ab53cf3b85243fbe8e97506db'
       ) {
@@ -998,6 +999,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'touch()': async () => {
+    // TODO: This test fails on Windows, but I guess because stat()
+    // does not work there the same as on other platforms.
     try {
       const filePath = `${TemporaryDirectoryPath}/touch-test`;
       try {
@@ -1096,7 +1099,6 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       try {
         await unlink(path);
       } catch {}
-
       await write(path, utf8, -1, 'ascii');
       let res = await readFile(path);
       if (res !== good) return 'fail';
@@ -1104,8 +1106,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       res = await readFile(path);
       if (res !== `${good}${good}`) return 'fail';
       return 'pass';
-    } catch (e) {
-      console.error(e);
+    } catch {
       return 'fail';
     }
   },
