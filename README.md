@@ -176,7 +176,6 @@ _When installing the library into a new project no additional steps are required
 - [Legacy] &mdash; Everything else inherited from the original library,
   but not yet correctly verified to work and match the documentation.
 - [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios)
-- [Test / Demo App](#test--demo-app)
 
 ## Getting Started
 [Getting Started]: #getting-started
