@@ -102,6 +102,8 @@ _When installing the library into a new project no additional steps are required
       directory.
   - [Functions]
     - [appendFile()] &mdash; Appends content to a file.
+    - [completeHandlerIOS()] &mdash; For use when using background downloads,
+      tell iOS you are done handling a completed download.
     - [copyAssetsFileIOS()] &mdash; Reads an image file from Camera Roll and
       writes it to the specified location. It also can be used to get video
       thumbnails.
@@ -464,6 +466,18 @@ Appends content to a file.
 - `contents` &mdash; **string** &mdash; The content to add.
 - `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding.
 - Resolves once the operation has been completed.
+
+### completeHandlerIOS()
+[completeHandlerIOS()]: #completehandlerios
+```ts
+function completeHandlerIOS(jobId: number): void;
+```
+**VERIFIED:** well... not really verified, but is callable on iOS.
+
+iOS only. For use when using background downloads, tell iOS you are done
+handling a completed download.
+
+Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
 
 ### copyAssetsFileIOS()
 [copyAssetsFileIOS()]: #copyassetsfileios
@@ -1531,12 +1545,6 @@ if (await RNFS.isResumable(jobId) {
     RNFS.resumeDownload(jobId)
 }
 ```
-
-### (iOS only) `completeHandlerIOS(jobId: number): void`
-
-For use when using background downloads, tell iOS you are done handling a completed download.
-
-Read more about background downloads in the [Background Downloads Tutorial (iOS)](#background-downloads-tutorial-ios) section.
 
 ## Background Downloads Tutorial (iOS)
 

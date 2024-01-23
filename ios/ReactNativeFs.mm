@@ -654,12 +654,13 @@ RCT_EXPORT_METHOD(isResumable:(double)jobId
     }
 }
 
-RCT_EXPORT_METHOD(completeHandlerIOS:(nonnull NSNumber *)jobId
+RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
     if (self.uuids) {
-        NSString *uuid = [self.uuids objectForKey:[jobId stringValue]];
+        NSNumber *jid = [NSNumber numberWithDouble:jobId];
+        NSString *uuid = [self.uuids objectForKey:[jid stringValue]];
         CompletionHandler completionHandler = [completionHandlers objectForKey:uuid];
         if (completionHandler) {
             completionHandler();
@@ -1049,10 +1050,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (NSDictionary *) getConstants {
   return [self constantsToExport];
-}
-
-- (void)completeHandlerIOS:(double)jobId { 
-
 }
 
 - (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
