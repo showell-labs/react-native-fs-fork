@@ -485,7 +485,7 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ```ts
 function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -749,7 +749,7 @@ Provides information about free and total file system space.
 ```ts
 function hash(path: string, algorithm: string): Promise<string>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Calculates file's hash.
 - `path` &mdash; **string** &mdash; File path.
@@ -1066,7 +1066,7 @@ to reject. Perhaps, we'll change it in future to behave similarly.
 ```ts
 function touch(filepath: string, mtime?: Date, ctime?: Date): Promise<void>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Alters creation and modification timestamps of the given file.
 - `filepath` &mdash; **string** &mdash; File path.
@@ -1116,7 +1116,7 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS.
+**VERIFIED:** Android, iOS, macOS.
 
 Writes content to a file at the given random access position.
 
