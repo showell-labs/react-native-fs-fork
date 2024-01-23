@@ -19,6 +19,7 @@ import {
   hash,
   mkdir,
   moveFile,
+  pathForGroup,
   read,
   readdir,
   readDir,
@@ -498,6 +499,19 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
       return 'pass';
     } catch {
+      return 'fail';
+    }
+  },
+  // TODO: This is yet another dummy test, that should be enhanced (but not
+  // a priority).
+  'pathForGroup()': async () => {
+    try {
+      await pathForGroup('dummy-group');
+      return 'fail';
+    } catch (e: any) {
+      if (e.message === "ENOENT: no directory for group 'dummy-group' found") {
+        return 'pass';
+      }
       return 'fail';
     }
   },
