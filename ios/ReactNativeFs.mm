@@ -1139,60 +1139,58 @@ RCT_EXPORT_METHOD(
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 ) {
-  if (TARGET_OS_MACCATALYST) {
-    [[RNFSException NOT_IMPLEMENTED]
-     reject:reject
-     details:@"pickFile() does not work on macOS yet"];
-    return;
-  }
-
   dispatch_async(dispatch_get_main_queue(), ^() {
-    UIDocumentPickerViewController *picker;
+    @try {
+      UIDocumentPickerViewController *picker;
 
 #   ifdef RCT_NEW_ARCH_ENABLED
-    facebook::react::LazyVector<NSString*> mimeTypes = options.mimeTypes();
-    int numMimeTypes = mimeTypes.size();
+      facebook::react::LazyVector<NSString*> mimeTypes = options.mimeTypes();
+      int numMimeTypes = mimeTypes.size();
 #   else
-    NSArray<NSString*>* mimeTypes = options[@"mimeTypes"];
-    int numMimeTypes = mimeTypes.count;
+      NSArray<NSString*>* mimeTypes = options[@"mimeTypes"];
+      int numMimeTypes = mimeTypes.count;
 #   endif
 
-    if (@available(iOS 14.0, *)) {
-      NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:numMimeTypes];
-      for (int i = 0; i < numMimeTypes; ++i) {
-        NSString *mime = mimeTypes[i];
-        UTType *type;
-        if ([mime isEqual:@"*/*"]) type = UTTypeItem;
-        else type = [UTType typeWithMIMEType:mime];
-        [types addObject:type];
+      if (@available(iOS 14.0, *)) {
+        NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:numMimeTypes];
+        for (int i = 0; i < numMimeTypes; ++i) {
+          NSString *mime = mimeTypes[i];
+          UTType *type;
+          if ([mime isEqual:@"*/*"]) type = UTTypeItem;
+          else type = [UTType typeWithMIMEType:mime];
+          [types addObject:type];
+        }
+        picker = [[UIDocumentPickerViewController alloc]
+                  initForOpeningContentTypes:types];
+      } else {
+        // TODO: There is no UTType object on iOS < 14.0, just UTType strings that
+        // can be found here:
+        // https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html#//apple_ref/doc/uid/TP40009259-SW1
+        // though I have not found a function for converting MIME types into UTTypes
+        // on iOS < 14.0. If the only option is to implement this conversion ourselves,
+        // at least for now we can leave without iOS < 14.0 support (RN presumably
+        // supports iOS 13.4 and above, but according to Wiki iOS 13.x are considered
+        // obsolete by now, and presumably all devices running iOS 13.x originally
+        // have been upgraded to iOS 14+ by now).
+        [[RNFSException NOT_IMPLEMENTED]
+         reject:reject details:@"pickFile() is implemented for iOS 14+ only"];
+        return;
       }
-      picker = [[UIDocumentPickerViewController alloc]
-                initForOpeningContentTypes:types];
-    } else {
-      // TODO: There is no UTType object on iOS < 14.0, just UTType strings that
-      // can be found here:
-      // https://developer.apple.com/library/archive/documentation/Miscellaneous/Reference/UTIRef/Articles/System-DeclaredUniformTypeIdentifiers.html#//apple_ref/doc/uid/TP40009259-SW1
-      // though I have not found a function for converting MIME types into UTTypes
-      // on iOS < 14.0. If the only option is to implement this conversion ourselves,
-      // at least for now we can leave without iOS < 14.0 support (RN presumably
-      // supports iOS 13.4 and above, but according to Wiki iOS 13.x are considered
-      // obsolete by now, and presumably all devices running iOS 13.x originally
-      // have been upgraded to iOS 14+ by now).
-      [[RNFSException NOT_IMPLEMENTED]
-       reject:reject details:@"pickFile() is implemented for iOS 14+ only"];
-      return;
+
+      UIViewController *root = RCTPresentedViewController();
+
+      // Note: This is needed because the module overall runs on a dedicated queue
+      // (see its methodQueue() method below), while interaction with UI should be
+      // done on the main thread queue.
+
+      picker.delegate = self;
+      [pendingPickFilePromises setObject:@[resolve, reject]
+                                  forKey:[NSValue valueWithPointer:(void*)picker]];
+      [root presentViewController:picker animated:YES completion:nil];
     }
-
-    UIViewController *root = RCTPresentedViewController();
-
-    // Note: This is needed because the module overall runs on a dedicated queue
-    // (see its methodQueue() method below), while interaction with UI should be
-    // done on the main thread queue.
-
-    picker.delegate = self;
-    [pendingPickFilePromises setObject:@[resolve, reject]
-                                forKey:[NSValue valueWithPointer:(void*)picker]];
-    [root presentViewController:picker animated:YES completion:nil];
+    @catch (NSException *e) {
+      [[RNFSException from:e] reject:reject];
+    }
   });
 }
 
