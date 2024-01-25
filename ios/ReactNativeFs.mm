@@ -654,9 +654,7 @@ RCT_EXPORT_METHOD(isResumable:(double)jobId
     }
 }
 
-RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId)
 {
     if (self.uuids) {
         NSNumber *jid = [NSNumber numberWithDouble:jobId];
@@ -667,7 +665,6 @@ RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId
             [completionHandlers removeObjectForKey:uuid];
         }
     }
-    resolve(nil);
 }
 
 RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT &)options
@@ -810,9 +807,6 @@ RCT_EXPORT_METHOD(getFSInfo:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
   }
 }
 
-
-// [PHAsset fetchAssetsWithALAssetURLs] is deprecated and not supported in Mac Catalyst
-#if !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
 /**
  * iOS Only: copy images from the assets-library (camera-roll) to a specific path, asuming
  * JPEG-Images.
@@ -839,6 +833,8 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
                   reject: (RCTPromiseRejectBlock) reject)
 
 {
+// [PHAsset fetchAssetsWithALAssetURLs] is deprecated and not supported in Mac Catalyst
+# if !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
     CGSize size = CGSizeMake(width, height);
 
     NSURL* url = [NSURL URLWithString:imageUri];
@@ -905,11 +901,11 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
 
         }
     }];
+# else
+  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyAssetsFileIOS() is not supported for macOS"];
+# endif
 }
-#endif
 
-// [PHAsset fetchAssetsWithALAssetURLs] is deprecated and not supported in Mac Catalyst
-#if !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
 /**
  * iOS Only: copy videos from the assets-library (camera-roll) to a specific path as mp4-file.
  *
@@ -920,6 +916,8 @@ RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
                   resolve: (RCTPromiseResolveBlock) resolve
                   reject: (RCTPromiseRejectBlock) reject)
 {
+// [PHAsset fetchAssetsWithALAssetURLs] is deprecated and not supported in Mac Catalyst
+# if !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
   NSURL* url = [NSURL URLWithString:imageUri];
   //unused?
   //__block NSURL* videoURL = [NSURL URLWithString:destination];
@@ -974,8 +972,10 @@ RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
   }
 
   return resolve(destination);
+# else
+  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyAssetsVideoIOS() is not supported for macOS"];
+# endif
 }
-#endif
 
 RCT_EXPORT_METHOD(touch:(NSString*)filepath
                   options:(JS::NativeReactNativeFs::TouchOptions &) options
