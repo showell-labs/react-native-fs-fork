@@ -837,10 +837,16 @@ For more information read the [Adding an App to an App Group](https://developer.
 ```ts
 function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 ```
-**SUPPORTED**: Android, iOS. **NOT YET SUPPORTED**: macOS, Windows.
+**SUPPORTED**: Android, iOS, macOS. **NOT YET SUPPORTED**: Windows.
 
 Prompts the user to select file(s) using a platform-provided file picker UI,
 which also allows to access files outside the app sandbox.
+
+**BEWARE:** On **macOS (Catalyst)** for this function to work you MUST go to
+_Signing & Capabilities_ settings of your project, and inside its _App Sandbox_
+section to set _File Access_ > _User Selected Files_ to _Read/Write_ or _Read_
+value. If it is left at the default _None_ value the call to [pickFile()] will
+crash the app.
 
 - `options` &mdash; [PickFileOptionsT] &mdash; Optional parameters. By default,
   this function allows user to select a single file of any kind.
