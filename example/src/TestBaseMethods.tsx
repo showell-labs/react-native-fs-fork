@@ -919,7 +919,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         } else {
           if (
             !isMatch(e, {
-              code: 'ENSCOCOAERRORDOMAIN260',
+              code: 'NSCocoaErrorDomain:260',
               message:
                 'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
             })

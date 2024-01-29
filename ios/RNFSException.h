@@ -6,7 +6,10 @@
 - (RNFSException*) log;
 - (void) reject:(RCTPromiseRejectBlock)reject;
 - (void) reject:(RCTPromiseRejectBlock)reject details:(NSString*)details;
-+ (RNFSException*) from: (NSException*)exception;
+
++ (RNFSException*) fromError:(NSError*)error;
++ (RNFSException*) fromException:(NSException*)exception;
+
 + (RNFSException*) name: (NSString*)name;
 + (RNFSException*) name: (NSString*)name details: (NSString*)details;
 

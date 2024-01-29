@@ -855,6 +855,18 @@ crash the app.
   allowing a direct access to them with other methods in this library
   (_e.g._ [readFile()]), even if the file is outside the app sandbox.
 
+  **NOTE:** On **iOS** & **macOS** it resolve to special values with the format
+  &laquo;`bookmark://<BASE64_ENCODED_STRING>`&raquo;, rather than normal URIs.
+  It is necessary for the support of security scopes
+  (see [Bookmarks and Security Scopes](https://developer.apple.com/documentation/foundation/nsurl#1663783)) in library methods. The &laquo;`<BASE64_ENCODED_STRING>`&raquo;
+  in this case is a Base64-encoded binary representation of the URL bookmark,
+  along with its security scope data. Other methods of the library are expected
+  to automatically handle such special URIs as needed.
+
+  **BEWARE:** It has not been thoroughly verified yet that all library methods
+  support these &laquo;Bookmark URLs&raquo; correctly. The expected error in
+  such case is a failure to access the URLs as non-existing.
+
 ### read()
 [read()]: #read
 ```ts
