@@ -206,13 +206,17 @@ Background downloads in iOS require a bit of a setup.
 First, in your `AppDelegate.m` file add the following:
 
 ```js
-#import <RNFSManager.h>
+#import <RNFSBackgroundDownloads.h>
 
 ...
 
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
+- (void)application:(UIApplication *)application
+  handleEventsForBackgroundURLSession:(NSString *)identifier
+  completionHandler:(void (^)())completionHandler
 {
-  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
+  [RNFSBackgroundDownloads
+    setCompletionHandlerForIdentifier:identifier
+    completionHandler:completionHandler];
 }
 
 ```

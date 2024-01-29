@@ -18,9 +18,8 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <Photos/Photos.h>
 
+#import "RNFSBackgroundDownloads.h"
 #import "RNFSException.h"
-
-typedef void (^CompletionHandler)(void);
 
 @implementation ReactNativeFs
 
@@ -32,7 +31,6 @@ typedef void (^CompletionHandler)(void);
 // and pass the resulting "Bookmark URLs" string around.
 static NSString *BOOKMARK = @"bookmark://";
 
-static NSMutableDictionary *completionHandlers;
 NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
 RCT_EXPORT_MODULE()
@@ -671,11 +669,7 @@ RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId)
     if (self.uuids) {
         NSNumber *jid = [NSNumber numberWithDouble:jobId];
         NSString *uuid = [self.uuids objectForKey:[jid stringValue]];
-        CompletionHandler completionHandler = [completionHandlers objectForKey:uuid];
-        if (completionHandler) {
-            completionHandler();
-            [completionHandlers removeObjectForKey:uuid];
-        }
+      [RNFSBackgroundDownloads complete:uuid];
     }
 }
 
@@ -1248,12 +1242,6 @@ RCT_EXPORT_METHOD(
   }
 
   return res;
-}
-
-+(void)setCompletionHandlerForIdentifier: (NSString *)identifier completionHandler: (CompletionHandler)completionHandler
-{
-    if (!completionHandlers) completionHandlers = [[NSMutableDictionary alloc] init];
-    [completionHandlers setValue:completionHandler forKey:identifier];
 }
 
 - (dispatch_queue_t)methodQueue
