@@ -206,13 +206,17 @@ Background downloads in iOS require a bit of a setup.
 First, in your `AppDelegate.m` file add the following:
 
 ```js
-#import <RNFSManager.h>
+#import <RNFSBackgroundDownloads.h>
 
 ...
 
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler
+- (void)application:(UIApplication *)application
+  handleEventsForBackgroundURLSession:(NSString *)identifier
+  completionHandler:(void (^)())completionHandler
 {
-  [RNFSManager setCompletionHandlerForIdentifier:identifier completionHandler:completionHandler];
+  [RNFSBackgroundDownloads
+    setCompletionHandlerForIdentifier:identifier
+    completionHandler:completionHandler];
 }
 
 ```
@@ -854,6 +858,18 @@ crash the app.
 - Resolves to a **string** array &mdash; URIs (paths) of user-selected files,
   allowing a direct access to them with other methods in this library
   (_e.g._ [readFile()]), even if the file is outside the app sandbox.
+
+  **NOTE:** On **iOS** & **macOS** it resolve to special values with the format
+  &laquo;`bookmark://<BASE64_ENCODED_STRING>`&raquo;, rather than normal URIs.
+  It is necessary for the support of security scopes
+  (see [Bookmarks and Security Scopes](https://developer.apple.com/documentation/foundation/nsurl#1663783)) in library methods. The &laquo;`<BASE64_ENCODED_STRING>`&raquo;
+  in this case is a Base64-encoded binary representation of the URL bookmark,
+  along with its security scope data. Other methods of the library are expected
+  to automatically handle such special URIs as needed.
+
+  **BEWARE:** It has not been thoroughly verified yet that all library methods
+  support these &laquo;Bookmark URLs&raquo; correctly. The expected error in
+  such case is a failure to access the URLs as non-existing.
 
 ### read()
 [read()]: #read

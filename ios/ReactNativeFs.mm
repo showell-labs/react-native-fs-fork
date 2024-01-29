@@ -18,12 +18,19 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <Photos/Photos.h>
 
+#import "RNFSBackgroundDownloads.h"
 #import "RNFSException.h"
 
-typedef void (^CompletionHandler)(void);
-
 @implementation ReactNativeFs
-static NSMutableDictionary *completionHandlers;
+
+// The prefix of "Bookmark URLs".
+// See https://developer.apple.com/documentation/foundation/nsurl#1663783
+// to learn about bookmark objects in iOS / macOS. To such object between
+// native and JS layers, we convert it into binary (NSData) representation,
+// then encode it into Base64 string, prefix it with this BOOKMARK prefix,
+// and pass the resulting "Bookmark URLs" string around.
+static NSString *BOOKMARK = @"bookmark://";
+
 NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
 RCT_EXPORT_MODULE()
@@ -58,9 +65,7 @@ RCT_EXPORT_METHOD(readDir:(NSString *)dirPath
     }
   }
 
-  if (error) {
-    return [self reject:reject withError:error];
-  }
+  if (error) return [[RNFSException fromError:error] reject:reject];
 
   resolve(tagetContents);
 }
@@ -69,11 +74,14 @@ RCT_EXPORT_METHOD(exists:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(__unused RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    BOOL fileExists = [url checkResourceIsReachableAndReturnError:&error];
     resolve([NSNumber numberWithBool:fileExists]);
   }
   @finally {
@@ -85,16 +93,17 @@ RCT_EXPORT_METHOD(stat:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
     NSError *error = nil;
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
 
-    if (error) {
-      return [self reject:reject withError:error];
-    }
+    if (error) return [[RNFSException fromError:error] reject:reject];
 
     attributes = @{
                    @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
@@ -140,7 +149,10 @@ RCT_EXPORT_METHOD(appendFile:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
@@ -174,7 +186,8 @@ RCT_EXPORT_METHOD(appendFile:(NSString *)filepath
       [info setValue:exception.callStackSymbols forKey:@"ExceptionCallStackSymbols"];
       [info setValue:exception.userInfo forKey:@"ExceptionUserInfo"];
       NSError *err = [NSError errorWithDomain:@"RNFS" code:0 userInfo:info];
-      return [self reject:reject withError:err];
+
+      return [[RNFSException fromError:err] reject:reject];
     }
   }
   @finally {
@@ -223,7 +236,10 @@ RCT_EXPORT_METHOD(unlink:(NSString*)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
@@ -237,9 +253,7 @@ RCT_EXPORT_METHOD(unlink:(NSString*)filepath
     NSError *error = nil;
     BOOL success = [manager removeItemAtPath:filepath error:&error];
 
-    if (!success) {
-      return [self reject:reject withError:error];
-    }
+    if (!success) return [[RNFSException fromError:error] reject:reject];
 
     resolve(nil);
   }
@@ -264,9 +278,7 @@ RCT_EXPORT_METHOD(mkdir:(NSString *)filepath
   NSError *error = nil;
     BOOL success = [manager createDirectoryAtPath:filepath withIntermediateDirectories:YES attributes:attributes error:&error];
 
-  if (!success) {
-    return [self reject:reject withError:error];
-  }
+  if (!success) return [[RNFSException fromError:error] reject:reject];
 
   NSURL *url = [NSURL fileURLWithPath:filepath];
 
@@ -274,9 +286,7 @@ RCT_EXPORT_METHOD(mkdir:(NSString *)filepath
     NSNumber *value = [NSNumber numberWithBool:*options.NSURLIsExcludedFromBackupKey()];
     success = [url setResourceValue: value forKey: NSURLIsExcludedFromBackupKey error: &error];
 
-    if (!success) {
-      return [self reject:reject withError:error];
-    }
+    if (!success) return [[RNFSException fromError:error] reject:reject];
   }
 
   resolve(nil);
@@ -286,7 +296,10 @@ RCT_EXPORT_METHOD(readFile:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
@@ -300,9 +313,7 @@ RCT_EXPORT_METHOD(readFile:(NSString *)filepath
 
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
 
-    if (error) {
-      return [self reject:reject withError:error];
-    }
+    if (error) return [[RNFSException fromError:error] reject:reject];
 
     if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
       return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
@@ -324,11 +335,14 @@ RCT_EXPORT_METHOD(read:(NSString *)path
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:path];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:path error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try{
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:path];
+    BOOL fileExists = [url checkResourceIsReachableAndReturnError:&error];
 
     if (!fileExists) {
         return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", path], nil);
@@ -336,20 +350,18 @@ RCT_EXPORT_METHOD(read:(NSString *)path
 
     NSError *error = nil;
 
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:&error];
+    NSFileAttributeType type;
+    BOOL success = [url getResourceValue:&type forKey:NSFileType error:&error];
+    if (!success) return [[RNFSException fromError:error] reject:reject];
 
-    if (error) {
-        return [self reject:reject withError:error];
-    }
-
-    if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
+    if (type == NSFileTypeDirectory) {
         return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
     }
 
     // Open the file handler.
-    NSFileHandle *file = [NSFileHandle fileHandleForReadingAtPath:path];
+    NSFileHandle *file = [NSFileHandle fileHandleForReadingFromURL:url error:&error];
     if (file == nil) {
-        return reject(@"EISDIR", @"EISDIR: Could not open file for reading", nil);
+        return reject(@"EISDIR", @"EISDIR: Could not open file for reading", error);
     }
 
     // Seek to the position if there is one.
@@ -376,7 +388,10 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:filepath];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
@@ -390,9 +405,7 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
 
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
 
-    if (error) {
-      return [self reject:reject withError:error];
-    }
+    if (error) return [[RNFSException fromError:error] reject:reject];
 
     if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
       return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
@@ -448,14 +461,16 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
   }
 }
 
-
 RCT_EXPORT_METHOD(moveFile:(NSString *)from
                   into:(NSString *)into
                   options:(JS::NativeReactNativeFs::FileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:from];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:from error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
@@ -464,18 +479,14 @@ RCT_EXPORT_METHOD(moveFile:(NSString *)from
     NSError *error = nil;
     BOOL success = [manager moveItemAtPath:from toPath:into error:&error];
 
-    if (!success) {
-      return [self reject:reject withError:error];
-    }
+    if (!success) return [[RNFSException fromError:error] reject:reject];
 
     if (options.NSFileProtectionKey()) {
       NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
       [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
       BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
 
-      if (!updateSuccess) {
-        return [self reject:reject withError:error];
-      }
+      if (!updateSuccess) return [[RNFSException fromError:error] reject:reject];
     }
 
     resolve(nil);
@@ -492,27 +503,26 @@ RCT_EXPORT_METHOD(copyFile:(NSString *)from
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSURL *url = [NSURL fileURLWithPath:from];
+  NSError *error = nil;
+  NSURL *url = [ReactNativeFs pathToUrl:from error:&error];
+  if (error) return [[RNFSException fromError:error] reject:reject];
+
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
     NSFileManager *manager = [NSFileManager defaultManager];
 
-    NSError *error = nil;
-    BOOL success = [manager copyItemAtPath:from toPath:into error:&error];
+    BOOL success = [manager copyItemAtURL:url
+                                    toURL:[NSURL fileURLWithPath:into]
+                                    error:&error];
 
-    if (!success) {
-      return [self reject:reject withError:error];
-    }
+    if (!success) return [[RNFSException fromError:error] reject:reject];
 
     if (options.NSFileProtectionKey()) {
       NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
       [attributes setValue:options.NSFileProtectionKey() forKey:@"NSFileProtectionKey"];
-      BOOL updateSuccess = [manager setAttributes:attributes ofItemAtPath:into error:&error];
-
-      if (!updateSuccess) {
-        return [self reject:reject withError:error];
-      }
+      success = [manager setAttributes:attributes ofItemAtPath:into error:&error];
+      if (!success) return [[RNFSException fromError:error] reject:reject];
     }
 
     resolve(nil);
@@ -579,7 +589,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
       return;
     }
     callbackFired = YES;
-    return [self reject:reject withError:error];
+    return [[RNFSException fromError:error] reject:reject];
   };
 
   if (hasBeginCallback) {
@@ -659,11 +669,7 @@ RCT_EXPORT_METHOD(completeHandlerIOS:(double)jobId)
     if (self.uuids) {
         NSNumber *jid = [NSNumber numberWithDouble:jobId];
         NSString *uuid = [self.uuids objectForKey:[jid stringValue]];
-        CompletionHandler completionHandler = [completionHandlers objectForKey:uuid];
-        if (completionHandler) {
-            completionHandler();
-            [completionHandlers removeObjectForKey:uuid];
-        }
+      [RNFSBackgroundDownloads complete:uuid];
     }
 }
 
@@ -704,7 +710,7 @@ RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT
 
   params.errorCallback = ^(NSError* error) {
     [self.uploaders removeObjectForKey:[jobId stringValue]];
-    return [self reject:reject withError:error];
+    return [[RNFSException fromError:error] reject:reject];
   };
 
   if (hasBeginCallback) {
@@ -766,7 +772,7 @@ RCT_EXPORT_METHOD(pathForBundle:(NSString *)bundleNamed
                                          code:NSFileNoSuchFileError
                                      userInfo:nil];
 
-    [self reject:reject withError:error];
+    return [[RNFSException fromError:error] reject:reject];
   }
 }
 
@@ -803,7 +809,7 @@ RCT_EXPORT_METHOD(getFSInfo:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRe
       @"freeSpace": [NSNumber numberWithUnsignedLongLong:totalFreeSpace]
     });
   } else {
-    [self reject:reject withError:error];
+    [[RNFSException fromError:error] reject:reject];
   }
 }
 
@@ -851,8 +857,7 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
         NSMutableDictionary* details = [NSMutableDictionary dictionary];
         [details setValue:errorText forKey:NSLocalizedDescriptionKey];
         NSError *error = [NSError errorWithDomain:@"RNFS" code:500 userInfo:details];
-        [self reject: reject withError:error];
-        return;
+      return [[RNFSException fromError:error] reject:reject];
     }
 
     PHAsset *asset = [results firstObject];
@@ -897,8 +902,7 @@ RCT_EXPORT_METHOD(copyAssetsFileIOS: (NSString *) imageUri
             NSMutableDictionary* details = [NSMutableDictionary dictionary];
             [details setValue:info[PHImageErrorKey] forKey:NSLocalizedDescriptionKey];
             NSError *error = [NSError errorWithDomain:@"RNFS" code:501 userInfo:details];
-            [self reject: reject withError:error];
-
+          [[RNFSException fromError:error] reject:reject];
         }
     }];
 # else
@@ -968,7 +972,7 @@ RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
 
   if (error) {
     NSLog(@"RNFS: %@", error);
-    return [self reject:reject withError:error];
+    return [[RNFSException fromError:error] reject:reject];
   }
 
   return resolve(destination);
@@ -1005,9 +1009,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
     NSError *error = nil;
     BOOL success = [manager setAttributes:attr ofItemAtPath:filepath error:&error];
 
-    if (!success) {
-        return [self reject:reject withError:error];
-    }
+  if (!success) return [[RNFSException fromError:error] reject:reject];
 
     resolve(nil);
 }
@@ -1015,12 +1017,6 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 - (NSNumber *)dateToTimeIntervalNumber:(NSDate *)date
 {
   return @([date timeIntervalSince1970]);
-}
-
-- (void)reject:(RCTPromiseRejectBlock)reject withError:(NSError *)error
-{
-  NSString *codeWithDomain = [NSString stringWithFormat:@"E%@%zd", error.domain.uppercaseString, error.code];
-  reject(codeWithDomain, error.localizedDescription, error);
 }
 
 - (NSString *)getPathForDirectory:(NSSearchPathDirectory)directory
@@ -1111,7 +1107,28 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
     RCTPromiseResolveBlock resolve = promise[0];
     NSMutableArray *res = [NSMutableArray arrayWithCapacity:urls.count];
     for (int i = 0; i < urls.count; ++i) {
-      [res addObject:urls[i].absoluteString];
+      NSURL *url = urls[i];
+
+      BOOL allowed = [url startAccessingSecurityScopedResource];
+
+      NSURLBookmarkCreationOptions options = 0;
+
+#     if TARGET_OS_MACCATALYST
+      options = NSURLBookmarkCreationWithSecurityScope;
+#     endif // TARGET_OS_MACCATALYST
+
+      NSError *error = nil;
+      NSData *data = [url bookmarkDataWithOptions:options
+                   includingResourceValuesForKeys:nil
+                                    relativeToURL:nil
+                                            error:&error];
+
+      if (allowed) [url stopAccessingSecurityScopedResource];
+      if (error) return [[RNFSException fromError:error] reject:promise[1]];
+
+      NSString *bookmark = [data base64EncodedStringWithOptions:0];
+      bookmark = [NSString stringWithFormat:@"%@%@", BOOKMARK, bookmark];
+      [res addObject:bookmark];
     }
     resolve(res);
   }
@@ -1189,15 +1206,42 @@ RCT_EXPORT_METHOD(
       [root presentViewController:picker animated:YES completion:nil];
     }
     @catch (NSException *e) {
-      [[RNFSException from:e] reject:reject];
+      [[RNFSException fromException:e] reject:reject];
     }
   });
 }
 
-+(void)setCompletionHandlerForIdentifier: (NSString *)identifier completionHandler: (CompletionHandler)completionHandler
+/**
+ * Given a path string converts it into NSURL object.
+ */
++ (NSURL*) pathToUrl:(NSString*)path error:(NSError**)error
 {
-    if (!completionHandlers) completionHandlers = [[NSMutableDictionary alloc] init];
-    [completionHandlers setValue:completionHandler forKey:identifier];
+  NSURL *res = nil;
+
+  if ([path hasPrefix:BOOKMARK]) {
+    // If path is a "Bookmark URL".
+    // See BOOKMARK description for details.
+    path = [path substringFromIndex:BOOKMARK.length];
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:path options:0];
+
+    NSURLBookmarkResolutionOptions options = 0;
+
+#   if TARGET_OS_MACCATALYST
+    options = NSURLBookmarkResolutionWithSecurityScope;
+#   endif // TARGET_OS_MACCATALYST
+
+    BOOL isStale = NO;
+    res = [NSURL URLByResolvingBookmarkData:data
+                                    options:options
+                              relativeToURL:nil
+                        bookmarkDataIsStale:&isStale
+                                      error:error];
+  } else {
+    // If path is just a regular path.
+    res = [NSURL fileURLWithPath:path];
+  }
+
+  return res;
 }
 
 - (dispatch_queue_t)methodQueue

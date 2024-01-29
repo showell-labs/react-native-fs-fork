@@ -40,13 +40,22 @@ static NSString * const ERROR_DOMAIN = @"RNFS";
   reject(self.name, reason, [self error]);
 }
 
-+ (RNFSException*) from: (NSException*)exception
++ (RNFSException*) fromError:(NSError *)error
+{
+  NSString *name = [NSString stringWithFormat:@"%@:%ld",
+                    error.domain, error.code];
+  return [[RNFSException alloc]
+          initWithName:name
+          reason:error.localizedDescription
+          userInfo:error.userInfo];
+}
+
++ (RNFSException*) fromException:(NSException *)exception
 {
   return [[RNFSException alloc]
           initWithName: exception.name
           reason: exception.reason
-          userInfo: exception.userInfo
-  ];
+          userInfo: exception.userInfo];
 }
 
 + (RNFSException*) name: (NSString*)name

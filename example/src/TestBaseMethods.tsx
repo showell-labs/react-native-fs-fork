@@ -1,9 +1,10 @@
 import { isEqual, isMatch } from 'lodash';
 import React from 'react';
-import { Platform, Text, View } from 'react-native';
+import { AppState, Platform, Text, View } from 'react-native';
 
 import {
   appendFile,
+  completeHandlerIOS,
   // copyAssetsFileIOS,
   // copyAssetsVideoIOS,
   // completeHandlerIOS,
@@ -322,6 +323,56 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       const file = await readFile(path);
       if (file !== good) return 'fail';
       return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
+  // FOR THIS TEST TO RUN THE EXAMPLE APP SHOULD BE SENT TO THE BACKGROUND!
+  '[iOS] Background downloadFile()': async () => {
+    if (Platform.OS !== 'ios') return 'fail';
+
+    const url =
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+    const path = `${TemporaryDirectoryPath}/background-download-file-01`;
+    const good = 'GÖÖÐ\n';
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      console.info(
+        'Send the app to background to run the iOS background download test',
+      );
+      const promise = new Promise<'fail' | 'pass'>((resolve) => {
+        const sub = AppState.addEventListener('change', async (state) => {
+          if (state === 'background') {
+            const { jobId, promise: downloadPromise } = downloadFile({
+              fromUrl: url,
+              toFile: path,
+            });
+            sub.remove();
+            const res = await downloadPromise;
+            completeHandlerIOS(jobId);
+            if (
+              typeof jobId !== 'number' ||
+              res.bytesWritten !== 8 ||
+              res.statusCode !== 200
+            ) {
+              console.info('Background download test failed');
+              resolve('fail');
+              return;
+            }
+            const file = await readFile(path);
+            if (file !== good) {
+              console.info('Background download test failed');
+              resolve('fail');
+              return;
+            }
+            console.info('Background download test passed');
+            resolve('pass');
+          }
+        });
+      });
+      return promise;
     } catch {
       return 'fail';
     }
@@ -919,7 +970,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         } else {
           if (
             !isMatch(e, {
-              code: 'ENSCOCOAERRORDOMAIN260',
+              code: 'NSCocoaErrorDomain:260',
               message:
                 'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
             })
