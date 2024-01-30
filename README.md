@@ -848,8 +848,11 @@ which also allows to access files outside the app sandbox.
 
 **BEWARE:** On **macOS (Catalyst)** for this function to work you MUST go to
 _Signing & Capabilities_ settings of your project, and inside its _App Sandbox_
-section to set _File Access_ > _User Selected Files_ to _Read/Write_ or _Read_
-value. If it is left at the default _None_ value the call to [pickFile()] will
+section to set _File Access_ > _User Selected Files_ to _Read/Write_ value
+(with just _Read_ the file picker on **macOS** opens and seemingly works,
+but rather than returning the picked up URL, it signals the operation has been
+cancelled).
+If it is left at the default _None_ value the call to [pickFile()] will
 crash the app.
 
 - `options` &mdash; [PickFileOptionsT] &mdash; Optional parameters. By default,
