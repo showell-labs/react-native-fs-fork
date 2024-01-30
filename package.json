@@ -1,6 +1,6 @@
 {
   "name": "@dr.pogodin/react-native-fs",
-  "version": "2.23.0",
+  "version": "2.24.0",
   "description": "Native filesystem access for react-native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -71,8 +71,8 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "^0.73",
-    "react-native-windows": "^0.73"
+    "react-native": "^0.73.*",
+    "react-native-windows": "^0.73.*"
   },
   "workspaces": [
     "example"

@@ -1832,8 +1832,8 @@ __metadata:
     typescript: ^5.3.3
   peerDependencies:
     react: "*"
-    react-native: ^0.73
-    react-native-windows: ^0.73
+    react-native: ^0.73.*
+    react-native-windows: ^0.73.*
   languageName: unknown
   linkType: soft
 
