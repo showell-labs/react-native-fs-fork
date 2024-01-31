@@ -146,34 +146,64 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun copyFileAssets(from: String, into: String, promise: Promise) {
       try {
-        val assetManager: AssetManager = getReactApplicationContext().getAssets()
-        val queue = ArrayList<Pair<String,String>>()
-        queue.add(Pair(from, into))
+        val manager: AssetManager = getReactApplicationContext().getAssets()
 
-        while (!queue.isEmpty()) {
-          val next = queue.removeLast()
-          val list = assetManager.list(next.first)
+        var list = manager.list(from)
 
-          // Next asset to copy is a folder.
-          if (list?.isEmpty() == false) {
-            File(next.second).mkdir()
-            for (i in 0.. list.size - 1) {
-              val name = list[i]
-              queue.add(Pair(
-                if (next.first.isEmpty()) name else next.first + "/" + name,
-                next.second + "/" + name
-              ))
-            }
-          }
-
-          // Next asset to copy is a file.
-          else {
-            val stream = assetManager.open(next.first)
-            copyInputStream(stream, next.second)
-          }
+        // `from` is a regular file, we just copy it and exit early.
+        if (list == null || list.isEmpty()) {
+          copyInputStream(manager.open(from), into)
+          return promise.resolve(null)
         }
 
-        promise.resolve(null)
+        // `from` is a folder, we need to recursively walk and copy its content in an efficient way.
+        // From this point on, `currentFrom` is the currently handled asset (file or folder),
+        // `currentInto` is its copy destination, and `list` is the asset's content listing.
+        var currentFrom = from
+        var currentInto = into
+        val queue = ArrayList<Pair<String,String>>()
+
+        while (true) {
+          // Current asset is a file, we copy it and pick up the next asset from the queue, if any.
+          if (list == null || list.isEmpty()) {
+            copyInputStream(manager.open(currentFrom), currentInto)
+
+            // If the queue has drained, it is success, we are done.
+            if (queue.isEmpty()) return promise.resolve(null)
+
+            val next = queue.removeLast()
+            currentFrom = next.first
+            currentInto = next.second
+          }
+
+          // Current asset is a folder, we need to add its content to the queue.
+          else {
+            // If target folder does not exist, we create it here.
+            File(currentInto).mkdir()
+
+            // We'll handle the first (0-index) asset right after the following loop,
+            // which adds other asses to the queue.
+            for (i in 1 until list.size) {
+              var itemFrom = list[i]
+              val itemInto = currentInto + File.separator + itemFrom
+
+              // `currentFrom` can be empty, as the `from` argument can be empty (pointing to
+              // the root assets folder), and we should guard this case to keep the asset path
+              // relative to the root (i.e. avoid the leading separator).
+              if (!currentFrom.isEmpty()) itemFrom = currentFrom + File.separator + itemFrom
+
+              queue.add(Pair(itemFrom, itemInto))
+            }
+
+            // Here, again, we should guard against inserting a leading separator.
+            if (currentFrom.isEmpty()) currentFrom = list[0]
+            else currentFrom += File.separator + list[0]
+
+            currentInto += File.separator + list[0]
+          }
+
+          list = manager.list(currentFrom)
+        }
       } catch (e: Exception) {
         Errors.OPERATION_FAILED.reject(promise, e.toString())
       }
@@ -843,55 +873,37 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         }
     }
 
-    /**
-     * Internal method for copying that works with any InputStream
-     *
-     * @param in          InputStream from assets or file
-     * @param source      source path (only used for logging errors)
-     * @param destination destination path
-     * @param promise     React Callback
-     */
-    private fun copyInputStream(`in`: InputStream, source: String, destination: String, promise: Promise) {
-        var out: OutputStream? = null
+    private fun copyInputStream(input: InputStream, source: String, destination: String, promise: Promise) {
         try {
-            out = getOutputStream(destination, false)
-            val buffer = ByteArray(1024 * 10) // 10k buffer
-            var read: Int
-            while (`in`.read(buffer).also { read = it } != -1) {
-                out!!.write(buffer, 0, read)
-            }
-
-            // Success!
+            copyInputStream(input, destination)
             promise.resolve(null)
         } catch (ex: Exception) {
             reject(promise, source, Exception(String.format("Failed to copy '%s' to %s (%s)", source, destination, ex.localizedMessage)))
-        } finally {
-            closeIgnoringException(`in`)
-            closeIgnoringException(out)
         }
     }
 
   /**
    * Copies given InputStream to the specified destination.
-   *
-   * It is a less opinionated version of the copyInputStream() method defined above.
-   *
-   * Note that since API 33 InputStream has .transferTo() method that can do the job,
-   * but for now we stick with this lower-level, but more universal implementation.
    */
   private fun copyInputStream(stream: InputStream, destination: String) {
-    var out: OutputStream? = null
+    var output: OutputStream? = null
     try {
-      // TODO: Since API 33 there is a handy method .transferTo() of InputStream to do this job.
-      out = getOutputStream(destination, false)
-      val buffer = ByteArray(1024 * 10) // 10k buffer
-      var read: Int
-      while (stream.read(buffer).also { read = it } != -1) {
-        out!!.write(buffer, 0, read)
+      output = getOutputStream(destination, false)
+
+      // The modern Android just has a method for stream piping.
+      if (Build.VERSION.SDK_INT >= 33) stream.transferTo(output)
+
+      // For legacy systems we fallback to the original library implementation.
+      else {
+        val buffer = ByteArray(1024 * 10) // 10k buffer
+        var read: Int
+        while (stream.read(buffer).also { read = it } != -1) {
+          output!!.write(buffer, 0, read)
+        }
       }
     } finally {
       closeIgnoringException(stream)
-      closeIgnoringException(out)
+      closeIgnoringException(output)
     }
   }
 
