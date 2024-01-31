@@ -144,15 +144,39 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun copyFileAssets(assetPath: String, destination: String, promise: Promise) {
+    override fun copyFileAssets(from: String, into: String, promise: Promise) {
+      try {
         val assetManager: AssetManager = getReactApplicationContext().getAssets()
-        try {
-            val `in` = assetManager.open(assetPath)
-            copyInputStream(`in`, assetPath, destination, promise)
-        } catch (e: IOException) {
-            // Default error message is just asset name, so make a more helpful error here.
-            reject(promise, assetPath, Exception(String.format("Asset '%s' could not be opened", assetPath)))
+        val queue = ArrayList<Pair<String,String>>()
+        queue.add(Pair(from, into))
+
+        while (!queue.isEmpty()) {
+          val next = queue.removeLast()
+          val list = assetManager.list(next.first)
+
+          // Next asset to copy is a folder.
+          if (list?.isEmpty() == false) {
+            File(next.second).mkdir()
+            for (i in 0.. list.size - 1) {
+              val name = list[i]
+              queue.add(Pair(
+                if (next.first.isEmpty()) name else next.first + "/" + name,
+                next.second + "/" + name
+              ))
+            }
+          }
+
+          // Next asset to copy is a file.
+          else {
+            val stream = assetManager.open(next.first)
+            copyInputStream(stream, next.second)
+          }
         }
+
+        promise.resolve(null)
+      } catch (e: Exception) {
+        Errors.OPERATION_FAILED.reject(promise, e.toString())
+      }
     }
 
     @ReactMethod
@@ -846,6 +870,30 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             closeIgnoringException(out)
         }
     }
+
+  /**
+   * Copies given InputStream to the specified destination.
+   *
+   * It is a less opinionated version of the copyInputStream() method defined above.
+   *
+   * Note that since API 33 InputStream has .transferTo() method that can do the job,
+   * but for now we stick with this lower-level, but more universal implementation.
+   */
+  private fun copyInputStream(stream: InputStream, destination: String) {
+    var out: OutputStream? = null
+    try {
+      // TODO: Since API 33 there is a handy method .transferTo() of InputStream to do this job.
+      out = getOutputStream(destination, false)
+      val buffer = ByteArray(1024 * 10) // 10k buffer
+      var read: Int
+      while (stream.read(buffer).also { read = it } != -1) {
+        out!!.write(buffer, 0, read)
+      }
+    } finally {
+      closeIgnoringException(stream)
+      closeIgnoringException(out)
+    }
+  }
 
     private fun DeleteRecursive(fileOrDirectory: File) {
         if (fileOrDirectory.isDirectory) {

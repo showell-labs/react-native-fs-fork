@@ -58,8 +58,8 @@ and [old][Old Architecture] [RN][React Native] architectures.
     - [copyAssetsVideoIOS()] &mdash; Copies a video from the assets-library
       to the specified destination.
     - [copyFile()] &mdash; Copies a file to a new destination.
-    - [copyFileAssets()] &mdash; (Android only) Copies an asset file to
-      the given destination.
+    - [copyFileAssets()] &mdash; (Android only) Copies Android app's asset(s)
+      to the specified destination.
     - [copyFileRes()] &mdash; (Android only) Copies specified resource to
       the given destination.
     - [copyFolder()] &mdash; (Windows only) Copies a folder to a new location
@@ -625,13 +625,25 @@ function copyFileAssets(from: string, into: string): Promise<void>
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
-Copies a file from the given path in the Android app's assets folder to
-the specified destination path, overwriting the file at destination, if
-it exists.
+Copies Android app's asset(s) to the specified destination.
 
-- `from` &mdash; **string** &mdash; Source asset path (relative to the asset
-  folder's root).
-- `to` &mdash; **string** &mdash; Destination path.
+If `from` points to a file, this function assumes `into` is a file path as well,
+and it copies the asset to that destination, overwriting the existing file at
+that destination, if any.
+
+If `from` points to a folder, this function assumes `into` is a folder path
+as well, and it recursively copies the content of `from` into that destination,
+preserving the folder structure of copied assets, and overwriting existing files
+in the destination in case of conflicts. It does not clean the destination prior
+to copying into it, and it cannot overwrite files by folders and vice-versa.
+If `into` does not exist, it will be created, assuming its parent folder
+does exist (_i.e._ it does not attempt to create entire path as [mkdir()] does).
+
+- `from` &mdash; **string** &mdash; Source path, relative to the root assets
+  folder. Can be empty to refer the root assets folder itself.
+
+- `into` &mdash; **string** &mdash; Destination path.
+
 - Resolves once completed.
 
 ### copyFileRes()
