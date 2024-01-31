@@ -281,6 +281,35 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'copyFileAssets() - invalid path': async () => {
+    const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
+    try {
+      await unlink(path);
+    } catch {}
+    try {
+      if (await exists(path)) return 'fail';
+      await copyFileAssets('invalid-path', path);
+      return 'fail';
+    } catch {
+      return 'pass';
+    }
+  },
+  // NOTE: This is a new test, for the updated function behavior.
+  'copyFileAssets() - new': async () => {
+    const dest = `${TemporaryDirectoryPath}/copy-file-assets-2`;
+    try {
+      await unlink(dest);
+    } catch {}
+    // await mkdir(dest);
+    try {
+      await copyFileAssets('test', dest);
+      const res = await readFile(`${dest}/good-utf8.txt`);
+      if (res !== 'GÖÖÐ\n') return 'fail';
+      return 'pass';
+    } catch {
+      return 'fail';
+    }
+  },
   'copyFileRes()': async () => {
     const path = `${TemporaryDirectoryPath}/res_good_utf8.txt`;
     try {
