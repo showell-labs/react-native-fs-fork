@@ -356,6 +356,28 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'downloadFile() - progress callback': async () => {
+    try {
+      const url = 'https://www.youtube.com/';
+      const path = `${TemporaryDirectoryPath}/download-file-01b`;
+
+      return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => resolve('fail'), 3000);
+
+        const { jobId } = downloadFile({
+          fromUrl: url,
+          toFile: path,
+          progress: () => {
+            clearTimeout(timeoutId);
+            stopDownload(jobId);
+            resolve('pass');
+          },
+        });
+      });
+    } catch {
+      return 'fail';
+    }
+  },
   // FOR THIS TEST TO RUN THE EXAMPLE APP SHOULD BE SENT TO THE BACKGROUND!
   '[iOS] Background downloadFile()': async () => {
     if (Platform.OS !== 'ios') return 'fail';

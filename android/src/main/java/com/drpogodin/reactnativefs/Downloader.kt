@@ -123,9 +123,12 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
         mAbort.set(true)
     }
 
-    protected fun onProgressUpdate(vararg values: LongArray) {
-        super.onProgressUpdate(*values)
-        mParam!!.onDownloadProgress?.onDownloadProgress(values[0][0], values[0][1])
+    protected override fun onProgressUpdate(vararg args: LongArray?) {
+        val values = args[0]
+        super.onProgressUpdate(values)
+        if (values != null) {
+          mParam!!.onDownloadProgress?.onDownloadProgress(values[0], values[1])
+        }
     }
 
     protected fun onPostExecute(ex: Exception?) {}
