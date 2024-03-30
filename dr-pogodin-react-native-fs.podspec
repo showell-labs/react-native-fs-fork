@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/birdofpreyru/react-native-fs.git", :tag => "#{s.version}" }
 
+  s.resource_bundles = { 'RNFS_PrivacyInfo' => 'ios/PrivacyInfo.xcprivacy' }
   s.source_files = "ios/**/*.{h,m,mm}"
 
   s.frameworks = "Photos"
