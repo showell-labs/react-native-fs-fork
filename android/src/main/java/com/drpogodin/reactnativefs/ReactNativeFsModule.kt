@@ -27,7 +27,6 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.ByteArrayOutputStream
-import java.io.Closeable
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -95,7 +94,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             getOutputStream(filepath, true).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
-                outputStream!!.write(bytes)
+                outputStream.write(bytes)
             }
 
             // BEWARE: Must be outside the above block, to resolve only after the output stream
@@ -232,7 +231,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun downloadFile(options: ReadableMap, promise: Promise) {
         try {
-            val file = File(options.getString("toFile"))
+            val file = File(options.getString("toFile")!!)
             val url = URL(options.getString("fromUrl"))
             val jobId = options.getInt("jobId")
             val headers = options.getMap("headers")
@@ -268,7 +267,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                     override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: Map<String, String?>?) {
                         val headersMap = Arguments.createMap()
                         for ((key, value) in headers!!) {
-                            headersMap.putString(key!!, value)
+                            headersMap.putString(key, value)
                         }
                         val data = Arguments.createMap()
                         data.putInt("jobId", jobId)
@@ -300,7 +299,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun exists(filepath: String?, promise: Promise) {
+    override fun exists(filepath: String, promise: Promise) {
         try {
             val file = File(filepath)
             promise.resolve(file.exists())
@@ -311,11 +310,11 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun existsAssets(filepath: String?, promise: Promise) {
+    override fun existsAssets(filepath: String, promise: Promise) {
         try {
             val assetManager: AssetManager = getReactApplicationContext().getAssets()
             try {
-                val list = assetManager.list(filepath!!)
+                val list = assetManager.list(filepath)
                 if (list != null && list.size > 0) {
                     promise.resolve(true)
                     return
@@ -326,7 +325,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
             // Attempt to open file (win = exists)
             try {
-                assetManager.open(filepath!!).use { fileStream -> promise.resolve(true) }
+                assetManager.open(filepath).use { fileStream -> promise.resolve(true) }
             } catch (ex: Exception) {
                 promise.resolve(false) // don't throw an error, resolve false
             }
@@ -356,9 +355,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         val allExternalFilesDirs: Array<File> = this.getReactApplicationContext().getExternalFilesDirs(null)
         val fs = Arguments.createArray()
         for (f in allExternalFilesDirs) {
-            if (f != null) {
-                fs.pushString(f.absolutePath)
-            }
+          fs.pushString(f.absolutePath)
         }
         promise.resolve(fs)
     }
@@ -372,16 +369,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         val freeSpace: Long
         var totalSpaceEx: Long = 0
         var freeSpaceEx: Long = 0
-        if (Build.VERSION.SDK_INT >= 18) {
-            totalSpace = stat.totalBytes
-            freeSpace = stat.freeBytes
-            totalSpaceEx = statEx.totalBytes
-            freeSpaceEx = statEx.freeBytes
-        } else {
-            val blockSize = stat.blockSize.toLong()
-            totalSpace = blockSize * stat.blockCount
-            freeSpace = blockSize * stat.availableBlocks
-        }
+        totalSpace = stat.totalBytes
+        freeSpace = stat.freeBytes
+        totalSpaceEx = statEx.totalBytes
+        freeSpaceEx = statEx.freeBytes
         val info = Arguments.createMap()
         info.putDouble("totalSpace", totalSpace.toDouble()) // Int32 too small, must use Double
         info.putDouble("freeSpace", freeSpace.toDouble())
@@ -391,7 +382,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun hash(filepath: String?, algorithm: String, promise: Promise) {
+    override fun hash(filepath: String, algorithm: String, promise: Promise) {
         var inputStream: FileInputStream? = null
         try {
             val algorithms: MutableMap<String, String> = HashMap()
@@ -411,7 +402,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 rejectFileNotFound(promise, filepath)
                 return
             }
-            val md = MessageDigest.getInstance(algorithms[algorithm])
+            val md = MessageDigest.getInstance(algorithms[algorithm]!!)
             inputStream = FileInputStream(filepath)
             val buffer = ByteArray(1024 * 10) // 10 KB Buffer
             var read: Int
@@ -425,7 +416,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             ex.printStackTrace()
             reject(promise, filepath, ex)
         } finally {
-            closeIgnoringException(inputStream)
+            inputStream?.close()
         }
     }
 
@@ -435,7 +426,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun mkdir(filepath: String?, options: ReadableMap?, promise: Promise) {
+    override fun mkdir(filepath: String, options: ReadableMap?, promise: Promise) {
         try {
             val file = File(filepath)
             file.mkdirs()
@@ -449,7 +440,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun moveFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
+    override fun moveFile(filepath: String, destPath: String, options: ReadableMap?, promise: Promise) {
         try {
             val inFile = File(filepath)
             if (!inFile.renameTo(File(destPath))) {
@@ -486,19 +477,21 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun pickFile(options: ReadableMap, promise: Promise) {
         val mimeTypesArray = options.getArray("mimeTypes")
-        val mimeTypes = arrayOfNulls<String>(mimeTypesArray!!.size())
-        for (i in 0 until mimeTypesArray.size()) {
+        val mimeTypes = emptyArray<String>()
+        if (mimeTypesArray != null) {
+          for (i in 0 until mimeTypesArray.size()) {
             mimeTypes[i] = mimeTypesArray.getString(i)
+          }
         }
 
         // Note: Here we assume that if a new pickFile() call is done prior to
-        // the previous one having been completed, effectivly the new call with
+        // the previous one having been completed, effectively the new call with
         // open a new file picker on top of the view stack (thus, on top of
         // the one opened for the previous call), thus just keeping all pending
         // promises in FILO stack we should be able to resolve them in the correct
         // order.
         pendingPickFilePromises.push(promise)
-        getPickFileLauncher().launch(mimeTypes as Array<String>)
+        getPickFileLauncher().launch(mimeTypes)
     }
 
     @ReactMethod
@@ -511,7 +504,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             getInputStream(filepath).use { inputStream ->
                 val buffer = ByteArray(length.toInt())
-                inputStream!!.skip(position.toInt().toLong())
+                inputStream.skip(position.toInt().toLong())
                 val bytesRead = inputStream.read(buffer, 0, length.toInt())
                 val base64Content = Base64.encodeToString(buffer, 0, bytesRead, Base64.NO_WRAP)
                 promise.resolve(base64Content)
@@ -523,7 +516,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun readDir(directory: String?, promise: Promise) {
+    override fun readDir(directory: String, promise: Promise) {
         try {
             val file = File(directory)
             if (!file.exists()) throw Exception("Folder does not exist")
@@ -560,11 +553,9 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 var isDirectory = true
                 try {
                     val assetFileDescriptor = assetManager.openFd(path!!)
-                    if (assetFileDescriptor != null) {
-                        length = assetFileDescriptor.length.toInt()
-                        assetFileDescriptor.close()
-                        isDirectory = false
-                    }
+                    length = assetFileDescriptor.length.toInt()
+                    assetFileDescriptor.close()
+                    isDirectory = false
                 } catch (ex: IOException) {
                     //.. ah.. is a directory or a compressed file?
                     isDirectory = !ex.message!!.contains("compressed")
@@ -583,7 +574,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     override fun readFile(filepath: String, promise: Promise) {
         try {
             getInputStream(filepath).use { inputStream ->
-                val inputData = getInputStreamBytes(inputStream!!)
+                val inputData = getInputStreamBytes(inputStream)
                 val base64Content = Base64.encodeToString(inputData, Base64.NO_WRAP)
                 promise.resolve(base64Content)
             }
@@ -600,10 +591,6 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             // ensure isn't a directory
             val assetManager: AssetManager = getReactApplicationContext().getAssets()
             stream = assetManager.open(filepath!!, 0)
-            if (stream == null) {
-                reject(promise, filepath, Exception("Failed to open file"))
-                return
-            }
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
             val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
@@ -612,7 +599,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             ex.printStackTrace()
             reject(promise, filepath, ex)
         } finally {
-            closeIgnoringException(stream)
+            stream?.close()
         }
     }
 
@@ -622,10 +609,6 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             val res = getResIdentifier(filename)
             stream = getReactApplicationContext().getResources().openRawResource(res)
-            if (stream == null) {
-                reject(promise, filename, Exception("Failed to open file"))
-                return
-            }
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
             val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
@@ -634,7 +617,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             ex.printStackTrace()
             reject(promise, filename, ex)
         } finally {
-            closeIgnoringException(stream)
+            stream?.close()
         }
     }
 
@@ -666,7 +649,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     @ReactMethod
     override fun setReadable(
-            filepath: String?,
+            filepath: String,
             readable: Boolean,
             ownerOnly: Boolean,
             promise: Promise
@@ -714,7 +697,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun touch(filepath: String?, options: ReadableMap, promise: Promise) {
+    override fun touch(filepath: String, options: ReadableMap, promise: Promise) {
         try {
             val file = File(filepath)
             val mtime = options.getDouble("mtime").toLong()
@@ -729,7 +712,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @ReactMethod
-    override fun unlink(filepath: String?, promise: Promise) {
+    override fun unlink(filepath: String, promise: Promise) {
         try {
             val file = File(filepath)
             if (!file.exists()) throw Exception("File does not exist")
@@ -821,7 +804,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             val bytes = Base64.decode(base64Content, Base64.DEFAULT)
             if (position < 0) {
                 outputStream = getOutputStream(filepath, true)
-                outputStream!!.write(bytes)
+                outputStream.write(bytes)
             } else {
                 file = RandomAccessFile(filepath, "rw")
                 file.seek(position.toLong())
@@ -844,7 +827,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             getOutputStream(filepath, false).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
-                outputStream!!.write(bytes)
+                outputStream.write(bytes)
             }
             // BEWARE: Must be outside the block above to be resolved after
             // the output stream is closed.
@@ -866,16 +849,16 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 out = getOutputStream(destPath, false)
                 val buffer = ByteArray(1024)
                 var length: Int
-                while (`in`!!.read(buffer).also { length = it } > 0) {
-                    out!!.write(buffer, 0, length)
+                while (`in`.read(buffer).also { length = it } > 0) {
+                    out.write(buffer, 0, length)
                     Thread.yield()
                 }
                 null
             } catch (ex: Exception) {
                 ex
             } finally {
-                closeIgnoringException(`in`)
-                closeIgnoringException(out)
+                `in`?.close()
+                out?.close()
             }
         }
     }
@@ -905,12 +888,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         val buffer = ByteArray(1024 * 10) // 10k buffer
         var read: Int
         while (stream.read(buffer).also { read = it } != -1) {
-          output!!.write(buffer, 0, read)
+          output.write(buffer, 0, read)
         }
       }
     } finally {
-      closeIgnoringException(stream)
-      closeIgnoringException(output)
+      stream.close()
+      output?.close()
     }
   }
 
@@ -938,7 +921,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @Throws(IORejectionException::class)
-    private fun getInputStream(filepath: String): InputStream? {
+    private fun getInputStream(filepath: String): InputStream {
         val uri = getFileUri(filepath, false)
         val stream: InputStream?
         stream = try {
@@ -970,7 +953,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     @Throws(IORejectionException::class)
-    private fun getOutputStream(filepath: String, append: Boolean): OutputStream? {
+    private fun getOutputStream(filepath: String, append: Boolean): OutputStream {
         val uri = getFileUri(filepath, false)
         val stream: OutputStream?
         stream = try {
@@ -992,7 +975,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     private val writeAccessByAPILevel: String
-        private get() = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) "w" else "rwt"
+        get() = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) "w" else "rwt"
 
     // TODO: These should be merged / replaced by the dedicated "Errors" module.
     private fun reject(promise: Promise, filepath: String?, ex: Exception?) {
@@ -1024,20 +1007,6 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     companion object {
         const val NAME = "ReactNativeFs"
-
-        /**
-         * Attempts to close given object, discarting possible exception. Does nothing
-         * if given argument is null.
-         * @param closeable
-         */
-        private fun closeIgnoringException(closeable: Closeable?) {
-            if (closeable != null) {
-                try {
-                    closeable.close()
-                } catch (e: Exception) {
-                }
-            }
-        }
 
         @Throws(IOException::class)
         private fun getInputStreamBytes(inputStream: InputStream): ByteArray {

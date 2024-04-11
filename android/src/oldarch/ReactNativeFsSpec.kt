@@ -41,9 +41,9 @@ abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactConte
 
   abstract fun downloadFile(options: ReadableMap, promise: Promise)
 
-  abstract fun exists(filepath: String?, promise: Promise)
+  abstract fun exists(filepath: String, promise: Promise)
 
-  abstract fun existsAssets(filepath: String?, promise: Promise)
+  abstract fun existsAssets(filepath: String, promise: Promise)
 
   abstract fun existsRes(filename: String, promise: Promise)
 
@@ -51,13 +51,13 @@ abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactConte
 
   abstract fun getFSInfo(promise: Promise)
 
-  abstract fun hash(filepath: String?, algorithm: String, promise: Promise)
+  abstract fun hash(filepath: String, algorithm: String, promise: Promise)
 
   abstract fun isResumable(jobId: Double, promise: Promise?)
 
-  abstract fun mkdir(filepath: String?, options: ReadableMap?, promise: Promise)
+  abstract fun mkdir(filepath: String, options: ReadableMap?, promise: Promise)
 
-  abstract fun moveFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise)
+  abstract fun moveFile(filepath: String, destPath: String, options: ReadableMap?, promise: Promise)
 
   abstract fun pathForBundle(bundle: String?, promise: Promise?)
 
@@ -72,7 +72,7 @@ abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactConte
     promise: Promise
   )
 
-  abstract fun readDir(directory: String?, promise: Promise)
+  abstract fun readDir(directory: String, promise: Promise)
 
   abstract fun readDirAssets(directory: String, promise: Promise)
 
@@ -89,7 +89,7 @@ abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactConte
   abstract fun scanFile(path: String, promise: Promise)
 
   abstract fun setReadable(
-    filepath: String?,
+    filepath: String,
     readable: Boolean,
     ownerOnly: Boolean,
     promise: Promise
@@ -101,9 +101,9 @@ abstract class ReactNativeFsSpec(context: ReactApplicationContext?) : ReactConte
 
   abstract fun stopUpload(jobId: Double)
 
-  abstract fun touch(filepath: String?, options: ReadableMap, promise: Promise)
+  abstract fun touch(filepath: String, options: ReadableMap, promise: Promise)
 
-  abstract fun unlink(filepath: String?, promise: Promise)
+  abstract fun unlink(filepath: String, promise: Promise)
 
   abstract fun uploadFiles(options: ReadableMap, promise: Promise)
 
