@@ -96,8 +96,11 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             getOutputStream(filepath, true).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
                 outputStream!!.write(bytes)
-                promise.resolve(null)
             }
+
+            // BEWARE: Must be outside the above block, to resolve only after the output stream
+            // has been closed (and thus flushed).
+            promise.resolve(null)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -824,13 +827,15 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 file.seek(position.toLong())
                 file.write(bytes)
             }
+            // BEWARE: Output stream must be closed before resolving the promise.
+            outputStream?.close()
             promise.resolve(null)
         } catch (ex: Exception) {
+            outputStream?.close()
             ex.printStackTrace()
             reject(promise, filepath, ex)
         } finally {
-            closeIgnoringException(outputStream)
-            closeIgnoringException(file)
+            file?.close()
         }
     }
 
@@ -840,8 +845,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             getOutputStream(filepath, false).use { outputStream ->
                 val bytes = Base64.decode(base64Content, Base64.DEFAULT)
                 outputStream!!.write(bytes)
-                promise.resolve(null)
             }
+            // BEWARE: Must be outside the block above to be resolved after
+            // the output stream is closed.
+            promise.resolve(null)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
