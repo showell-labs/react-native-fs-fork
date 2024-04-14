@@ -179,11 +179,13 @@ import {
 ```
 
 **ROADMAP:**
-- **v2.22.0** of this library is, presumably, a drop-in replacement for
-  the latest (**v2.20.0**) release of the original, upstream [react-native-fs]
-  (beside the need to upgrade host project to the lates RN v0.73).
-  It has matching functionality and API, with just a handfull of internal
-  fixes, and a few additions.
+- **v2.22.0** of this library is mostly a drop-in replacement for the latest
+  (**v2.20.0**) release of the original, upstream [react-native-fs]. It requires
+  to upgrade the host project to the latest RN v0.73+, and to correct the names
+  of TypeScript types exported from the library, if they are used, by appending
+  letter `T` to all of them. Beside these, the library has its functionality and
+  API matching the original library, with just a handful of internal fixes, and
+  a few added features.
 
 - In further versions, **v2.X.Y**, we'll be taking care of improvements,
   and optimizations of existing functionality, as well as adding new APIs,
