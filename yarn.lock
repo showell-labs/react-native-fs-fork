@@ -1823,7 +1823,7 @@ __metadata:
     "@babel/core": ^7.24.4
     "@babel/preset-env": ^7.24.4
     "@babel/runtime": ^7.24.4
-    "@dr.pogodin/react-native-static-server": ^0.12.0
+    "@dr.pogodin/react-native-static-server": ^0.13.0
     "@react-native/babel-preset": ^0.73.21
     "@react-native/metro-config": ^0.73.5
     "@react-native/typescript-config": ^0.73.1
@@ -1843,7 +1843,7 @@ __metadata:
   dependencies:
     "@react-native/eslint-config": ^0.73.2
     "@types/jest": ^29.5.12
-    "@types/react": ^18.2.75
+    "@types/react": ^18.2.78
     buffer: ^6.0.3
     del-cli: ^5.1.0
     eslint: ^8.57.0
@@ -1865,9 +1865,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.12.0":
-  version: 0.12.0
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.12.0"
+"@dr.pogodin/react-native-static-server@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.13.0"
   dependencies:
     "@dr.pogodin/js-utils": ^0.0.9
   peerDependencies:
@@ -1875,7 +1875,7 @@ __metadata:
     react: 18
     react-native: 0.73
     react-native-windows: 0.73
-  checksum: dd704297ee901705b71637f415191b73ebc41fe9c7caa20347f91fdb441320e7d7e11514e367fa6979e5575a2c610ce0752b50d3dd7a5069e5234eafddd053aa
+  checksum: ce37db320531b1bcbea6e71d6f0b83fb6cc1725cbd81ed53c6d67e5dea0865a980c33ad07801c816183ada5ab82008442a0acb89e1febc609e7891f83c221e11
   languageName: node
   linkType: hard
 

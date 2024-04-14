@@ -13,7 +13,7 @@
     "build:ios": "cd ios && xcodebuild -workspace ReactNativeFsExample.xcworkspace -scheme ReactNativeFsExample -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.12.0",
+    "@dr.pogodin/react-native-static-server": "^0.13.0",
     "@types/lodash": "^4.17.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",

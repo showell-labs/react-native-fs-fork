@@ -477,10 +477,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun pickFile(options: ReadableMap, promise: Promise) {
         val mimeTypesArray = options.getArray("mimeTypes")
-        val mimeTypes = emptyArray<String>()
+        var mimeTypes = emptyArray<String>()
         if (mimeTypesArray != null) {
           for (i in 0 until mimeTypesArray.size()) {
-            mimeTypes[i] = mimeTypesArray.getString(i)
+            mimeTypes += mimeTypesArray.getString(i)
           }
         }
 
