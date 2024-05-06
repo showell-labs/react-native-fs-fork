@@ -3,7 +3,6 @@ package com.drpogodin.reactnativefs
 import android.os.AsyncTask
 import android.webkit.MimeTypeMap
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.NoSuchKeyException
 import java.io.BufferedInputStream
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -14,12 +13,13 @@ import java.net.HttpURLConnection
 import java.nio.channels.Channels
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.ceil
 
 class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
     private var mParams: UploadParams? = null
     private var res: UploadResult? = null
     private val mAbort = AtomicBoolean(false)
-    protected override fun doInBackground(vararg uploadParams: UploadParams?): UploadResult {
+    override fun doInBackground(vararg uploadParams: UploadParams?): UploadResult {
         mParams = uploadParams[0]
         res = UploadResult()
         Thread {
@@ -58,7 +58,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             val files: Array<Any> = params!!.files!!.toTypedArray()
             val binaryStreamOnly = params.binaryStreamOnly
             connection = params.src!!.openConnection() as HttpURLConnection
-            connection!!.doOutput = true
+            connection.doOutput = true
             val headerIterator = params.headers!!.keySetIterator()
             connection.requestMethod = params.method
             if (!binaryStreamOnly) {
@@ -118,7 +118,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 }
                 val file = File(map.getString("filepath"))
                 val fileLength = file.length()
-                val bufferSize = Math.ceil((fileLength / 100f).toDouble()).toLong()
+                val bufferSize = ceil((fileLength / 100f).toDouble()).toLong()
                 var bytesRead: Long = 0
                 val fileStream = FileInputStream(file)
                 val fileChannel = fileStream.channel
@@ -148,7 +148,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 responseHeaders.putString(key, value[count])
             }
             val stringBuilder = StringBuilder()
-            var line: String? = ""
+            var line: String?
             while (responseStreamReader.readLine().also { line = it } != null) {
                 stringBuilder.append(line).append("\n")
             }
@@ -165,7 +165,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         }
     }
 
-    protected fun getMimeType(path: String?): String {
+    private fun getMimeType(path: String?): String {
         var type: String? = null
         val extension = MimeTypeMap.getFileExtensionFromUrl(path)
         if (extension != null) {
