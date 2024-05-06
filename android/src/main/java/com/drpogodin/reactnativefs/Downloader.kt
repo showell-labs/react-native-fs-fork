@@ -45,7 +45,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
             }
             connection.connectTimeout = param.connectionTimeout
             connection.readTimeout = param.readTimeout
-            connection!!.connect()
+            connection.connect()
             var statusCode = connection.responseCode
             var lengthOfFile = getContentLength(connection)
             val isRedirect = statusCode != HttpURLConnection.HTTP_OK &&

@@ -50,8 +50,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     private var pickFileLauncher: ActivityResultLauncher<Array<String>>? = null
     private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
         if (pickFileLauncher == null) {
-            val activity = getCurrentActivity() as ReactActivity
-            val registry = activity.activityResultRegistry
+            val registry = (currentActivity as ReactActivity).activityResultRegistry
             pickFileLauncher = registry.register<Array<String>, Uri>(
                     "RNFS_pickFile",
                     OpenDocument()
@@ -71,16 +70,16 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     override fun getTypedExportedConstants(): Map<String, Any?> {
         val constants: MutableMap<String, Any?> = HashMap()
         constants["DocumentDirectory"] = 0
-        constants["DocumentDirectoryPath"] = this.getReactApplicationContext().getFilesDir().getAbsolutePath()
-        constants["TemporaryDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
+        constants["DocumentDirectoryPath"] = this.reactApplicationContext.filesDir.absolutePath
+        constants["TemporaryDirectoryPath"] = this.reactApplicationContext.cacheDir.absolutePath
         constants["PicturesDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
-        constants["CachesDirectoryPath"] = this.getReactApplicationContext().getCacheDir().getAbsolutePath()
+        constants["CachesDirectoryPath"] = this.reactApplicationContext.cacheDir.absolutePath
         constants["DownloadDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
         constants["FileTypeRegular"] = 0
         constants["FileTypeDirectory"] = 1
         constants["ExternalStorageDirectoryPath"] = Environment.getExternalStorageDirectory()?.absolutePath
-        constants["ExternalDirectoryPath"] = this.getReactApplicationContext().getExternalFilesDir(null)?.absolutePath
-        constants["ExternalCachesDirectoryPath"] = this.getReactApplicationContext().getExternalCacheDir()?.absolutePath
+        constants["ExternalDirectoryPath"] = this.reactApplicationContext.getExternalFilesDir(null)?.absolutePath
+        constants["ExternalCachesDirectoryPath"] = this.reactApplicationContext.externalCacheDir?.absolutePath
         return constants
     }
 
@@ -134,7 +133,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun copyFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
         object : CopyFileTask() {
-            protected override fun onPostExecute(ex: Exception?) {
+            override fun onPostExecute(ex: Exception?) {
                 if (ex == null) {
                     promise.resolve(null)
                 } else {
@@ -148,12 +147,12 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun copyFileAssets(from: String, into: String, promise: Promise) {
       try {
-        val manager: AssetManager = getReactApplicationContext().getAssets()
+        val manager: AssetManager = reactApplicationContext.assets
 
         var list = manager.list(from)
 
         // `from` is a regular file, we just copy it and exit early.
-        if (list == null || list.isEmpty()) {
+        if (list.isNullOrEmpty()) {
           copyInputStream(manager.open(from), into)
           return promise.resolve(null)
         }
@@ -167,7 +166,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
         while (true) {
           // Current asset is a file, we copy it and pick up the next asset from the queue, if any.
-          if (list == null || list.isEmpty()) {
+          if (list.isNullOrEmpty()) {
             copyInputStream(manager.open(currentFrom), currentInto)
 
             // If the queue has drained, it is success, we are done.
@@ -192,7 +191,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
               // `currentFrom` can be empty, as the `from` argument can be empty (pointing to
               // the root assets folder), and we should guard this case to keep the asset path
               // relative to the root (i.e. avoid the leading separator).
-              if (!currentFrom.isEmpty()) itemFrom = currentFrom + File.separator + itemFrom
+              if (currentFrom.isNotEmpty()) itemFrom = currentFrom + File.separator + itemFrom
 
               queue.add(Pair(itemFrom, itemInto))
             }
@@ -215,7 +214,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     override fun copyFileRes(filename: String, destination: String, promise: Promise) {
         try {
             val res = getResIdentifier(filename)
-            val `in`: InputStream = getReactApplicationContext().getResources().openRawResource(res)
+            val `in`: InputStream = reactApplicationContext.resources.openRawResource(res)
             copyInputStream(`in`, filename, destination, promise)
         } catch (e: Exception) {
             reject(promise, filename, Exception(String.format("Res '%s' could not be opened", filename)))
@@ -274,7 +273,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                         data.putInt("statusCode", statusCode)
                         data.putDouble("contentLength", contentLength.toDouble())
                         data.putMap("headers", headersMap)
-                        sendEvent(getReactApplicationContext(), "DownloadBegin", data)
+                        sendEvent("DownloadBegin", data)
                     }
                 }
             }
@@ -285,7 +284,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                         data.putInt("jobId", jobId)
                         data.putDouble("contentLength", contentLength.toDouble())
                         data.putDouble("bytesWritten", bytesWritten.toDouble())
-                        sendEvent(getReactApplicationContext(), "DownloadProgress", data)
+                        sendEvent("DownloadProgress", data)
                     }
                 }
             }
@@ -312,10 +311,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun existsAssets(filepath: String, promise: Promise) {
         try {
-            val assetManager: AssetManager = getReactApplicationContext().getAssets()
+            val assetManager: AssetManager = reactApplicationContext.assets
             try {
                 val list = assetManager.list(filepath)
-                if (list != null && list.size > 0) {
+                if (!list.isNullOrEmpty()) {
                     promise.resolve(true)
                     return
                 }
@@ -325,7 +324,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
             // Attempt to open file (win = exists)
             try {
-                assetManager.open(filepath).use { fileStream -> promise.resolve(true) }
+                assetManager.open(filepath).use { _ -> promise.resolve(true) }
             } catch (ex: Exception) {
                 promise.resolve(false) // don't throw an error, resolve false
             }
@@ -352,7 +351,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     @ReactMethod
     override fun getAllExternalFilesDirs(promise: Promise) {
-        val allExternalFilesDirs: Array<File> = this.getReactApplicationContext().getExternalFilesDirs(null)
+        val allExternalFilesDirs: Array<File> = this.reactApplicationContext.getExternalFilesDirs(null)
         val fs = Arguments.createArray()
         for (f in allExternalFilesDirs) {
           fs.pushString(f.absolutePath)
@@ -365,14 +364,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         val path = Environment.getDataDirectory()
         val stat = StatFs(path.path)
         val statEx = StatFs(Environment.getExternalStorageDirectory().path)
-        val totalSpace: Long
-        val freeSpace: Long
-        var totalSpaceEx: Long = 0
-        var freeSpaceEx: Long = 0
-        totalSpace = stat.totalBytes
-        freeSpace = stat.freeBytes
-        totalSpaceEx = statEx.totalBytes
-        freeSpaceEx = statEx.freeBytes
+        val totalSpace: Long = stat.totalBytes
+        val freeSpace: Long = stat.freeBytes
+        val totalSpaceEx: Long = statEx.totalBytes
+        val freeSpaceEx: Long = statEx.freeBytes
         val info = Arguments.createMap()
         info.putDouble("totalSpace", totalSpace.toDouble()) // Int32 too small, must use Double
         info.putDouble("freeSpace", freeSpace.toDouble())
@@ -445,7 +440,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             val inFile = File(filepath)
             if (!inFile.renameTo(File(destPath))) {
                 object : CopyFileTask() {
-                    protected override fun onPostExecute(ex: Exception?) {
+                    override fun onPostExecute(ex: Exception?) {
                         if (ex == null) {
                             inFile.delete()
                             promise.resolve(true)
@@ -522,6 +517,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             if (!file.exists()) throw Exception("Folder does not exist")
             val files = file.listFiles()
             val fileMaps = Arguments.createArray()
+
+            // TODO: Not sure, whether we should throw or avoid to throw if files are null?
             for (childFile in files) {
                 val fileMap = Arguments.createMap()
                 fileMap.putDouble("mtime", childFile.lastModified().toDouble() / 1000)
@@ -541,7 +538,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun readDirAssets(directory: String, promise: Promise) {
         try {
-            val assetManager: AssetManager = getReactApplicationContext().getAssets()
+            val assetManager: AssetManager = reactApplicationContext.assets
             val list = assetManager.list(directory)
             val fileMaps = Arguments.createArray()
             for (childFile in list!!) {
@@ -550,7 +547,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 val path = if (directory.isEmpty()) childFile else String.format("%s/%s", directory, childFile) // don't allow / at the start when directory is ""
                 fileMap.putString("path", path)
                 var length = -1
-                var isDirectory = true
+                var isDirectory: Boolean
                 try {
                     val assetFileDescriptor = assetManager.openFd(path!!)
                     length = assetFileDescriptor.length.toInt()
@@ -589,7 +586,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         var stream: InputStream? = null
         try {
             // ensure isn't a directory
-            val assetManager: AssetManager = getReactApplicationContext().getAssets()
+            val assetManager: AssetManager = reactApplicationContext.assets
             stream = assetManager.open(filepath!!, 0)
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
@@ -608,7 +605,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         var stream: InputStream? = null
         try {
             val res = getResIdentifier(filename)
-            stream = getReactApplicationContext().getResources().openRawResource(res)
+            stream = reactApplicationContext.resources.openRawResource(res)
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
             val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
@@ -636,7 +633,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
 
     @ReactMethod
     override fun scanFile(path: String, promise: Promise) {
-        MediaScannerConnection.scanFile(this.getReactApplicationContext(), arrayOf<String>(path),
+        MediaScannerConnection.scanFile(this.reactApplicationContext, arrayOf(path),
                 null,
                 object : MediaScannerConnectionClient {
                     override fun onMediaScannerConnected() {}
@@ -716,7 +713,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             val file = File(filepath)
             if (!file.exists()) throw Exception("File does not exist")
-            DeleteRecursive(file)
+            deleteRecursive(file)
             promise.resolve(null)
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -766,7 +763,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                     override fun onUploadBegin() {
                         val data = Arguments.createMap()
                         data.putInt("jobId", jobId)
-                        sendEvent(getReactApplicationContext(), "UploadBegin", data)
+                        sendEvent("UploadBegin", data)
                     }
                 }
             }
@@ -777,7 +774,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                         data.putInt("jobId", jobId)
                         data.putInt("totalBytesExpectedToSend", totalBytesExpectedToSend)
                         data.putInt("totalBytesSent", totalBytesSent)
-                        sendEvent(getReactApplicationContext(), "UploadProgress", data)
+                        sendEvent("UploadProgress", data)
                     }
                 }
             }
@@ -839,7 +836,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     private open inner class CopyFileTask : AsyncTask<String?, Void?, Exception?>() {
-        protected override fun doInBackground(vararg paths: String?): Exception? {
+        override fun doInBackground(vararg paths: String?): Exception? {
             var `in`: InputStream? = null
             var out: OutputStream? = null
             return try {
@@ -897,10 +894,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
   }
 
-    private fun DeleteRecursive(fileOrDirectory: File) {
+    private fun deleteRecursive(fileOrDirectory: File) {
         if (fileOrDirectory.isDirectory) {
             for (child in fileOrDirectory.listFiles()) {
-                DeleteRecursive(child)
+                deleteRecursive(child)
             }
         }
         fileOrDirectory.delete()
@@ -923,9 +920,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @Throws(IORejectionException::class)
     private fun getInputStream(filepath: String): InputStream {
         val uri = getFileUri(filepath, false)
-        val stream: InputStream?
-        stream = try {
-            getReactApplicationContext().getContentResolver().openInputStream(uri)
+        val stream: InputStream? = try {
+            reactApplicationContext.contentResolver.openInputStream(uri)
         } catch (ex: FileNotFoundException) {
             throw IORejectionException("ENOENT", "ENOENT: " + ex.message + ", open '" + filepath + "'")
         }
@@ -941,7 +937,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         var originalFilepath = filepath
         if (uri.scheme == "content") {
             try {
-                val cursor: Cursor = getReactApplicationContext().getContentResolver().query(uri, null, null, null, null)!!
+                val cursor: Cursor = reactApplicationContext.contentResolver.query(uri, null, null, null, null)!!
                 if (cursor.moveToFirst()) {
                     originalFilepath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA))
                 }
@@ -955,9 +951,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @Throws(IORejectionException::class)
     private fun getOutputStream(filepath: String, append: Boolean): OutputStream {
         val uri = getFileUri(filepath, false)
-        val stream: OutputStream?
-        stream = try {
-            getReactApplicationContext().getContentResolver().openOutputStream(uri, if (append) "wa" else writeAccessByAPILevel)
+        val stream: OutputStream? = try {
+            reactApplicationContext.contentResolver.openOutputStream(uri, if (append) "wa" else writeAccessByAPILevel)
         } catch (ex: FileNotFoundException) {
             throw IORejectionException("ENOENT", "ENOENT: " + ex.message + ", open '" + filepath + "'")
         }
@@ -971,7 +966,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         val suffix = filename.substring(filename.lastIndexOf(".") + 1)
         val name = filename.substring(0, filename.lastIndexOf("."))
         val isImage = suffix == "png" || suffix == "jpg" || suffix == "jpeg" || suffix == "bmp" || suffix == "gif" || suffix == "webp" || suffix == "psd" || suffix == "svg" || suffix == "tiff"
-        return getReactApplicationContext().getResources().getIdentifier(name, if (isImage) "drawable" else "raw", getReactApplicationContext().getPackageName())
+        return reactApplicationContext.resources.getIdentifier(name, if (isImage) "drawable" else "raw", reactApplicationContext.packageName)
     }
 
     private val writeAccessByAPILevel: String
@@ -984,8 +979,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             return
         }
         if (ex is IORejectionException) {
-            val ioRejectionException = ex
-            promise.reject(ioRejectionException.code, ioRejectionException.message)
+            promise.reject(ex.code, ex.message)
             return
         }
         promise.reject(null, ex!!.message)
@@ -999,8 +993,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         promise.reject("EISDIR", "EISDIR: illegal operation on a directory, read")
     }
 
-    private fun sendEvent(reactContext: ReactContext, eventName: String, params: WritableMap) {
-        val emitter: DeviceEventManagerModule.RCTDeviceEventEmitter = getReactApplicationContext()
+    private fun sendEvent(eventName: String, params: WritableMap) {
+        val emitter: DeviceEventManagerModule.RCTDeviceEventEmitter = reactApplicationContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
         emitter.emit(eventName, params)
     }
