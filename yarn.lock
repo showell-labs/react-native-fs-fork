@@ -1845,7 +1845,7 @@ __metadata:
     metro-config: ^0.80.9
     react: 18.3.1
     react-native: 0.74.1
-    react-native-windows: ^0.74.2
+    react-native-windows: 0.74.2
   languageName: unknown
   linkType: soft
 
@@ -1867,7 +1867,7 @@ __metadata:
     react: 18.3.1
     react-native: 0.74.1
     react-native-builder-bob: ^0.23.2
-    react-native-windows: ^0.74.2
+    react-native-windows: 0.74.2
     typescript: ^5.4.5
   peerDependencies:
     react: "*"
@@ -9348,7 +9348,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-windows@npm:^0.74.2":
+"react-native-windows@npm:0.74.2":
   version: 0.74.2
   resolution: "react-native-windows@npm:0.74.2"
   dependencies:
