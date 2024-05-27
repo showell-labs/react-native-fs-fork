@@ -51,7 +51,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
         if (pickFileLauncher == null) {
             val registry = (currentActivity as ReactActivity).activityResultRegistry
-            pickFileLauncher = registry.register<Array<String>, Uri>(
+            pickFileLauncher = registry.register<Array<String>, Uri?>(
                     "RNFS_pickFile",
                     OpenDocument()
             ) { uri ->
