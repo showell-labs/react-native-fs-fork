@@ -1156,15 +1156,24 @@ RCT_EXPORT_METHOD(
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 ) {
+  // NOTE: We must copy options into a local variable, so that (especially with
+  // the new, bridgeless architecture) it is correctly detained by the async
+  // block below, not crushing the app.
+  // See: https://github.com/birdofpreyru/react-native-fs/issues/44
+# ifdef RCT_NEW_ARCH_ENABLED
+  JS::NativeReactNativeFs::PickFileOptionsT o = options;
+# else
+  NSDictionary* o = options;
+# endif
   dispatch_async(dispatch_get_main_queue(), ^() {
     @try {
       UIDocumentPickerViewController *picker;
 
 #   ifdef RCT_NEW_ARCH_ENABLED
-      facebook::react::LazyVector<NSString*> mimeTypes = options.mimeTypes();
+      facebook::react::LazyVector<NSString*> mimeTypes = o.mimeTypes();
       int numMimeTypes = mimeTypes.size();
 #   else
-      NSArray<NSString*>* mimeTypes = options[@"mimeTypes"];
+      NSArray<NSString*>* mimeTypes = o[@"mimeTypes"];
       int numMimeTypes = mimeTypes.count;
 #   endif
 
