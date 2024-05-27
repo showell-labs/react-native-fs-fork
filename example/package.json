@@ -13,17 +13,17 @@
     "build:ios": "cd ios && xcodebuild -workspace ReactNativeFsExample.xcworkspace -scheme ReactNativeFsExample -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.14.0",
-    "@types/lodash": "^4.17.1",
+    "@dr.pogodin/react-native-static-server": "^0.15.0",
+    "@types/lodash": "^4.17.4",
     "lodash": "^4.17.21",
     "react": "18.3.1",
     "react-native": "0.74.1",
-    "react-native-windows": "0.74.2"
+    "react-native-windows": "0.74.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.5",
-    "@babel/preset-env": "^7.24.5",
-    "@babel/runtime": "^7.24.5",
+    "@babel/core": "^7.24.6",
+    "@babel/preset-env": "^7.24.6",
+    "@babel/runtime": "^7.24.6",
     "@react-native/babel-preset": "0.74.83",
     "@react-native/metro-config": "0.74.83",
     "@react-native/typescript-config": "0.74.83",
