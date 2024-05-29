@@ -553,7 +553,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
   NSNumber* discretionary = [NSNumber numberWithBool:options.discretionary()];
   params.discretionary = [discretionary boolValue];
   NSNumber* cacheable = [NSNumber numberWithBool:options.cacheable()];
-  params.cacheable = cacheable ? [cacheable boolValue] : YES;
+  params.cacheable = [cacheable boolValue];
   NSNumber* progressInterval= [NSNumber numberWithDouble:options.progressInterval()];
   params.progressInterval = progressInterval;
   NSNumber* progressDivider = [NSNumber numberWithDouble:options.progressDivider()];

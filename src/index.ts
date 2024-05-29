@@ -173,7 +173,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
     toFile: normalizeFilePath(options.toFile),
     background: !!options.background,
     backgroundTimeout: options.backgroundTimeout || 3600000, // 1 hour
-    cacheable: !!options.cacheable,
+    cacheable: options.cacheable === undefined ? true : options.cacheable,
     connectionTimeout: options.connectionTimeout || 5000,
     discretionary: !!options.discretionary,
     headers: options.headers || {},
