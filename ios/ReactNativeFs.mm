@@ -548,12 +548,9 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
   params.toFile = options.toFile();
   NSDictionary* headers = options.headers();
   params.headers = headers;
-  NSNumber* background = [NSNumber numberWithBool:options.background()];
-  params.background = [background boolValue];
-  NSNumber* discretionary = [NSNumber numberWithBool:options.discretionary()];
-  params.discretionary = [discretionary boolValue];
-  NSNumber* cacheable = [NSNumber numberWithBool:options.cacheable()];
-  params.cacheable = [cacheable boolValue];
+  params.background = options.background();
+  params.discretionary = options.discretionary();
+  params.cacheable = options.cacheable();
   NSNumber* progressInterval= [NSNumber numberWithDouble:options.progressInterval()];
   params.progressInterval = progressInterval;
   NSNumber* progressDivider = [NSNumber numberWithDouble:options.progressDivider()];

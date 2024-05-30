@@ -25,7 +25,7 @@ namespace JS {
 
     struct MkdirOptionsT {
       std::optional<bool> NSURLIsExcludedFromBackupKey() const {
-        return _v[@"NSURLIsExcludedFromBackupKey"];
+        return [_v[@"NSURLIsExcludedFromBackupKey"] boolValue];
       }
       NSString *NSFileProtectionKey() const {
         return _v[@"NSFileProtectionKey"];
@@ -81,15 +81,15 @@ namespace JS {
       NSString *toUrl() const { return _v[@"toUrl"]; }
 
       std::optional<bool> binaryStreamOnly() const {
-        return ((NSNumber*)_v[@"binaryStreamOnly"]).boolValue;
+        return [_v[@"binaryStreamOnly"] boolValue];
       }
 
       id<NSObject>  files() const { return _v[@"files"]; }
       id<NSObject> _Nullable headers() const { return _v[@"headers"]; }
       id<NSObject> _Nullable fields() const { return _v[@"fields"]; }
       NSString *method() const { return _v[@"method"]; }
-      bool hasBeginCallback() const { return _v[@"hasBeginCallback"]; }
-      bool hasProgressCallback() const { return _v[@"hasProgressCallback"]; }
+      bool hasBeginCallback() const { return [_v[@"hasBeginCallback"] boolValue]; }
+      bool hasProgressCallback() const { return [_v[@"hasProgressCallback"] boolValue]; }
 
       NativeUploadFileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
