@@ -1248,8 +1248,8 @@ The type of options argument of [downloadFile()].
   Defaults _false_.
 
 - `discretionary` &mdash; **boolean** &mdash; Optional. Allow the OS to control
-  the timing and speed of the download to improve perceived performance
-  (iOS only).
+  the timing and speed of the download to improve perceived performance. This setting may prevent downloading with mobile internet or when the battery is low. Only works when `background` is activated
+  (iOS only, defaults to _false_).
 - `cacheable` &mdash; **boolean** &mdash; Optional. Whether the download can be
   stored in the shared NSURLCache (iOS only, defaults to _true_).
 

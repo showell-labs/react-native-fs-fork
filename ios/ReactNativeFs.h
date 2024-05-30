@@ -25,7 +25,7 @@ namespace JS {
 
     struct MkdirOptionsT {
       std::optional<bool> NSURLIsExcludedFromBackupKey() const {
-        return _v[@"NSURLIsExcludedFromBackupKey"];
+        return [_v[@"NSURLIsExcludedFromBackupKey"] boolValue];
       }
       NSString *NSFileProtectionKey() const {
         return _v[@"NSFileProtectionKey"];
@@ -40,18 +40,18 @@ namespace JS {
       double jobId() const { return [_v[@"jobId"] doubleValue]; }
       NSString *fromUrl() const  { return _v[@"fromUrl"]; }
       NSString *toFile() const  { return _v[@"toFile"]; }
-      bool background() const  { return _v[@"background"]; }
+      bool background() const  { return [_v[@"background"] boolValue]; }
       double backgroundTimeout() const  { return [_v[@"backgroundTimeout"] doubleValue]; }
-      bool cacheable() const  { return _v[@"cacheable"]; }
+      bool cacheable() const  { return [_v[@"cacheable"] boolValue]; }
       double connectionTimeout() const  { return [_v[@"connectionTimeout"] doubleValue]; }
-      bool discretionary() const  { return _v[@"discretionary"]; }
+      bool discretionary() const  { return [_v[@"discretionary"] boolValue]; }
       id<NSObject>  headers() const  { return _v[@"headers"]; }
       double progressDivider() const  { return [_v[@"progressDivider"] doubleValue]; }
       double progressInterval() const  { return [_v[@"progressInterval"] doubleValue]; }
       double readTimeout() const  { return [_v[@"readTimeout"] doubleValue]; }
-      bool hasBeginCallback() const  { return _v[@"hasBeginCallback"]; }
-      bool hasProgressCallback() const  { return _v[@"hasProgressCallback"]; }
-      bool hasResumableCallback() const  { return _v[@"hasResumableCallback"]; }
+      bool hasBeginCallback() const  { return [_v[@"hasBeginCallback"] boolValue]; }
+      bool hasProgressCallback() const  { return [_v[@"hasProgressCallback"] boolValue]; }
+      bool hasResumableCallback() const  { return [_v[@"hasResumableCallback"] boolValue]; }
 
       NativeDownloadFileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
@@ -81,15 +81,15 @@ namespace JS {
       NSString *toUrl() const { return _v[@"toUrl"]; }
 
       std::optional<bool> binaryStreamOnly() const {
-        return ((NSNumber*)_v[@"binaryStreamOnly"]).boolValue;
+        return [_v[@"binaryStreamOnly"] boolValue];
       }
 
       id<NSObject>  files() const { return _v[@"files"]; }
       id<NSObject> _Nullable headers() const { return _v[@"headers"]; }
       id<NSObject> _Nullable fields() const { return _v[@"fields"]; }
       NSString *method() const { return _v[@"method"]; }
-      bool hasBeginCallback() const { return _v[@"hasBeginCallback"]; }
-      bool hasProgressCallback() const { return _v[@"hasProgressCallback"]; }
+      bool hasBeginCallback() const { return [_v[@"hasBeginCallback"] boolValue]; }
+      bool hasProgressCallback() const { return [_v[@"hasProgressCallback"] boolValue]; }
 
       NativeUploadFileOptionsT(NSDictionary *const v) : _v(v) {}
     private:
