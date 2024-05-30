@@ -1844,7 +1844,7 @@ __metadata:
     metro-config: ^0.80.9
     react: 18.3.1
     react-native: 0.74.1
-    react-native-windows: 0.74.5
+    react-native-windows: 0.74.7
   languageName: unknown
   linkType: soft
 
@@ -1866,7 +1866,7 @@ __metadata:
     react: 18.3.1
     react-native: 0.74.1
     react-native-builder-bob: ^0.23.2
-    react-native-windows: 0.74.5
+    react-native-windows: 0.74.7
     typescript: ^5.4.5
   peerDependencies:
     react: "*"
@@ -9347,9 +9347,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-windows@npm:0.74.5":
-  version: 0.74.5
-  resolution: "react-native-windows@npm:0.74.5"
+"react-native-windows@npm:0.74.7":
+  version: 0.74.7
+  resolution: "react-native-windows@npm:0.74.7"
   dependencies:
     "@babel/runtime": ^7.0.0
     "@jest/create-cache-key-function": ^29.6.3
@@ -9396,7 +9396,7 @@ __metadata:
     "@types/react": ^18.2.6
     react: 18.2.0
     react-native: ^0.74.0
-  checksum: be0a75d2e425f24495c6815706a98b51ffca0a31e02ebe46917ff347168cabc3b80f3e64b7337a3c045051708ee6dd2ae55135c92534142b5e9cf741b270591d
+  checksum: aa2810b0763b8b08847e1ed46080a8e01881e0e921e94c1a822fa82b2ed90c3c21f43c3eff65331f2d8e49afdfee102a70578cb8b741cfd290a0bf2f49d09994
   languageName: node
   linkType: hard
 
