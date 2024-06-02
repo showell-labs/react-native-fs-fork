@@ -22,6 +22,16 @@ and [old][Old Architecture] [RN][React Native] architectures.
 
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
+### Sponsored By
+[<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
+
+### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/104437822?s=36" />](https://github.com/stetbern)
+[<img width=36 src="https://avatars.githubusercontent.com/u/28300143?s=36" />](https://github.com/raphaelheinz)
+[<img width=36 src="https://avatars.githubusercontent.com/u/118227615?s=36" />](https://github.com/IanOpenSpace)
+[<img width=36 src="https://avatars.githubusercontent.com/u/20144632?s=36" />](https://github.com/birdofpreyru)
+<br />[+ contributors of the original `react-native-fs`](https://github.com/itinance/react-native-fs/graphs/contributors)
+
 ## Table of Contents
 - [Getting Started]
 - [Project History & Roadmap]
