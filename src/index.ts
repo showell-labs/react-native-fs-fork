@@ -1,3 +1,4 @@
+import { getReasonPhrase } from 'http-status-codes';
 import { type EmitterSubscription, NativeEventEmitter } from 'react-native';
 
 import RNFS from './ReactNativeFs';
@@ -378,6 +379,13 @@ export function uploadFiles(options: UploadFileOptionsT): {
     jobId,
     promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResultT) => {
       subscriptions.forEach((sub) => sub.remove());
+
+      if (res.statusCode >= 400) {
+        const error = Error(getReasonPhrase(res.statusCode));
+        (error as any).result = res;
+        throw error;
+      }
+
       return res;
     }),
   };

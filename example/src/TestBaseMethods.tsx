@@ -1189,6 +1189,39 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       return 'fail';
     }
   },
+  'uploadFiles() - HTTP error handling': async () => {
+    try {
+      const server = await waitServer();
+
+      const good = 'GÖÖÐ\n';
+      const path = `${TemporaryDirectoryPath}/upload-files.txt`;
+      await writeFile(path, good);
+
+      const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
+
+      try {
+        unlink(targetDevicePath);
+      } catch {}
+
+      const res = uploadFiles({
+        toUrl: `${server?.origin!}/invalid-path/upload-files.txt`,
+        method: 'PUT',
+        files: [
+          {
+            name: 'upload-files-source-file',
+            filename: 'upload-files-source-file.txt',
+            filepath: path,
+          },
+        ],
+      });
+      await res.promise;
+      return 'fail';
+    } catch (e: any) {
+      return e.message !== 'Not Found' || e.result.statusCode !== 404
+        ? 'fail'
+        : 'pass';
+    }
+  },
   'write()': async () => {
     // TODO: This test is copied from "readFile() and writeFile()", and it is
     // just slightly modified, without much thinking - it does not test all

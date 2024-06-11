@@ -139,7 +139,11 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             }
             request.flush()
             request.close()
-            responseStream = BufferedInputStream(connection.inputStream)
+            if (connection.errorStream != null) {
+                responseStream = BufferedInputStream(connection.errorStream)
+            } else {
+                responseStream = BufferedInputStream(connection.inputStream)
+            }
             responseStreamReader = BufferedReader(InputStreamReader(responseStream))
             val responseHeaders = Arguments.createMap()
             val map = connection.headerFields

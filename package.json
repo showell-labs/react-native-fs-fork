@@ -46,7 +46,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "http-status-codes": "^2.3.0"
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.74.84",

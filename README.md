@@ -1157,8 +1157,11 @@ in this library fork.
 - `options` &mdash; [UploadFileOptionsT] &mdash; Upload settings.
 
 - Returns an object holding `jobId` **number** (can be used to manage
-  in-progress download by corresponding functions) and `promise` resolving
-  to [UploadResultT] once the download is completed.
+  in-progress uploads by corresponding functions), and `promise` resolving
+  to [UploadResultT] once the upload completes successfully. In case the upload
+  fails (including when it fails due to HTTP errors), the promise is rejected
+  with `Error` object, to which `.result` field an instance of [UploadResultT]
+  is attached, if HTTP response was received.
 
 ### write()
 [write()]: #write
