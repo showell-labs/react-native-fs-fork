@@ -8,7 +8,7 @@
     </ProjectReference>
     <!-- Projects from @dr.pogodin/react-native-static-server -->
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\@dr.pogodin\react-native-static-server\windows\ReactNativeStaticServer\ReactNativeStaticServer.vcxproj">
-      <Project>{85449abf-3212-44b4-be33-d3c6629fd017}</Project>
+      <Project>{85449ABF-3212-44B4-BE33-D3C6629FD017}</Project>
     </ProjectReference>
   </ItemGroup>
 </Project>

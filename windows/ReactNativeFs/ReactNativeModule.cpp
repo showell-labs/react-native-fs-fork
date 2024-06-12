@@ -1104,7 +1104,7 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         promise.Resolve(JSValueObject
             {
                 { "jobId", jobId },
-                { "statusCode", statusCode},
+                { "statusCode", std::stoi(statusCode) },
                 { "headers", resultHeaders},
                 { "body", resultContent},
             });
