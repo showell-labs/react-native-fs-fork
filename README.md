@@ -26,6 +26,7 @@ and [old][Old Architecture] [RN][React Native] architectures.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 [<img width=36 src="https://avatars.githubusercontent.com/u/104437822?s=36" />](https://github.com/stetbern)
 [<img width=36 src="https://avatars.githubusercontent.com/u/28300143?s=36" />](https://github.com/raphaelheinz)
 [<img width=36 src="https://avatars.githubusercontent.com/u/118227615?s=36" />](https://github.com/IanOpenSpace)
@@ -1157,8 +1158,11 @@ in this library fork.
 - `options` &mdash; [UploadFileOptionsT] &mdash; Upload settings.
 
 - Returns an object holding `jobId` **number** (can be used to manage
-  in-progress download by corresponding functions) and `promise` resolving
-  to [UploadResultT] once the download is completed.
+  in-progress uploads by corresponding functions), and `promise` resolving
+  to [UploadResultT] once the upload completes successfully. In case the upload
+  fails (including when it fails due to HTTP errors), the promise is rejected
+  with `Error` object, to which `.result` field an instance of [UploadResultT]
+  is attached, if HTTP response was received.
 
 ### write()
 [write()]: #write
