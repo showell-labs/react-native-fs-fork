@@ -45,29 +45,42 @@ RCT_EXPORT_METHOD(readDir:(NSString *)dirPath
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 {
-  NSFileManager *fileManager = [NSFileManager defaultManager];
   NSError *error = nil;
-
-  NSArray *contents = [fileManager contentsOfDirectoryAtPath:dirPath error:&error];
-  NSMutableArray *tagetContents = [[NSMutableArray alloc] init];
-  for (NSString *obj in contents) {
-    NSString *path = [dirPath stringByAppendingPathComponent:obj];
-    NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:nil];
-    if(attributes != nil) {
-        [tagetContents addObject:@{
-            @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
-            @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
-            @"name": obj,
-            @"path": path,
-            @"size": [attributes objectForKey:NSFileSize],
-            @"type": [attributes objectForKey:NSFileType]
-            }];
-    }
-  }
-
+  NSURL *dirUrl = [ReactNativeFs pathToUrl:dirPath error:&error];
   if (error) return [[RNFSException fromError:error] reject:reject];
 
-  resolve(tagetContents);
+  BOOL allowed = [dirUrl startAccessingSecurityScopedResource];
+
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+
+  @try {
+    NSArray *contents = [fileManager contentsOfDirectoryAtPath:dirPath error:&error];
+    NSMutableArray *tagetContents = [[NSMutableArray alloc] init];
+    for (NSString *obj in contents) {
+      NSString *path = [dirUrl stringByAppendingPathComponent:obj];
+      NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:nil];
+      if(attributes != nil) {
+          [tagetContents addObject:@{
+              @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
+              @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
+              @"name": obj,
+              @"path": path,
+              @"size": [attributes objectForKey:NSFileSize],
+              @"type": [attributes objectForKey:NSFileType]
+              }];
+      }
+    }
+
+    if (error) return [[RNFSException fromError:error] reject:reject];
+
+    resolve(tagetContents);
+  }
+  @catch (NSException *exception) {
+    reject(@"exception", exception.reason, nil);
+  }
+  @finally {
+    if (allowed) [dirUrl stopAccessingSecurityScopedResource];
+  }
 }
 
 RCT_EXPORT_METHOD(exists:(NSString *)filepath
