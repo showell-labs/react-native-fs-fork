@@ -54,20 +54,42 @@ RCT_EXPORT_METHOD(readDir:(NSString *)dirPath
   NSFileManager *fileManager = [NSFileManager defaultManager];
 
   @try {
-    NSArray *contents = [fileManager contentsOfDirectoryAtPath:dirPath error:&error];
+    NSArray *contents = [fileManager contentsOfDirectoryAtURL:dirUrl
+                                   includingPropertiesForKeys:@[
+      NSURLContentModificationDateKey, NSURLCreationDateKey,
+      NSURLFileSizeKey, NSURLIsDirectoryKey, NSURLIsRegularFileKey
+    ] options:0 error:&error];
     NSMutableArray *tagetContents = [[NSMutableArray alloc] init];
-    for (NSString *obj in contents) {
-      NSString *path = [dirUrl stringByAppendingPathComponent:obj];
-      NSDictionary *attributes = [fileManager attributesOfItemAtPath:path error:nil];
-      if(attributes != nil) {
-          [tagetContents addObject:@{
-              @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
-              @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
-              @"name": obj,
-              @"path": path,
-              @"size": [attributes objectForKey:NSFileSize],
-              @"type": [attributes objectForKey:NSFileType]
-              }];
+    for (NSURL *url in contents) {
+      NSDictionary *attrs = [url resourceValuesForKeys:@[
+        NSURLContentModificationDateKey, NSURLCreationDateKey,
+        NSURLFileSizeKey, NSURLIsDirectoryKey, NSURLIsRegularFileKey
+      ] error:nil];
+
+      if(attrs != nil) {
+        NSNumber *size = [attrs objectForKey:NSURLFileSizeKey];
+        if (size == nil) size = @(64);
+
+        NSString *path = url.resourceSpecifier;
+
+        NSString *type = @"N/A";
+        if ([[attrs objectForKey:NSURLIsRegularFileKey] boolValue])
+          type = NSFileTypeRegular;
+        else if ([[attrs objectForKey:NSURLIsDirectoryKey] boolValue]) {
+          type = NSFileTypeDirectory;
+
+          // Trims closing dash from the end of folder paths.
+          path = [path substringToIndex:[path length] - 1];
+        }
+
+        [tagetContents addObject:@{
+          @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attrs objectForKey:NSURLCreationDateKey]],
+          @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attrs objectForKey:NSURLContentModificationDateKey]],
+          @"name": url.lastPathComponent,
+          @"path": path,
+          @"size": size,
+          @"type": type
+        }];
       }
     }
 
