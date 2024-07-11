@@ -23,9 +23,11 @@ and [old][Old Architecture] [RN][React Native] architectures.
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
 ### Sponsored By
+[<img width=36 src="https://avatars.githubusercontent.com/u/3375071?s=36&v=4" />](https://github.com/josmithua)
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/31921080?s=36" />](https://github.com/Yupeng-li)
 [<img width=36 src="https://avatars.githubusercontent.com/u/12350021?s=36" />](https://github.com/zenoxs)
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 [<img width=36 src="https://avatars.githubusercontent.com/u/104437822?s=36" />](https://github.com/stetbern)
