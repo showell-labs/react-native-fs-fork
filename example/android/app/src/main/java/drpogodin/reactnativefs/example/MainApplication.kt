@@ -1,4 +1,4 @@
-package com.reactnativefsexample
+package drpogodin.reactnativefs.example
 
 import android.app.Application
 import com.facebook.react.PackageList

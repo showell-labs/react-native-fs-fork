@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { Alert, Button, SafeAreaView, ScrollView } from 'react-native';
 
@@ -29,7 +29,7 @@ export default function App() {
 
             for (let i = 0; i < res.length; ++i) {
               const begin = await read(res[0]!, 10);
-              Alert.alert(`File #{i + 1} starts with`, begin);
+              Alert.alert(`File ${i + 1} starts with`, begin);
             }
           }}
           title="pickFile()"

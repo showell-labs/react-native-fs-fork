@@ -1,17 +1,27 @@
 {
   "name": "@dr.pogodin/react-native-fs",
-  "version": "2.27.1",
+  "version": "2.28.0",
   "description": "Native filesystem access for React Native",
-  "main": "lib/commonjs/index",
-  "module": "lib/module/index",
-  "types": "lib/typescript/src/index.d.ts",
-  "react-native": "src/index",
-  "source": "src/index",
+  "source": "./src/index.ts",
+  "main": "./lib/commonjs/index.js",
+  "module": "./lib/module/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/typescript/module/src/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/src/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    }
+  },
   "scripts": {
     "codegen-windows": "react-native codegen-windows",
     "example": "yarn workspace @dr.pogodin/react-native-fs-example",
     "test": "yarn lint && yarn typecheck",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
@@ -47,24 +57,24 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "eslint-plugin-ft-flow": "^3.0.11",
     "http-status-codes": "^2.3.0"
   },
   "devDependencies": {
-    "@react-native/eslint-config": "^0.74.84",
+    "@react-native/eslint-config": "^0.75.2",
     "@types/jest": "^29.5.12",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18.3.4",
     "del-cli": "^5.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-prettier": "^5.2.1",
     "jest": "^29.7.0",
-    "metro-config": "^0.80.9",
-    "prettier": "^3.3.2",
+    "prettier": "^3.3.3",
     "react": "18.3.1",
-    "react-native": "0.74.2",
-    "react-native-builder-bob": "^0.23.2",
-    "react-native-windows": "0.74.8",
-    "typescript": "^5.4.5"
+    "react-native": "0.75.2",
+    "react-native-builder-bob": "^0.30.0",
+    "react-native-windows": "0.75.0",
+    "typescript": "^5.5.4"
   },
   "resolutions": {
     "@types/react": "^18.2.44"
@@ -88,54 +98,63 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@react-native",
-      "prettier"
+      "@react-native"
     ],
     "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "quoteProps": "consistent",
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "all",
-          "useTabs": false
-        }
-      ]
+      "curly": ["error", "multi-line"],
+      "react/react-in-jsx-scope": "off"
     }
   },
   "eslintIgnore": [
     "node_modules/",
     "lib/"
   ],
-  "prettier": {
-    "quoteProps": "consistent",
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "all",
-    "useTabs": false
-  },
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",
     "targets": [
-      "commonjs",
-      "module",
+      "codegen",
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
       [
         "typescript",
         {
-          "project": "tsconfig.build.json"
+          "project": "tsconfig.build.json",
+          "esm": true
         }
       ]
     ]
   },
   "codegenConfig": {
     "name": "RNReactNativeFsSpec",
-    "type": "modules",
+    "type": "all",
     "jsSrcsDir": "src",
     "windows": {
       "namespace": "winrt::ReactNativeFs",
       "outputDirectory": "windows/ReactNativeFs/codegen"
-    }
+    },
+    "outputDir": {
+      "ios": "ios/generated",
+      "android": "android/generated"
+    },
+    "android": {
+      "javaPackageName": "com.drpogodin.reactnativefs"
+    },
+    "includesGeneratedCode": true
+  },
+  "create-react-native-library": {
+    "type": "module-mixed",
+    "languages": "kotlin-objc",
+    "version": "0.41.0"
   }
 }
