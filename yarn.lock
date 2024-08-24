@@ -1770,7 +1770,7 @@ __metadata:
     "@babel/core": ^7.25.2
     "@babel/preset-env": ^7.25.4
     "@babel/runtime": ^7.25.4
-    "@dr.pogodin/react-native-static-server": ^0.15.1
+    "@dr.pogodin/react-native-static-server": ^0.15.2
     "@react-native/babel-preset": 0.75.2
     "@react-native/metro-config": 0.75.2
     "@react-native/typescript-config": 0.75.2
@@ -1811,9 +1811,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.15.1":
-  version: 0.15.1
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.15.1"
+"@dr.pogodin/react-native-static-server@npm:^0.15.2":
+  version: 0.15.2
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.15.2"
   dependencies:
     "@dr.pogodin/js-utils": ^0.0.12
   peerDependencies:
@@ -1821,7 +1821,7 @@ __metadata:
     react: "*"
     react-native: "*"
     react-native-windows: "*"
-  checksum: 6170ba3c294af7d62847eca3601e88104c3563dcc2e59f21643543cec931d18fbb0732de4ec1f3d6b0e2ac3de01cfe2025fdd7aba26870d34bbe1961ce733ec2
+  checksum: 7c7a17fc4848a897a6ce12d30c0b3cb261512bb92b27bd66afe23c0c40b1ecd13e7d3645b477e7a5fae9c40a09c538137cf9a488b82caaddd56d7db39db47e17
   languageName: node
   linkType: hard
 
