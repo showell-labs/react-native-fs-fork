@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, View } from 'react-native';
 
 const RNFS = require('@dr.pogodin/react-native-fs');

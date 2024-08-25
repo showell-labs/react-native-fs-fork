@@ -1,4 +1,4 @@
-package com.reactnativefsexample
+package drpogodin.reactnativefs.example
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

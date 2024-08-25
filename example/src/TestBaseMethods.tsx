@@ -1,5 +1,4 @@
 import { isEqual, isMatch } from 'lodash';
-import React from 'react';
 import { AppState, Platform, Text, View } from 'react-native';
 
 import {
@@ -504,8 +503,9 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     try {
       if (await exists(path)) return 'fail';
       await writeFile(path, 'xxx');
-      if ((await hash(path, 'md5')) !== 'f561aaf6ef0bf14d4208bb46a4ccb3ad')
+      if ((await hash(path, 'md5')) !== 'f561aaf6ef0bf14d4208bb46a4ccb3ad') {
         return 'fail';
+      }
       if (
         (await hash(path, 'sha1')) !==
         'b60d121b438a380c343d5ec3c2037564b82ffef3'

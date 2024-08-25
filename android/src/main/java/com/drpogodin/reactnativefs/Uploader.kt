@@ -55,117 +55,124 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         var filename: String
         var filetype: String
         try {
-            val files: Array<Any> = params!!.files!!.toTypedArray()
-            val binaryStreamOnly = params.binaryStreamOnly
-            connection = params.src!!.openConnection() as HttpURLConnection
-            connection.doOutput = true
-            val headerIterator = params.headers!!.keySetIterator()
-            connection.requestMethod = params.method
+          val files: Array<Any> = params!!.files!!.toTypedArray()
+          val binaryStreamOnly = params.binaryStreamOnly
+          connection = params.src!!.openConnection() as HttpURLConnection
+          connection.doOutput = true
+          val headerIterator = params.headers!!.keySetIterator()
+          connection.requestMethod = params.method
+          if (!binaryStreamOnly) {
+            connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
+          }
+          while (headerIterator.hasNextKey()) {
+            val key = headerIterator.nextKey()
+            val value = params.headers!!.getString(key)
+            connection.setRequestProperty(key, value)
+          }
+          val fieldsIterator = params.fields!!.keySetIterator()
+          while (fieldsIterator.hasNextKey()) {
+            val key = fieldsIterator.nextKey()
+            val value = params.fields!!.getString(key)
+            metaData += twoHyphens + boundary + crlf + "Content-Disposition: form-data; name=\"" + key + "\"" + crlf + crlf + value + crlf
+          }
+          stringData += metaData
+          fileHeader = arrayOfNulls(files.size)
+          for (map in params.files!!) {
+            name = map.getString("name")!!
+            filename = map.getString("filename")!!
+            filetype = map.getString("filetype") ?: getMimeType(map.getString("filepath"))
+            val file = File(map.getString("filepath"))
+            val fileLength = file.length()
+            totalFileLength += fileLength
             if (!binaryStreamOnly) {
-                connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
+              val fileHeaderType = twoHyphens + boundary + crlf +
+                "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + crlf +
+                "Content-Type: " + filetype + crlf
+              if (files.size - 1 == fileCount) {
+                totalFileLength += tail.length.toLong()
+              }
+              val fileLengthHeader = "Content-length: $fileLength$crlf"
+              fileHeader[fileCount] = fileHeaderType + fileLengthHeader + crlf
+              stringData += fileHeaderType + fileLengthHeader + crlf
             }
-            while (headerIterator.hasNextKey()) {
-                val key = headerIterator.nextKey()
-                val value = params.headers!!.getString(key)
-                connection.setRequestProperty(key, value)
-            }
-            val fieldsIterator = params.fields!!.keySetIterator()
-            while (fieldsIterator.hasNextKey()) {
-                val key = fieldsIterator.nextKey()
-                val value = params.fields!!.getString(key)
-                metaData += twoHyphens + boundary + crlf + "Content-Disposition: form-data; name=\"" + key + "\"" + crlf + crlf + value + crlf
-            }
-            stringData += metaData
-            fileHeader = arrayOfNulls(files.size)
-            for (map in params.files!!) {
-                name = map.getString("name")!!
-                filename = map.getString("filename")!!
-                filetype = map.getString("filetype") ?: getMimeType(map.getString("filepath"))
-                val file = File(map.getString("filepath"))
-                val fileLength = file.length()
-                totalFileLength += fileLength
-                if (!binaryStreamOnly) {
-                    val fileHeaderType = twoHyphens + boundary + crlf +
-                            "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + crlf +
-                            "Content-Type: " + filetype + crlf
-                    if (files.size - 1 == fileCount) {
-                        totalFileLength += tail.length.toLong()
-                    }
-                    val fileLengthHeader = "Content-length: $fileLength$crlf"
-                    fileHeader[fileCount] = fileHeaderType + fileLengthHeader + crlf
-                    stringData += fileHeaderType + fileLengthHeader + crlf
-                }
-                fileCount++
-            }
-            fileCount = 0
-            mParams!!.onUploadBegin?.onUploadBegin()
+            fileCount++
+          }
+          fileCount = 0
+          mParams!!.onUploadBegin?.onUploadBegin()
+          if (!binaryStreamOnly) {
+            var requestLength = totalFileLength
+            requestLength += (stringData.length + files.size * crlf.length).toLong()
+            connection.setRequestProperty("Content-length", "" + requestLength.toInt())
+            connection.setFixedLengthStreamingMode(requestLength.toInt())
+          }
+          connection.connect()
+          request = DataOutputStream(connection.outputStream)
+          val requestChannel = Channels.newChannel(request)
+          if (!binaryStreamOnly) {
+            request.writeBytes(metaData)
+          }
+          byteSentTotal = 0
+          for (map in params.files!!) {
             if (!binaryStreamOnly) {
-                var requestLength = totalFileLength
-                requestLength += (stringData.length + files.size * crlf.length).toLong()
-                connection.setRequestProperty("Content-length", "" + requestLength.toInt())
-                connection.setFixedLengthStreamingMode(requestLength.toInt())
+              request.writeBytes(fileHeader[fileCount])
             }
-            connection.connect()
-            request = DataOutputStream(connection.outputStream)
-            val requestChannel = Channels.newChannel(request)
-            if (!binaryStreamOnly) {
-                request.writeBytes(metaData)
-            }
-            byteSentTotal = 0
-            for (map in params.files!!) {
-                if (!binaryStreamOnly) {
-                    request.writeBytes(fileHeader[fileCount])
-                }
-                val file = File(map.getString("filepath"))
-                val fileLength = file.length()
-                val bufferSize = ceil((fileLength / 100f).toDouble()).toLong()
-                var bytesRead: Long = 0
-                val fileStream = FileInputStream(file)
-                val fileChannel = fileStream.channel
-                while (bytesRead < fileLength) {
-                    val transferredBytes = fileChannel.transferTo(bytesRead, bufferSize, requestChannel)
-                    bytesRead += transferredBytes
-                    byteSentTotal += transferredBytes.toInt()
-                    mParams!!.onUploadProgress?.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
-                }
-                if (!binaryStreamOnly) {
-                    request.writeBytes(crlf)
-                }
-                fileCount++
-                fileStream.close()
+            val file = File(map.getString("filepath"))
+            val fileLength = file.length()
+            val bufferSize = ceil((fileLength / 100f).toDouble()).toLong()
+            var bytesRead: Long = 0
+            val fileStream = FileInputStream(file)
+            val fileChannel = fileStream.channel
+            while (bytesRead < fileLength) {
+              val transferredBytes = fileChannel.transferTo(bytesRead, bufferSize, requestChannel)
+              bytesRead += transferredBytes
+              byteSentTotal += transferredBytes.toInt()
+              mParams!!.onUploadProgress?.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
             }
             if (!binaryStreamOnly) {
-                request.writeBytes(tail)
+              request.writeBytes(crlf)
             }
-            request.flush()
-            request.close()
-            if (connection.errorStream != null) {
-                responseStream = BufferedInputStream(connection.errorStream)
-            } else {
-                responseStream = BufferedInputStream(connection.inputStream)
+            fileCount++
+            fileStream.close()
+          }
+          if (!binaryStreamOnly) {
+            request.writeBytes(tail)
+          }
+          request.flush()
+          request.close()
+          if (connection.errorStream != null) {
+            responseStream = BufferedInputStream(connection.errorStream)
+          } else {
+            responseStream = BufferedInputStream(connection.inputStream)
+          }
+          responseStreamReader = BufferedReader(InputStreamReader(responseStream))
+          val responseHeaders = Arguments.createMap()
+          val map = connection.headerFields
+          for ((key, value) in map) {
+            // NOTE: Although the type of key is evaluated as non-nullable by the compiler,
+            // somehow it may become `null` after the upgrade to RN@0.75, thus this guard for now.
+            if (key !== null) {
+              val count = 0
+              responseHeaders.putString(key, value[count])
             }
-            responseStreamReader = BufferedReader(InputStreamReader(responseStream))
-            val responseHeaders = Arguments.createMap()
-            val map = connection.headerFields
-            for ((key, value) in map) {
-                val count = 0
-                responseHeaders.putString(key, value[count])
-            }
-            val stringBuilder = StringBuilder()
-            var line: String?
-            while (responseStreamReader.readLine().also { line = it } != null) {
-                stringBuilder.append(line).append("\n")
-            }
-            val response = stringBuilder.toString()
-            statusCode = connection.responseCode
-            res!!.headers = responseHeaders
-            res!!.body = response
-            res!!.statusCode = statusCode
+          }
+          val stringBuilder = StringBuilder()
+          var line: String?
+          while (responseStreamReader.readLine().also { line = it } != null) {
+            stringBuilder.append(line).append("\n")
+          }
+          val response = stringBuilder.toString()
+          statusCode = connection.responseCode
+          res!!.headers = responseHeaders
+          res!!.body = response
+          res!!.statusCode = statusCode
+        } catch (e: Exception) {
+          e.printStackTrace()
+          throw e
         } finally {
-            connection?.disconnect()
-            request?.close()
-            responseStream?.close()
-            responseStreamReader?.close()
+          connection?.disconnect()
+          request?.close()
+          responseStream?.close()
+          responseStreamReader?.close()
         }
     }
 

@@ -1,17 +1,20 @@
 const path = require('path');
-const pak = require('../package.json');
+const { getConfig } = require('react-native-builder-bob/babel-config');
+const pkg = require('../package.json');
 
-module.exports = {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: [
-    [
-      'module-resolver',
-      {
-        extensions: ['.tsx', '.ts', '.js', '.json'],
-        alias: {
-          [pak.name]: path.join(__dirname, '..', pak.source),
-        },
-      },
-    ],
-  ],
-};
+const root = path.resolve(__dirname, '..');
+
+const res = getConfig(
+  {
+    presets: ['module:@react-native/babel-preset'],
+  },
+  { root, pkg }
+);
+
+// As of RN@0.75.2, the first override in the getConfig() result sets up
+// the alias to react-native-fs library for example app, but excluding aliasing
+// for node_modules dependencies. We remove that exlusion here, as we need that
+// alias for react-native-static-server.
+delete res.overrides[0].exclude;
+
+module.exports = res;

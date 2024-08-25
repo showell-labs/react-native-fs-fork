@@ -1,4 +1,4 @@
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
 const fs = require('fs');
 const path = require('path');
@@ -13,17 +13,18 @@ const rnwPath = fs.realpathSync(
   path.resolve(require.resolve('react-native-windows/package.json'), '..'),
 );
 
+//
+
 /**
  * Metro configuration
  * https://facebook.github.io/metro/docs/configuration
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {
-  watchFolders: [root],
 
-  // We need to make sure that only one version is loaded for peerDependencies
-  // So we block them at the root, and alias them to the versions in example's node_modules
+const config = {
+  //
+  watchFolders: [root],
   resolver: {
     blockList: exclusionList([
       ...modules.map(
@@ -43,8 +44,8 @@ const config = {
       acc[name] = path.join(__dirname, 'node_modules', name);
       return acc;
     }, {}),
+    //
   },
-
   transformer: {
     getTransformOptions: async () => ({
       transform: {
@@ -52,8 +53,6 @@ const config = {
         inlineRequires: true,
       },
     }),
-    // This fixes the 'missing-asset-registry-path` error (see https://github.com/microsoft/react-native-windows/issues/11437)
-    assetRegistryPath: 'react-native/Libraries/Image/AssetRegistry',
   },
 };
 

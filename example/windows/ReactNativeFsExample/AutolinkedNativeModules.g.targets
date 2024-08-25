@@ -4,11 +4,11 @@
   <ItemGroup>
     <!-- Projects from @dr.pogodin/react-native-fs -->
     <ProjectReference Include="$(ProjectDir)..\..\..\windows\ReactNativeFs\ReactNativeFs.vcxproj">
-      <Project>{64defcc0-2495-420f-becb-78d19c734e25}</Project>
+      <Project>{8DD80475-5EEE-4C4C-B283-E4ABE56BE884}</Project>
     </ProjectReference>
     <!-- Projects from @dr.pogodin/react-native-static-server -->
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\@dr.pogodin\react-native-static-server\windows\ReactNativeStaticServer\ReactNativeStaticServer.vcxproj">
-      <Project>{85449ABF-3212-44B4-BE33-D3C6629FD017}</Project>
+      <Project>{51eea8fa-5914-480c-86a9-a0e5700e5eb3}</Project>
     </ProjectReference>
   </ItemGroup>
 </Project>
