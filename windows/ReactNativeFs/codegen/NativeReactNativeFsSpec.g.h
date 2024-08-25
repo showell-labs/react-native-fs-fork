@@ -13,7 +13,25 @@
 
 namespace winrt::ReactNativeFs {
 
+struct ReactNativeFsSpec_DownloadResultT {
+    double jobId;
+    double statusCode;
+    double bytesWritten;
+};
+
+struct ReactNativeFsSpec_FSInfoResultT {
+    double totalSpace;
+    double totalSpaceEx;
+    double freeSpace;
+    double freeSpaceEx;
+};
+
 struct ReactNativeFsSpec_FileOptionsT {
+    std::optional<std::string> NSFileProtectionKey;
+};
+
+struct ReactNativeFsSpec_MkdirOptionsT {
+    std::optional<bool> NSURLIsExcludedFromBackupKey;
     std::optional<std::string> NSFileProtectionKey;
 };
 
@@ -35,28 +53,6 @@ struct ReactNativeFsSpec_NativeDownloadFileOptionsT {
     bool hasResumableCallback;
 };
 
-struct ReactNativeFsSpec_DownloadResultT {
-    double jobId;
-    double statusCode;
-    double bytesWritten;
-};
-
-struct ReactNativeFsSpec_FSInfoResultT {
-    double totalSpace;
-    double totalSpaceEx;
-    double freeSpace;
-    double freeSpaceEx;
-};
-
-struct ReactNativeFsSpec_MkdirOptionsT {
-    std::optional<bool> NSURLIsExcludedFromBackupKey;
-    std::optional<std::string> NSFileProtectionKey;
-};
-
-struct ReactNativeFsSpec_PickFileOptionsT {
-    std::vector<std::string> mimeTypes;
-};
-
 struct ReactNativeFsSpec_NativeReadDirResItemT {
     double ctime;
     double mtime;
@@ -75,11 +71,6 @@ struct ReactNativeFsSpec_NativeStatResultT {
     std::string originalFilepath;
 };
 
-struct ReactNativeFsSpec_TouchOptions {
-    std::optional<double> ctime;
-    std::optional<double> mtime;
-};
-
 struct ReactNativeFsSpec_NativeUploadFileOptionsT {
     double jobId;
     std::string toUrl;
@@ -90,6 +81,15 @@ struct ReactNativeFsSpec_NativeUploadFileOptionsT {
     std::optional<std::string> method;
     bool hasBeginCallback;
     bool hasProgressCallback;
+};
+
+struct ReactNativeFsSpec_PickFileOptionsT {
+    std::vector<std::string> mimeTypes;
+};
+
+struct ReactNativeFsSpec_TouchOptions {
+    std::optional<double> ctime;
+    std::optional<double> mtime;
 };
 
 struct ReactNativeFsSpec_UploadResultT {
@@ -118,9 +118,36 @@ struct ReactNativeFsSpec_Constants {
 };
 
 
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadResultT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_DownloadResultT::jobId},
+        {L"statusCode", &ReactNativeFsSpec_DownloadResultT::statusCode},
+        {L"bytesWritten", &ReactNativeFsSpec_DownloadResultT::bytesWritten},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_FSInfoResultT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"totalSpace", &ReactNativeFsSpec_FSInfoResultT::totalSpace},
+        {L"totalSpaceEx", &ReactNativeFsSpec_FSInfoResultT::totalSpaceEx},
+        {L"freeSpace", &ReactNativeFsSpec_FSInfoResultT::freeSpace},
+        {L"freeSpaceEx", &ReactNativeFsSpec_FSInfoResultT::freeSpaceEx},
+    };
+    return fieldMap;
+}
+
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_FileOptionsT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"NSFileProtectionKey", &ReactNativeFsSpec_FileOptionsT::NSFileProtectionKey},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_MkdirOptionsT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"NSURLIsExcludedFromBackupKey", &ReactNativeFsSpec_MkdirOptionsT::NSURLIsExcludedFromBackupKey},
+        {L"NSFileProtectionKey", &ReactNativeFsSpec_MkdirOptionsT::NSFileProtectionKey},
     };
     return fieldMap;
 }
@@ -142,40 +169,6 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_N
         {L"hasBeginCallback", &ReactNativeFsSpec_NativeDownloadFileOptionsT::hasBeginCallback},
         {L"hasProgressCallback", &ReactNativeFsSpec_NativeDownloadFileOptionsT::hasProgressCallback},
         {L"hasResumableCallback", &ReactNativeFsSpec_NativeDownloadFileOptionsT::hasResumableCallback},
-    };
-    return fieldMap;
-}
-
-inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadResultT*) noexcept {
-    winrt::Microsoft::ReactNative::FieldMap fieldMap {
-        {L"jobId", &ReactNativeFsSpec_DownloadResultT::jobId},
-        {L"statusCode", &ReactNativeFsSpec_DownloadResultT::statusCode},
-        {L"bytesWritten", &ReactNativeFsSpec_DownloadResultT::bytesWritten},
-    };
-    return fieldMap;
-}
-
-inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_FSInfoResultT*) noexcept {
-    winrt::Microsoft::ReactNative::FieldMap fieldMap {
-        {L"totalSpace", &ReactNativeFsSpec_FSInfoResultT::totalSpace},
-        {L"totalSpaceEx", &ReactNativeFsSpec_FSInfoResultT::totalSpaceEx},
-        {L"freeSpace", &ReactNativeFsSpec_FSInfoResultT::freeSpace},
-        {L"freeSpaceEx", &ReactNativeFsSpec_FSInfoResultT::freeSpaceEx},
-    };
-    return fieldMap;
-}
-
-inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_MkdirOptionsT*) noexcept {
-    winrt::Microsoft::ReactNative::FieldMap fieldMap {
-        {L"NSURLIsExcludedFromBackupKey", &ReactNativeFsSpec_MkdirOptionsT::NSURLIsExcludedFromBackupKey},
-        {L"NSFileProtectionKey", &ReactNativeFsSpec_MkdirOptionsT::NSFileProtectionKey},
-    };
-    return fieldMap;
-}
-
-inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_PickFileOptionsT*) noexcept {
-    winrt::Microsoft::ReactNative::FieldMap fieldMap {
-        {L"mimeTypes", &ReactNativeFsSpec_PickFileOptionsT::mimeTypes},
     };
     return fieldMap;
 }
@@ -204,14 +197,6 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_N
     return fieldMap;
 }
 
-inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_TouchOptions*) noexcept {
-    winrt::Microsoft::ReactNative::FieldMap fieldMap {
-        {L"ctime", &ReactNativeFsSpec_TouchOptions::ctime},
-        {L"mtime", &ReactNativeFsSpec_TouchOptions::mtime},
-    };
-    return fieldMap;
-}
-
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_NativeUploadFileOptionsT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"jobId", &ReactNativeFsSpec_NativeUploadFileOptionsT::jobId},
@@ -223,6 +208,21 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_N
         {L"method", &ReactNativeFsSpec_NativeUploadFileOptionsT::method},
         {L"hasBeginCallback", &ReactNativeFsSpec_NativeUploadFileOptionsT::hasBeginCallback},
         {L"hasProgressCallback", &ReactNativeFsSpec_NativeUploadFileOptionsT::hasProgressCallback},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_PickFileOptionsT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"mimeTypes", &ReactNativeFsSpec_PickFileOptionsT::mimeTypes},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_TouchOptions*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"ctime", &ReactNativeFsSpec_TouchOptions::ctime},
+        {L"mtime", &ReactNativeFsSpec_TouchOptions::mtime},
     };
     return fieldMap;
 }

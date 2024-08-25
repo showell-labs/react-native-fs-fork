@@ -7,11 +7,11 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="9c9fc8f3-0afc-4328-9ac5-341258a8bb13"
+    Name="7ee1a030-50bc-44ce-b11e-4ffe3d46a794"
     Publisher="CN=drpog"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="9c9fc8f3-0afc-4328-9ac5-341258a8bb13" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="7ee1a030-50bc-44ce-b11e-4ffe3d46a794" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>ReactNativeFsExample</DisplayName>
