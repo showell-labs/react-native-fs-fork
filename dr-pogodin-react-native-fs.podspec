@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => min_ios_version_supported }
+  s.platforms    = { :ios => min_ios_version_supported, osx: "10.15" }
   s.source       = { :git => "https://github.com/birdofpreyru/react-native-fs.git", :tag => "#{s.version}" }
 
   s.resource_bundles = { 'RNFS_PrivacyInfo' => 'ios/PrivacyInfo.xcprivacy' }
