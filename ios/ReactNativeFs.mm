@@ -1129,6 +1129,7 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"setReadable()"];
 }
 
+#if !TARGET_OS_OSX
 - (void)documentPicker:(UIDocumentPickerViewController *)picker
 didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 {
@@ -1178,6 +1179,7 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
   }
   // TODO: Should crash here, as it is a fatal error.
 }
+#endif
 
 RCT_EXPORT_METHOD(
 #ifdef RCT_NEW_ARCH_ENABLED
@@ -1188,6 +1190,7 @@ RCT_EXPORT_METHOD(
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 ) {
+# if TARGET_OS_IOS
   // NOTE: We must copy options into a local variable, so that (especially with
   // the new, bridgeless architecture) it is correctly detained by the async
   // block below, not crushing the app.
@@ -1250,6 +1253,9 @@ RCT_EXPORT_METHOD(
       [[RNFSException fromException:e] reject:reject];
     }
   });
+# else
+  [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"pickFile()"];
+# endif
 }
 
 /**
