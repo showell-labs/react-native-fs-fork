@@ -982,7 +982,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             promise.reject(ex.code, ex.message)
             return
         }
-        promise.reject(null, ex!!.message)
+        promise.reject("RNFS01", ex!!.message)
     }
 
     private fun rejectFileNotFound(promise: Promise, filepath: String?) {
