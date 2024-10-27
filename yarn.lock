@@ -1688,7 +1688,7 @@ __metadata:
     "@babel/core": ^7.26.0
     "@babel/preset-env": ^7.26.0
     "@babel/runtime": ^7.26.0
-    "@dr.pogodin/react-native-static-server": ^0.17.1
+    "@dr.pogodin/react-native-static-server": ./react-native-static-server.tgz
     "@react-native-community/cli": 15.0.0
     "@react-native-community/cli-platform-android": 15.0.0
     "@react-native-community/cli-platform-ios": 15.0.0
@@ -1728,17 +1728,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.17.1":
-  version: 0.17.1
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.17.1"
+"@dr.pogodin/react-native-static-server@file:./react-native-static-server.tgz::locator=%40dr.pogodin%2Freact-native-fs-example%40workspace%3Aexample":
+  version: 0.18.0
+  resolution: "@dr.pogodin/react-native-static-server@file:./react-native-static-server.tgz::locator=%40dr.pogodin%2Freact-native-fs-example%40workspace%3Aexample"
   dependencies:
     "@dr.pogodin/js-utils": ^0.0.12
   peerDependencies:
     "@dr.pogodin/react-native-fs": ">= 2.22.0"
     react: ^18.3.1
-    react-native: ^0.75.3
-    react-native-windows: ^0.75.3
-  checksum: 0b1b1d84f4b884f7e01f4b4a1032b5a7483b7d0417367d5ceaa1be5702ad8eeda842eb9e044db7e8100ddaaf148de070215c3ffedd687988fd1fb8230b0e54c9
+    react-native: ^0.76.0
+    react-native-windows: ^0.75.6
+  checksum: f213484b42dd9bd63481596fe3e5769bca7addcf1845dad9d6f78130ab01561ae8d3609cc147f7e66af919c39e1d9487a84b6052b57ca4f4d38f384ca79bca59
   languageName: node
   linkType: hard
 
