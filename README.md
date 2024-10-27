@@ -1493,8 +1493,14 @@ The type of result resolved by [stat()].
   is a folder; _false_ otherwise.
 - `isFile` &mdash; **() => boolean** &mdash; Evaluates _true_ if the item is
   a file; _false_ otherwise.
-- `mode` &mdash; **number** | **undefined** &mdash; UNIX file mode; _undefined_
-  on platforms that currnetly do not support it (Android).
+
+- ~~`mode` &mdash; **number** | **undefined** &mdash; UNIX file mode;
+  _undefined_ on platforms that currnetly do not support it.~~
+
+  **NOTE**: In the library v2.29.0 the support of this field for iOS / macOS
+  (the only platforms that provided it before) was dropped; thus it is now
+  _undefined_ on all platforms.
+
 - `mtime` &mdash; [Date] &mdash; Item's last modification date.
 - `originalFilepath` &mdash; **string** &mdash; (Android-only) In case
   of content uri this is the pointed file path, otherwise is the same as `path`.
