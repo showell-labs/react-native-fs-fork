@@ -136,16 +136,27 @@ RCT_EXPORT_METHOD(stat:(NSString *)filepath
 
   @try {
     NSError *error = nil;
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+    NSDictionary *attributes = [url resourceValuesForKeys:@[
+      NSURLContentModificationDateKey,
+      NSURLCreationDateKey,
+      NSURLFileResourceTypeKey,
+      NSURLFileSizeKey,
+    ] error:&error];
 
     if (error) return [[RNFSException fromError:error] reject:reject];
 
+    NSValue *size = attributes[NSURLFileSizeKey];
+    if (size == nil) size = @64;
+
     attributes = @{
-                   @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
-                   @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
-                   @"size": [attributes objectForKey:NSFileSize],
-                   @"type": [attributes objectForKey:NSFileType],
-                   @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
+                   @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLCreationDateKey]],
+                   @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLContentModificationDateKey]],
+                   @"size": size,
+                   @"type": [attributes objectForKey:NSURLFileResourceTypeKey],
+
+                   // TODO: So far I haven't found how to get POSIX permissions of a resource from NSURL object.
+                   // @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
+
                    @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
                    };
 
@@ -430,23 +441,23 @@ RCT_EXPORT_METHOD(hash:(NSString *)filepath
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filepath];
+    BOOL fileExists = [url checkResourceIsReachableAndReturnError:&error];
 
     if (!fileExists) {
-      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", filepath], nil);
+      return reject(@"ENOENT", [NSString stringWithFormat:@"ENOENT: no such file or directory, open '%@'", url.absoluteURL], nil);
     }
 
     NSError *error = nil;
 
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
-
+    NSNumber *isDirectory;
+    [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&error];
     if (error) return [[RNFSException fromError:error] reject:reject];
 
-    if ([attributes objectForKey:NSFileType] == NSFileTypeDirectory) {
+    if (isDirectory.boolValue) {
       return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
     }
 
-    NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
+    NSData *content = [NSData dataWithContentsOfURL:url];
 
     NSArray *keys = [NSArray arrayWithObjects:@"md5", @"sha1", @"sha224", @"sha256", @"sha384", @"sha512", nil];
 
@@ -1067,8 +1078,8 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
            @"ExternalStorageDirectoryPath": [NSNull null],
            @"TemporaryDirectoryPath": NSTemporaryDirectory(),
            @"LibraryDirectoryPath": [self getPathForDirectory:NSLibraryDirectory],
-           @"FileTypeRegular": NSFileTypeRegular,
-           @"FileTypeDirectory": NSFileTypeDirectory,
+           @"FileTypeRegular": NSURLFileResourceTypeRegular,
+           @"FileTypeDirectory": NSURLFileResourceTypeDirectory,
            @"FileProtectionComplete": NSFileProtectionComplete,
            @"FileProtectionCompleteUnlessOpen": NSFileProtectionCompleteUnlessOpen,
            @"FileProtectionCompleteUntilFirstUserAuthentication": NSFileProtectionCompleteUntilFirstUserAuthentication,
