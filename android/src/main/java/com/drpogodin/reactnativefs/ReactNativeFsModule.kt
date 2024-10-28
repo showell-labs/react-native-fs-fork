@@ -21,7 +21,6 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
@@ -133,6 +132,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     @ReactMethod
     override fun copyFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
         object : CopyFileTask() {
+            @Deprecated("Deprecated in Java")
             override fun onPostExecute(ex: Exception?) {
                 if (ex == null) {
                     promise.resolve(null)
@@ -172,7 +172,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             // If the queue has drained, it is success, we are done.
             if (queue.isEmpty()) return promise.resolve(null)
 
-            val next = queue.removeLast()
+            val next = queue.removeAt(queue.size - 1)
             currentFrom = next.first
             currentInto = next.second
           }
@@ -440,6 +440,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             val inFile = File(filepath)
             if (!inFile.renameTo(File(destPath))) {
                 object : CopyFileTask() {
+                    @Deprecated("Deprecated in Java")
                     override fun onPostExecute(ex: Exception?) {
                         if (ex == null) {
                             inFile.delete()
@@ -667,7 +668,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         try {
             val originalFilepath = getOriginalFilepath(filepath, true)
             val file = File(originalFilepath)
-            if (!file.exists()) throw Exception("File does not exist")
+            if (!file.exists()) throw FileNotFoundException("File does not exist")
             val statMap = Arguments.createMap()
             statMap.putInt("ctime", (file.lastModified() / 1000).toInt())
             statMap.putInt("mtime", (file.lastModified() / 1000).toInt())
@@ -836,6 +837,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
     }
 
     private open inner class CopyFileTask : AsyncTask<String?, Void?, Exception?>() {
+        @Deprecated("Deprecated in Java")
         override fun doInBackground(vararg paths: String?): Exception? {
             var `in`: InputStream? = null
             var out: OutputStream? = null
@@ -982,7 +984,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             promise.reject(ex.code, ex.message)
             return
         }
-        promise.reject("RNFS01", ex!!.message)
+        promise.reject("RNFS", ex!!.message)
     }
 
     private fun rejectFileNotFound(promise: Promise, filepath: String?) {

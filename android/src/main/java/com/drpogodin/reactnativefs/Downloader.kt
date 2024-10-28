@@ -1,7 +1,6 @@
 package com.drpogodin.reactnativefs
 
 import android.os.AsyncTask
-import android.os.Build
 import android.util.Log
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -15,7 +14,9 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
     private var mParam: DownloadParams? = null
     private val mAbort = AtomicBoolean(false)
     var res: DownloadResult? = null
-    protected override fun doInBackground(vararg params: DownloadParams?): DownloadResult {
+
+    @Deprecated("Deprecated in Java")
+    override fun doInBackground(vararg params: DownloadParams?): DownloadResult {
         mParam = params[0]
         res = DownloadResult()
         Thread {
@@ -59,7 +60,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 statusCode = connection.responseCode
                 lengthOfFile = getContentLength(connection)
             }
-            if (statusCode >= 200 && statusCode < 300) {
+            if (statusCode in 200..299) {
                 val headers = connection.headerFields
                 val headersFlat: MutableMap<String, String> = HashMap()
                 for ((headerKey, value) in headers) {
@@ -114,22 +115,19 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
     }
 
     private fun getContentLength(connection: HttpURLConnection?): Long {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            connection!!.contentLengthLong
-        } else connection!!.contentLength.toLong()
+        return connection!!.contentLengthLong
     }
 
     fun stop() {
         mAbort.set(true)
     }
 
-    protected override fun onProgressUpdate(vararg args: LongArray?) {
+    @Deprecated("Deprecated in Java")
+    override fun onProgressUpdate(vararg args: LongArray?) {
         val values = args[0]
         super.onProgressUpdate(values)
         if (values != null) {
           mParam!!.onDownloadProgress?.onDownloadProgress(values[0], values[1])
         }
     }
-
-    protected fun onPostExecute(ex: Exception?) {}
 }

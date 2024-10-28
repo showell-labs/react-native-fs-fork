@@ -19,12 +19,14 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
     private var mParams: UploadParams? = null
     private var res: UploadResult? = null
     private val mAbort = AtomicBoolean(false)
+
+    @Deprecated("Deprecated in Java")
     override fun doInBackground(vararg uploadParams: UploadParams?): UploadResult {
         mParams = uploadParams[0]
         res = UploadResult()
         Thread {
             try {
-                upload(mParams, res!!)
+                upload(mParams)
                 mParams!!.onUploadComplete?.onUploadComplete(res!!)
             } catch (e: Exception) {
                 res!!.exception = e
@@ -35,7 +37,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
     }
 
     @Throws(Exception::class)
-    private fun upload(params: UploadParams?, result: UploadResult) {
+    private fun upload(params: UploadParams?) {
         var connection: HttpURLConnection? = null
         var request: DataOutputStream? = null
         val crlf = "\r\n"
@@ -81,7 +83,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             name = map.getString("name")!!
             filename = map.getString("filename")!!
             filetype = map.getString("filetype") ?: getMimeType(map.getString("filepath"))
-            val file = File(map.getString("filepath"))
+            val file = File(map.getString("filepath")!!)
             val fileLength = file.length()
             totalFileLength += fileLength
             if (!binaryStreamOnly) {
@@ -116,7 +118,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             if (!binaryStreamOnly) {
               request.writeBytes(fileHeader[fileCount])
             }
-            val file = File(map.getString("filepath"))
+            val file = File(map.getString("filepath")!!)
             val fileLength = file.length()
             val bufferSize = ceil((fileLength / 100f).toDouble()).toLong()
             var bytesRead: Long = 0
@@ -139,10 +141,10 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
           }
           request.flush()
           request.close()
-          if (connection.errorStream != null) {
-            responseStream = BufferedInputStream(connection.errorStream)
+          responseStream = if (connection.errorStream != null) {
+            BufferedInputStream(connection.errorStream)
           } else {
-            responseStream = BufferedInputStream(connection.inputStream)
+            BufferedInputStream(connection.inputStream)
           }
           responseStreamReader = BufferedReader(InputStreamReader(responseStream))
           val responseHeaders = Arguments.createMap()

@@ -1002,34 +1002,31 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         res = await stat(`${path}${SEP}non-existing-file.txt`);
         return 'fail';
       } catch (e: any) {
-        if (Platform.OS === 'android') {
-          if (
-            !isMatch(e, {
-              code: 'EUNSPECIFIED',
-              message: 'File does not exist',
-            })
-          ) {
-            return 'fail';
-          }
-        } else if (Platform.OS === 'windows') {
-          if (
-            !isMatch(e, {
-              code: 'ENOENT',
-              message: `ENOENT: no such file or directory, open ${path}${SEP}non-existing-file.txt`,
-            })
-          ) {
-            return 'fail';
-          }
-        } else {
-          if (
-            !isMatch(e, {
-              code: 'NSCocoaErrorDomain:260',
-              message:
-                'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
-            })
-          ) {
-            return 'fail';
-          }
+        switch (Platform.OS) {
+          case 'android':
+            if (
+              !isMatch(e, {
+                code: 'ENOENT',
+                message: 'ENOENT: no such file or directory, open \'/data/user/0/drpogodin.reactnativefs.example/cache/stat-test/non-existing-file.txt\'',
+              })
+            ) return 'fail';
+            break;
+          case 'windows':
+            if (
+              !isMatch(e, {
+                code: 'ENOENT',
+                message: `ENOENT: no such file or directory, open ${path}${SEP}non-existing-file.txt`,
+              })
+            ) return 'fail';
+            break;
+          default:
+            if (
+              !isMatch(e, {
+                code: 'NSCocoaErrorDomain:260',
+                message:
+                  'The file “non-existing-file.txt” couldn’t be opened because there is no such file.',
+              })
+            ) return 'fail';
         }
       }
 
