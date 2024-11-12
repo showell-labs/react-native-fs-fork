@@ -74,8 +74,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         constants["PicturesDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
         constants["CachesDirectoryPath"] = this.reactApplicationContext.cacheDir.absolutePath
         constants["DownloadDirectoryPath"] = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
-        constants["FileTypeRegular"] = 0
-        constants["FileTypeDirectory"] = 1
+        constants["FileTypeRegular"] = "0"
+        constants["FileTypeDirectory"] = "1"
         constants["ExternalStorageDirectoryPath"] = Environment.getExternalStorageDirectory()?.absolutePath
         constants["ExternalDirectoryPath"] = this.reactApplicationContext.getExternalFilesDir(null)?.absolutePath
         constants["ExternalCachesDirectoryPath"] = this.reactApplicationContext.externalCacheDir?.absolutePath
@@ -529,7 +529,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                 fileMap.putString("name", childFile.name)
                 fileMap.putString("path", childFile.absolutePath)
                 fileMap.putDouble("size", childFile.length().toDouble())
-                fileMap.putInt("type", if (childFile.isDirectory) 1 else 0)
+                fileMap.putString("type", if (childFile.isDirectory) "1" else "0")
                 fileMaps.pushMap(fileMap)
             }
             promise.resolve(fileMaps)
@@ -562,7 +562,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
                     isDirectory = !ex.message!!.contains("compressed")
                 }
                 fileMap.putInt("size", length)
-                fileMap.putInt("type", if (isDirectory) 1 else 0) // if 0, probably a folder..
+                fileMap.putString("type", if (isDirectory) "1" else "0") // if 0, probably a folder..
                 fileMaps.pushMap(fileMap)
             }
             promise.resolve(fileMaps)
@@ -676,7 +676,7 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             statMap.putInt("ctime", (file.lastModified() / 1000).toInt())
             statMap.putInt("mtime", (file.lastModified() / 1000).toInt())
             statMap.putDouble("size", file.length().toDouble())
-            statMap.putInt("type", if (file.isDirectory) 1 else 0)
+            statMap.putString("type", if (file.isDirectory) "1" else "0")
             statMap.putString("originalFilepath", originalFilepath)
             promise.resolve(statMap)
         } catch (ex: Exception) {

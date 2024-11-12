@@ -694,8 +694,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && item.isDirectory()) ||
-        (Platform.OS !== 'windows' && !item.isFile()) ||
+        item.isDirectory() ||
+        !item.isFile() ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
@@ -715,8 +715,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && item.isDirectory()) ||
-        (Platform.OS !== 'windows' && !item.isFile()) ||
+        item.isDirectory() ||
+        !item.isFile() ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
@@ -736,8 +736,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && !item.isDirectory()) ||
-        (Platform.OS !== 'windows' && item.isFile()) ||
+        !item.isDirectory() ||
+        item.isFile() ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
