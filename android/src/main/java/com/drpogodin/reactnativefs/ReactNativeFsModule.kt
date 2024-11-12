@@ -172,7 +172,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             // If the queue has drained, it is success, we are done.
             if (queue.isEmpty()) return promise.resolve(null)
 
-            val next = queue.removeAt(queue.size - 1)
+            val next =
+              if (Build.VERSION.SDK_INT >= 35) queue.removeLast()
+              else queue.removeAt(queue.size - 1)
+
             currentFrom = next.first
             currentInto = next.second
           }
