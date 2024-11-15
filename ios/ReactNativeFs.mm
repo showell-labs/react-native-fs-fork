@@ -70,22 +70,19 @@ RCT_EXPORT_METHOD(readDir:(NSString *)dirPath
         NSNumber *size = [attrs objectForKey:NSURLFileSizeKey];
         if (size == nil) size = @(64);
 
-        NSString *path = url.resourceSpecifier;
+        NSString *path = [url.path precomposedStringWithCanonicalMapping];
 
         NSString *type = @"N/A";
         if ([[attrs objectForKey:NSURLIsRegularFileKey] boolValue])
-          type = NSFileTypeRegular;
+          type = NSURLFileResourceTypeRegular;
         else if ([[attrs objectForKey:NSURLIsDirectoryKey] boolValue]) {
-          type = NSFileTypeDirectory;
-
-          // Trims closing dash from the end of folder paths.
-          path = [path substringToIndex:[path length] - 1];
+          type = NSURLFileResourceTypeDirectory;
         }
 
         [tagetContents addObject:@{
           @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attrs objectForKey:NSURLCreationDateKey]],
           @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attrs objectForKey:NSURLContentModificationDateKey]],
-          @"name": url.lastPathComponent,
+          @"name": [url.lastPathComponent precomposedStringWithCanonicalMapping],
           @"path": path,
           @"size": size,
           @"type": type

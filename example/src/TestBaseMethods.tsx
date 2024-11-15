@@ -662,7 +662,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       // of names in the returned listing.
       dir.sort();
 
-      if (!isEqual(dir, ['földer', 'ö-file-a.txt', 'ö-file-b.txt'])) return 'fail';
+      if (!isEqual(dir, [
+        'földer'.normalize(),
+        'ö-file-a.txt'.normalize(),
+        'ö-file-b.txt'.normalize(),
+      ])) {
+        return 'fail';
+      }
 
       return 'pass';
     } catch {
@@ -699,8 +705,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'földer' ||
-        item.path !== `${path}${SEP}földer` ||
+        item.name !== 'földer'.normalize() ||
+        item.path !== `${path}${SEP}földer`.normalize() ||
         // TODO: This is platform dependent,
         // also... why a folder size is 4096 or whatever bytes?
         // Is it really a value reported by OS, or is it
@@ -728,8 +734,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'ö-file-a.txt' ||
-        item.path !== `${path}${SEP}ö-file-a.txt` ||
+        item.name !== 'ö-file-a.txt'.normalize() ||
+        item.path !== `${path}${SEP}ö-file-a.txt`.normalize() ||
         // TODO: This can be platform dependent.
         item.size !== 11
       ) {
@@ -749,8 +755,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'ö-file-b.txt' ||
-        item.path !== `${path}${SEP}ö-file-b.txt` ||
+        item.name !== 'ö-file-b.txt'.normalize() ||
+        item.path !== `${path}${SEP}ö-file-b.txt`.normalize() ||
         // TODO: This can be platform dependent.
         item.size !== 18
       ) {
