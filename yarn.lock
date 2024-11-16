@@ -1639,7 +1639,7 @@ __metadata:
     lodash: ^4.17.21
     react: 18.3.1
     react-native: 0.76.2
-    react-native-builder-bob: ^0.31.0
+    react-native-builder-bob: ^0.32.0
     react-native-windows: 0.76.0
   languageName: unknown
   linkType: soft
@@ -1659,7 +1659,7 @@ __metadata:
     jest: ^29.7.0
     react: 18.3.1
     react-native: 0.76.2
-    react-native-builder-bob: ^0.31.0
+    react-native-builder-bob: ^0.32.0
     react-native-windows: 0.76.0
     typescript: ^5.6.3
   peerDependencies:
@@ -9290,9 +9290,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-builder-bob@npm:^0.31.0":
-  version: 0.31.0
-  resolution: "react-native-builder-bob@npm:0.31.0"
+"react-native-builder-bob@npm:^0.32.0":
+  version: 0.32.0
+  resolution: "react-native-builder-bob@npm:0.32.0"
   dependencies:
     "@babel/core": ^7.25.2
     "@babel/plugin-transform-strict-mode": ^7.24.7
@@ -9318,7 +9318,7 @@ __metadata:
     yargs: ^17.5.1
   bin:
     bob: bin/bob
-  checksum: 17008d699e1bec93a02f01e047efbb25e734edf7650a42ce7a27cd123b78494aaecc8103c9d771f660b24c958eae116a5c2835dcc6ce002e41b831090de8b798
+  checksum: 970f83b0c72ea931b55b5426131de9635602771f7e0481c07c4876c764e093400bd39b6de501fc8231cb221e35543cdc0c9354fc221169fc67eaa6690ce3babd
   languageName: node
   linkType: hard
 
