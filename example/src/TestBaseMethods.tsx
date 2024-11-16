@@ -102,7 +102,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     // writeFile()" test, without much thinking about it.
     const good = 'GÖÖÐ\n';
     const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
-    const path = `${TemporaryDirectoryPath}/append-file-test`;
+    const path = `${TemporaryDirectoryPath}/ö-append-file-test`;
     try {
       await writeFile(path, utf8, 'ascii');
       await appendFile(path, utf8, 'ascii');
@@ -127,7 +127,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       // a valid asset name below, and it will try to copy and check it,
       // otherwise it will just report the test as hanging.
       const asset = 'IMG_6437';
-      const path = `${TemporaryDirectoryPath}/copy-assets-file-ios`;
+      const path = `${TemporaryDirectoryPath}/cöpy-assets-file-ios`;
       try {
         await unlink(path);
       } catch {}
@@ -150,7 +150,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       // a valid asset name below, and it will try to copy and check it,
       // otherwise it will just report the test as hanging.
       const asset = 'IMG_6437';
-      const path = `${TemporaryDirectoryPath}/copy-assets-video-ios`;
+      const path = `${TemporaryDirectoryPath}/cöpy-assets-video-ios`;
       try {
         await unlink(path);
       } catch {}
@@ -168,29 +168,29 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     //    overwrites it? Is it different for folders and files?
     // -  What does it throw when attempting to move a non-existing item?
     try {
-      const path = `${TemporaryDirectoryPath}/copy-file-test`;
+      const path = `${TemporaryDirectoryPath}/cöpy-file-test`;
       try {
         await unlink(path);
       } catch {}
-      await mkdir(`${path}/folder`);
-      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await mkdir(`${path}/földer`);
+      await writeFile(`${path}/ö-test-file.txt`, 'Dummy content');
       await writeFile(
-        `${path}/folder/another-test-file.txt`,
+        `${path}/földer/anöther-test-file.txt`,
         'Another dummy content',
       );
 
       // Can it move a file?
-      await copyFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      await copyFile(`${path}/ö-test-file.txt`, `${path}/möved-file.txt`);
       if (
-        (await readFile(`${path}/test-file.txt`)) !== 'Dummy content' ||
-        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+        (await readFile(`${path}/ö-test-file.txt`)) !== 'Dummy content' ||
+        (await readFile(`${path}/möved-file.txt`)) !== 'Dummy content'
       ) {
         return 'fail';
       }
 
       // Can it copy a folder with its content?
       try {
-        await copyFile(`${path}/folder`, `${path}/moved-folder`);
+        await copyFile(`${path}/földer`, `${path}/möved-folder`);
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
         return ['android', 'windows'].includes(Platform.OS) ? 'fail' : 'pass';
@@ -206,7 +206,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           if (
             e.code !== 'EISDIR' ||
             e.message !==
-              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/cöpy-file-test/földer'`
           ) {
             return 'fail';
           }
@@ -224,20 +224,20 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     //    overwrites it? Is it different for folders and files?
     // -  What does it throw when attempting to move a non-existing item?
     try {
-      const path = `${TemporaryDirectoryPath}/copy-folder-test`;
+      const path = `${TemporaryDirectoryPath}/cöpy-folder-test`;
       try {
         await unlink(path);
       } catch {}
-      await mkdir(`${path}/folder`);
-      await mkdir(`${path}/dest`);
+      await mkdir(`${path}/földer`);
+      await mkdir(`${path}/ö-dest`);
       await writeFile(
-        `${path}/folder/another-test-file.txt`,
+        `${path}/földer/anöther-test-file.txt`,
         'Another dummy content',
       );
 
       // Can it copy a folder with its content?
       try {
-        await copyFolder(`${path}/folder`, `${path}/dest`);
+        await copyFolder(`${path}/földer`, `${path}/ö-dest`);
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
         return ['android'].includes(Platform.OS) ? 'fail' : 'pass';
@@ -253,7 +253,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           if (
             e.code !== 'EISDIR' ||
             e.message !==
-              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/copy-file-test/folder'`
+              `EISDIR: illegal operation on a directory, read '${TemporaryDirectoryPath}/cöpy-file-test/földer'`
           ) {
             return 'fail';
           }
@@ -266,13 +266,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'copyFileAssets()': async () => {
-    const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
+    const path = `${TemporaryDirectoryPath}/gööd-utf8.txt`;
     try {
       await unlink(path);
     } catch {}
     try {
       if (await exists(path)) return 'fail';
-      await copyFileAssets('test/good-utf8.txt', path);
+      await copyFileAssets('test/gööd-utf8.txt', path);
       const res = await readFile(path);
       if (res !== 'GÖÖÐ\n') return 'fail';
       return 'pass';
@@ -281,7 +281,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'copyFileAssets() - invalid path': async () => {
-    const path = `${TemporaryDirectoryPath}/good-utf8.txt`;
+    const path = `${TemporaryDirectoryPath}/gööd-utf8.txt`;
     try {
       await unlink(path);
     } catch {}
@@ -295,14 +295,14 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   // NOTE: This is a new test, for the updated function behavior.
   'copyFileAssets() - new': async () => {
-    const dest = `${TemporaryDirectoryPath}/copy-file-assets-2`;
+    const dest = `${TemporaryDirectoryPath}/cöpy-file-assets-2`;
     try {
       await unlink(dest);
     } catch {}
     // await mkdir(dest);
     try {
       await copyFileAssets('test', dest);
-      const res = await readFile(`${dest}/good-utf8.txt`);
+      const res = await readFile(`${dest}/gööd-utf8.txt`);
       if (res !== 'GÖÖÐ\n') return 'fail';
       return 'pass';
     } catch {
@@ -310,7 +310,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'copyFileRes()': async () => {
-    const path = `${TemporaryDirectoryPath}/res_good_utf8.txt`;
+    const path = `${TemporaryDirectoryPath}/res_gööd_utf8.txt`;
     try {
       await unlink(path);
     } catch {}
@@ -330,7 +330,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'downloadFile()': async () => {
     const url =
       'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
-    const path = `${TemporaryDirectoryPath}/download-file-01`;
+    const path = `${TemporaryDirectoryPath}/döwnload-file-01`;
     const good = 'GÖÖÐ\n';
     try {
       await unlink(path);
@@ -358,7 +358,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'downloadFile() - progress callback': async () => {
     try {
       const url = 'https://www.youtube.com/';
-      const path = `${TemporaryDirectoryPath}/download-file-01b`;
+      const path = `${TemporaryDirectoryPath}/döwnload-file-01b`;
 
       return new Promise((resolve) => {
         const timeoutId = setTimeout(() => resolve('fail'), 3000);
@@ -383,7 +383,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
 
     const url =
       'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
-    const path = `${TemporaryDirectoryPath}/background-download-file-01`;
+    const path = `${TemporaryDirectoryPath}/backgröund-download-file-01`;
     const good = 'GÖÖÐ\n';
     try {
       await unlink(path);
@@ -428,7 +428,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'exists()': async () => {
-    const path = `${TemporaryDirectoryPath}/test-exists-file`;
+    const path = `${TemporaryDirectoryPath}/ö-test-exists-file`;
     try {
       await unlink(path);
     } catch {}
@@ -443,7 +443,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'existsAssets()': async () => {
     try {
-      if (!(await existsAssets('test/good-utf8.txt'))) return 'fail';
+      if (!(await existsAssets('test/gööd-utf8.txt'))) return 'fail';
       if (await existsAssets('test/non-existing.txt')) return 'fail';
       return 'pass';
     } catch {
@@ -496,7 +496,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'hash()': async () => {
-    const path = `${TemporaryDirectoryPath}/hash`;
+    const path = `${TemporaryDirectoryPath}/ö-hash`;
     try {
       await unlink(path);
     } catch {}
@@ -543,8 +543,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     }
   },
   'mkdir()': async () => {
-    const pathA = `${TemporaryDirectoryPath}/test-mkdir-path`;
-    const pathB = `${pathA}/inner/path`;
+    const pathA = `${TemporaryDirectoryPath}/ö-test-mkdir-path`;
+    const pathB = `${pathA}/ö-inner/ö-path`;
     try {
       await unlink(pathA);
     } catch {}
@@ -563,33 +563,33 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     //    overwrites it? Is it different for folders and files?
     // -  What does it throw when attempting to move a non-existing item?
     try {
-      const path = `${TemporaryDirectoryPath}/move-file-test`;
+      const path = `${TemporaryDirectoryPath}/möve-file-test`;
       try {
         await unlink(path);
       } catch {}
-      await mkdir(`${path}/folder`);
-      await writeFile(`${path}/test-file.txt`, 'Dummy content');
+      await mkdir(`${path}/földer`);
+      await writeFile(`${path}/ö-test-file.txt`, 'Dummy content');
       await writeFile(
-        `${path}/folder/another-test-file.txt`,
+        `${path}/földer/anöther-test-file.txt`,
         'Another dummy content',
       );
 
       // Can it move a file?
-      await moveFile(`${path}/test-file.txt`, `${path}/moved-file.txt`);
+      await moveFile(`${path}/ö-test-file.txt`, `${path}/möved-file.txt`);
       if (
-        (await exists(`${path}/test-file.txt`)) ||
-        (await readFile(`${path}/moved-file.txt`)) !== 'Dummy content'
+        (await exists(`${path}/ö-test-file.txt`)) ||
+        (await readFile(`${path}/möved-file.txt`)) !== 'Dummy content'
       ) {
         return 'fail';
       }
 
       // Can it move a folder with its content?
       try {
-        await moveFile(`${path}/folder`, `${path}/moved-folder`);
+        await moveFile(`${path}/földer`, `${path}/möved-folder`);
         if (
-          (await exists(`${path}/folder`)) ||
-          !(await exists(`${path}/moved-folder/another-test-file.txt`)) ||
-          (await readFile(`${path}/moved-folder/another-test-file.txt`)) !==
+          (await exists(`${path}/földer`)) ||
+          !(await exists(`${path}/möved-folder/anöther-test-file.txt`)) ||
+          (await readFile(`${path}/möved-folder/anöther-test-file.txt`)) !==
             'Another dummy content'
         ) {
           return 'fail';
@@ -626,7 +626,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     try {
       const good = 'GÖÖÐ\n';
       const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
-      const path = `${TemporaryDirectoryPath}/read-test`;
+      const path = `${TemporaryDirectoryPath}/ö-read-test`;
       await writeFile(path, utf8, 'ascii');
 
       if (
@@ -649,20 +649,26 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'readdir()': async () => {
     try {
-      const path = `${TemporaryDirectoryPath}/read-dir-test`;
+      const path = `${TemporaryDirectoryPath}/ö-read-dir-test`;
       try {
         await unlink(path);
       } catch {}
-      await mkdir(`${path}/folder`);
-      await writeFile(`${path}/file-a.txt`, 'A test file');
-      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      await mkdir(`${path}/földer`);
+      await writeFile(`${path}/ö-file-a.txt`, 'A test file');
+      await writeFile(`${path}/ö-file-b.txt`, 'A second test file');
       const dir = await readdir(path);
 
       // TODO: As of now, readdir() does not guarantee any specific order
       // of names in the returned listing.
       dir.sort();
 
-      if (!isEqual(dir, ['file-a.txt', 'file-b.txt', 'folder'])) return 'fail';
+      if (!isEqual(dir, [
+        'földer'.normalize(),
+        'ö-file-a.txt'.normalize(),
+        'ö-file-b.txt'.normalize(),
+      ])) {
+        return 'fail';
+      }
 
       return 'pass';
     } catch {
@@ -678,15 +684,15 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         await unlink(path);
       } catch {}
       const now = Date.now();
-      await mkdir(`${path}/folder`);
-      await writeFile(`${path}/file-a.txt`, 'A test file');
-      await writeFile(`${path}/file-b.txt`, 'A second test file');
+      await mkdir(`${path}/földer`);
+      await writeFile(`${path}/ö-file-a.txt`, 'A test file');
+      await writeFile(`${path}/ö-file-b.txt`, 'A second test file');
       const dir = await readDir(path);
 
       // TODO: Currently there is no guarantee on the sort order of the result.
       dir.sort((a, b) => a.name.localeCompare(b.name));
 
-      // Second object is the smaller "file-a.txt"
+      // First object is a folder created by mkdir.
       let item = dir[0];
       if (
         !item ||
@@ -694,55 +700,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           ? item.ctime !== null
           : item.ctime!.valueOf() < now - 1000 ||
             item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && item.isDirectory()) ||
-        (Platform.OS !== 'windows' && !item.isFile()) ||
+        !item.isDirectory() ||
+        item.isFile() ||
         !(item.mtime instanceof Date) ||
         item.mtime.valueOf() < now - 1000 ||
         item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'file-a.txt' ||
-        item.path !== `${path}${SEP}file-a.txt` ||
-        // TODO: This can be platform dependent.
-        item.size !== 11
-      ) {
-        return 'fail';
-      }
-
-      // Second object is the larger "file-b.txt"
-      item = dir[1];
-      if (
-        !item ||
-        (Platform.OS === 'android'
-          ? item.ctime !== null
-          : item.ctime!.valueOf() < now - 1000 ||
-            item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && item.isDirectory()) ||
-        (Platform.OS !== 'windows' && !item.isFile()) ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'file-b.txt' ||
-        item.path !== `${path}${SEP}file-b.txt` ||
-        // TODO: This can be platform dependent.
-        item.size !== 18
-      ) {
-        return 'fail';
-      }
-
-      // First object is a folder created by mkdir.
-      item = dir[2];
-      if (
-        !item ||
-        (Platform.OS === 'android'
-          ? item.ctime !== null
-          : item.ctime!.valueOf() < now - 1000 ||
-            item.ctime!.valueOf() > now + 1000) ||
-        (Platform.OS !== 'windows' && !item.isDirectory()) ||
-        (Platform.OS !== 'windows' && item.isFile()) ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== 'folder' ||
-        item.path !== `${path}${SEP}folder` ||
+        item.name !== 'földer'.normalize() ||
+        item.path !== `${path}${SEP}földer`.normalize() ||
         // TODO: This is platform dependent,
         // also... why a folder size is 4096 or whatever bytes?
         // Is it really a value reported by OS, or is it
@@ -753,6 +717,48 @@ const tests: { [name: string]: StatusOrEvaluator } = {
             windows: 0,
             default: 64,
           })
+      ) {
+        return 'fail';
+      }
+
+      // Second object is the smaller "file-a.txt"
+      item = dir[1];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        item.isDirectory() ||
+        !item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'ö-file-a.txt'.normalize() ||
+        item.path !== `${path}${SEP}ö-file-a.txt`.normalize() ||
+        // TODO: This can be platform dependent.
+        item.size !== 11
+      ) {
+        return 'fail';
+      }
+
+      // Second object is the larger "file-b.txt"
+      item = dir[2];
+      if (
+        !item ||
+        (Platform.OS === 'android'
+          ? item.ctime !== null
+          : item.ctime!.valueOf() < now - 1000 ||
+            item.ctime!.valueOf() > now + 1000) ||
+        item.isDirectory() ||
+        !item.isFile() ||
+        !(item.mtime instanceof Date) ||
+        item.mtime.valueOf() < now - 1000 ||
+        item.mtime.valueOf() > now + 1000 ||
+        item.name !== 'ö-file-b.txt'.normalize() ||
+        item.path !== `${path}${SEP}ö-file-b.txt`.normalize() ||
+        // TODO: This can be platform dependent.
+        item.size !== 18
       ) {
         return 'fail';
       }
@@ -780,13 +786,13 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       if (
         !isEqual(assets2, [
           {
-            name: 'good-latin1.txt',
-            path: 'test/good-latin1.txt',
+            name: 'gööd-latin1.txt',
+            path: 'test/gööd-latin1.txt',
             size: -1,
           },
           {
-            name: 'good-utf8.txt',
-            path: 'test/good-utf8.txt',
+            name: 'gööd-utf8.txt',
+            path: 'test/gööd-utf8.txt',
             size: -1,
           },
         ])
@@ -815,8 +821,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           isDirectory: '[Function isDirectory]',
           isFile: '[Function isFile]',
           mtime: null,
-          name: 'good-latin1.txt',
-          path: 'test/good-latin1.txt',
+          name: 'gööd-latin1.txt',
+          path: 'test/gööd-latin1.txt',
           size: 0,
         },
         {
@@ -824,8 +830,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
           isDirectory: '[Function isDirectory]',
           isFile: '[Function isFile]',
           mtime: null,
-          name: 'good-utf8.txt',
-          path: 'test/good-utf8.txt',
+          name: 'gööd-utf8.txt',
+          path: 'test/gööd-utf8.txt',
           size: 0,
         },
       ])
@@ -837,7 +843,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'readFile() and writeFile()': async () => {
     const good = 'GÖÖÐ\n';
     const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
-    const path = `${TemporaryDirectoryPath}/test-file`;
+    const path = `${TemporaryDirectoryPath}/ö-test-file`;
     try {
       await writeFile(path, utf8, 'ascii');
       let res = await readFile(path);
@@ -854,22 +860,22 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'readFileAssets()': async () => {
     try {
-      let res = await readFileAssets('test/good-latin1.txt', 'ascii');
+      let res = await readFileAssets('test/gööd-latin1.txt', 'ascii');
       if (res !== 'GÖÖÐ\n') return 'fail';
 
-      res = await readFileAssets('test/good-utf8.txt', 'ascii');
+      res = await readFileAssets('test/gööd-utf8.txt', 'ascii');
       if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A') return 'fail';
 
-      res = await readFileAssets('test/good-utf8.txt', 'utf8');
+      res = await readFileAssets('test/gööd-utf8.txt', 'utf8');
       if (res !== 'GÖÖÐ\n') return 'fail';
 
-      res = await readFileAssets('test/good-utf8.txt');
+      res = await readFileAssets('test/gööd-utf8.txt');
       if (res !== 'GÖÖÐ\n') return 'fail';
 
-      res = await readFileAssets('test/good-latin1.txt', 'base64');
+      res = await readFileAssets('test/gööd-latin1.txt', 'base64');
       if (res !== 'R9bW0Ao=') return 'fail';
 
-      res = await readFileAssets('test/good-utf8.txt', 'base64');
+      res = await readFileAssets('test/gööd-utf8.txt', 'base64');
       if (res !== 'R8OWw5bDkAo=') return 'fail';
 
       return 'pass';
@@ -904,7 +910,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'scanFile()': async () => {
     try {
-      const path = `${TemporaryDirectoryPath}/scan-file-test`;
+      const path = `${TemporaryDirectoryPath}/ö-scan-file-test`;
       await writeFile(path, 'xxx');
       await scanFile(path);
       // TODO: Currently scanFile() returns "null" here, indicating the scan has
@@ -917,22 +923,22 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'stat()': async () => {
     try {
-      const path = `${TemporaryDirectoryPath}${SEP}stat-test`;
+      const path = `${TemporaryDirectoryPath}${SEP}ö-stat-test`;
       try {
         unlink(path);
       } catch {}
       const now = Date.now();
-      await mkdir(`${path}${SEP}folder`);
-      await writeFile(`${path}${SEP}test-file.txt`, 'Dummy content');
+      await mkdir(`${path}${SEP}földer`);
+      await writeFile(`${path}${SEP}ö-test-file.txt`, 'Dummy content');
 
       // TODO: There is something wrong with this test on Windows:
       // it tends to randomly pass or fail, it should be double-checked
       // why.
-      let res = await stat(`${path}${SEP}folder`);
+      let res = await stat(`${path}${SEP}földer`);
       if (
         res.ctime.valueOf() < now - 1000 ||
         res.ctime.valueOf() > now + 1000 ||
-        (Platform.OS !== 'windows' && !res.isDirectory()) ||
+        !res.isDirectory() ||
         res.isFile() ||
         // NOTE: mode is documented, but not actually returned, at least on
         // Android. We'll deal with it later.
@@ -949,11 +955,11 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         // TODO: Check this works as documented for Android Contentt URIs.
         res.originalFilepath !==
           Platform.select({
-            android: `${path}${SEP}folder`,
+            android: `${path}${SEP}földer`,
             ios: 'NOT_SUPPORTED_ON_IOS',
             windows: undefined,
           }) ||
-        res.path !== `${path}${SEP}folder` ||
+        res.path !== `${path}${SEP}földer` ||
         // TODO: Again, check why we report 4096 byte size for a folder?
         res.size !==
           Platform.select<number | string>({
@@ -965,12 +971,12 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         return 'fail';
       }
 
-      res = await stat(`${path}${SEP}test-file.txt`);
+      res = await stat(`${path}${SEP}ö-test-file.txt`);
       if (
         res.ctime.valueOf() < now - 1000 ||
         res.ctime.valueOf() > now + 1000 ||
         res.isDirectory() ||
-        (Platform.OS !== 'windows' && !res.isFile()) ||
+        !res.isFile() ||
         // NOTE: mode is documented, but not actually returned, at least on
         // Android. We'll deal with it later.
         res.mode !==
@@ -984,11 +990,11 @@ const tests: { [name: string]: StatusOrEvaluator } = {
         // TODO: Check this works as documented for Android Contentt URIs.
         res.originalFilepath !==
           Platform.select({
-            android: `${path}${SEP}test-file.txt`,
+            android: `${path}${SEP}ö-test-file.txt`,
             ios: 'NOT_SUPPORTED_ON_IOS',
             windows: undefined,
           }) ||
-        res.path !== `${path}${SEP}test-file.txt` ||
+        res.path !== `${path}${SEP}ö-test-file.txt` ||
         res.size !==
           Platform.select<number | string>({
             windows: '13',
@@ -1007,7 +1013,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
             if (
               !isMatch(e, {
                 code: 'ENOENT',
-                message: 'ENOENT: no such file or directory, open \'/data/user/0/drpogodin.reactnativefs.example/cache/stat-test/non-existing-file.txt\'',
+                message: 'ENOENT: no such file or directory, open \'/data/user/0/drpogodin.reactnativefs.example/cache/ö-stat-test/non-existing-file.txt\'',
               })
             ) return 'fail';
             break;
@@ -1039,7 +1045,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   'stopDownload()': async () => {
     const url =
       'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
-    const path = `${TemporaryDirectoryPath}/stop-download-test`;
+    const path = `${TemporaryDirectoryPath}/ö-stop-download-test`;
     try {
       await unlink(path);
     } catch {}
@@ -1064,17 +1070,17 @@ const tests: { [name: string]: StatusOrEvaluator } = {
       const server = await waitServer();
 
       const good = 'GÖÖÐ\n';
-      const path = `${TemporaryDirectoryPath}/stop-upload.txt`;
+      const path = `${TemporaryDirectoryPath}/stöp-upload.txt`;
       await writeFile(path, good);
 
-      const targetDevicePath = `${FILE_DIR}/dav/stop-upload.txt`;
+      const targetDevicePath = `${FILE_DIR}/dav/stöp-upload.txt`;
 
       try {
         unlink(targetDevicePath);
       } catch {}
 
       const res = uploadFiles({
-        toUrl: `${server?.origin!}/dav/stop-upload.txt`,
+        toUrl: `${server?.origin!}/dav/stöp-upload.txt`,
         method: 'PUT',
         files: [
           {
@@ -1092,7 +1098,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     } catch (e: any) {
       if (
         e.message.startsWith('ENOENT: no such file or directory, open') &&
-        e.message.endsWith("/tmp/test-server/dav/stop-upload.txt'")
+        e.message.endsWith("/tmp/test-server/dav/stöp-upload.txt'")
       ) {
         return 'pass';
       }
@@ -1103,7 +1109,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     // TODO: This test fails on Windows, but I guess because stat()
     // does not work there the same as on other platforms.
     try {
-      const filePath = `${TemporaryDirectoryPath}/touch-test`;
+      const filePath = `${TemporaryDirectoryPath}/töuch-test`;
       try {
         await unlink(filePath);
       } catch {}
@@ -1129,8 +1135,8 @@ const tests: { [name: string]: StatusOrEvaluator } = {
   },
   'unlink()': async () => {
     try {
-      const dirPath = `${TemporaryDirectoryPath}/test-unlink-dir`;
-      const filePath = `${dirPath}/test-unlink-file`;
+      const dirPath = `${TemporaryDirectoryPath}/ö-test-unlink-dir`;
+      const filePath = `${dirPath}/ö-test-unlink-file`;
       await mkdir(dirPath);
       await writeFile(filePath, 'xxx');
       if (!(await exists(filePath))) return 'fail';
@@ -1228,7 +1234,7 @@ const tests: { [name: string]: StatusOrEvaluator } = {
     // and writeFile() functions into one.
     const good = 'GÖÖÐ\n';
     const utf8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
-    const path = `${TemporaryDirectoryPath}/write-test`;
+    const path = `${TemporaryDirectoryPath}/ö-write-test`;
     try {
       try {
         await unlink(path);

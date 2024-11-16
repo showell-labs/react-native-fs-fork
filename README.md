@@ -1107,7 +1107,7 @@ with an error.
 ```ts
 function stopUpload(jobId: number): void;
 ```
-**VERIFIED:** iOS.
+**VERIFIED:** iOS. **NOT SUPPORTED**: Android, Windows.
 
 iOS only. Abort the current upload job with given ID.
 

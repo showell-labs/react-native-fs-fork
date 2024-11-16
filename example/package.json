@@ -13,24 +13,24 @@
     "build:ios": "react-native build-ios --scheme ReactNativeFsExample --mode Debug --extra-params \"-sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ GCC_OPTIMIZATION_LEVEL=0 GCC_PRECOMPILE_PREFIX_HEADER=YES ASSETCATALOG_COMPILER_OPTIMIZATION=time DEBUG_INFORMATION_FORMAT=dwarf COMPILER_INDEX_STORE_ENABLE=NO\""
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "./react-native-static-server.tgz",
+    "@dr.pogodin/react-native-static-server": "^0.18.0",
     "lodash": "^4.17.21",
     "react": "18.3.1",
-    "react-native": "0.76.0",
-    "react-native-windows": "0.75.7"
+    "react-native": "0.76.2",
+    "react-native-windows": "0.76.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "@babel/runtime": "^7.26.0",
-    "@react-native-community/cli": "15.0.0",
-    "@react-native-community/cli-platform-android": "15.0.0",
-    "@react-native-community/cli-platform-ios": "15.0.0",
-    "@react-native/babel-preset": "0.76.0",
-    "@react-native/metro-config": "0.76.0",
-    "@react-native/typescript-config": "0.76.0",
-    "@types/lodash": "^4.17.12",
-    "react-native-builder-bob": "^0.30.3"
+    "@react-native-community/cli": "15.1.2",
+    "@react-native-community/cli-platform-android": "15.1.2",
+    "@react-native-community/cli-platform-ios": "15.1.2",
+    "@react-native/babel-preset": "0.76.2",
+    "@react-native/metro-config": "0.76.2",
+    "@react-native/typescript-config": "0.76.2",
+    "@types/lodash": "^4.17.13",
+    "react-native-builder-bob": "^0.32.0"
   },
   "engines": {
     "node": ">=18"
