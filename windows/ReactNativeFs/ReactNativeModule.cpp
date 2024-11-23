@@ -164,7 +164,7 @@ ReactNativeFsSpec_Constants ReactNativeModule::GetConstants() noexcept
     return res;
 }
 
-winrt::fire_and_forget ReactNativeModule::mkdir(std::string directory, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::mkdir(std::wstring directory, JSValueObject options, ReactPromise<void> promise) noexcept
 try
 {
     size_t pathLength{ directory.length() };
@@ -213,14 +213,14 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::moveFile(std::string filepath, std::string destpath, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::moveFile(std::wstring srcPath, std::wstring destPath, JSValueObject options, ReactPromise<void> promise) noexcept
 try
 {
     winrt::hstring srcDirectoryPath, srcFileName;
-    splitPath(filepath, srcDirectoryPath, srcFileName);
+    splitPath(srcPath, srcDirectoryPath, srcFileName);
 
     winrt::hstring destDirectoryPath, destFileName;
-    splitPath(destpath, destDirectoryPath, destFileName);
+    splitPath(destPath, destDirectoryPath, destFileName);
 
     StorageFolder srcFolder{ co_await StorageFolder::GetFolderFromPathAsync(srcDirectoryPath) };
     StorageFolder destFolder{ co_await StorageFolder::GetFolderFromPathAsync(destDirectoryPath) };
@@ -237,14 +237,14 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::copyFile(std::string filepath, std::string destpath, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::copyFile(std::wstring srcPath, std::wstring destPath, JSValueObject options, ReactPromise<void> promise) noexcept
 try
 {
     winrt::hstring srcDirectoryPath, srcFileName;
-    splitPath(filepath, srcDirectoryPath, srcFileName);
+    splitPath(srcPath, srcDirectoryPath, srcFileName);
 
     winrt::hstring destDirectoryPath, destFileName;
-    splitPath(destpath, destDirectoryPath, destFileName);
+    splitPath(destPath, destDirectoryPath, destFileName);
 
     StorageFolder srcFolder{ co_await StorageFolder::GetFolderFromPathAsync(srcDirectoryPath) };
     StorageFolder destFolder{ co_await StorageFolder::GetFolderFromPathAsync(destDirectoryPath) };
@@ -262,8 +262,8 @@ catch (const hresult_error& ex)
 
 
 winrt::fire_and_forget ReactNativeModule::copyFolder(
-    std::string srcFolderPath,
-    std::string destFolderPath,
+    std::wstring srcFolderPath,
+    std::wstring destFolderPath,
     ReactPromise<void> promise) noexcept
 try
 {
@@ -346,17 +346,17 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::unlink(std::string filepath, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::unlink(std::wstring filePath, ReactPromise<void> promise) noexcept
 try
 {
-    size_t pathLength{ filepath.length() };
+    size_t pathLength{ filePath.length() };
 
     if (pathLength <= 0) {
         promise.Reject("Invalid path.");
     }
     else {
-        bool hasTrailingSlash{ filepath[pathLength - 1] == '\\' || filepath[pathLength - 1] == '/' };
-        std::filesystem::path path(hasTrailingSlash ? filepath.substr(0, pathLength - 1) : filepath);
+        bool hasTrailingSlash{ filePath[pathLength - 1] == '\\' || filePath[pathLength - 1] == '/' };
+        std::filesystem::path path(hasTrailingSlash ? filePath.substr(0, pathLength - 1) : filePath);
         path.make_preferred();
 
         StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(path.parent_path().wstring()) };
@@ -371,7 +371,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else
     {
@@ -381,20 +381,20 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::exists(std::string filepath, ReactPromise<bool> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::exists(std::wstring filePath, ReactPromise<bool> promise) noexcept
 try
 {
-    size_t fileLength{ filepath.length() };
+    size_t fileLength{ filePath.length() };
 
     if (fileLength <= 0) {
         promise.Resolve(false);
     }
     else {
-        bool hasTrailingSlash{ filepath[fileLength - 1] == '\\' || filepath[fileLength - 1] == '/' };
-        std::filesystem::path path(hasTrailingSlash ? filepath.substr(0, fileLength - 1) : filepath);
+        bool hasTrailingSlash{ filePath[fileLength - 1] == '\\' || filePath[fileLength - 1] == '/' };
+        std::filesystem::path path(hasTrailingSlash ? filePath.substr(0, fileLength - 1) : filePath);
 
         winrt::hstring directoryPath, fileName;
-        splitPath(filepath, directoryPath, fileName);
+        splitPath(filePath, directoryPath, fileName);
         StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
         if (fileName.size() > 0) {
             co_await folder.GetItemAsync(fileName);
@@ -425,11 +425,11 @@ void ReactNativeModule::stopUpload(int32_t jobID) noexcept
 }
 
 
-winrt::fire_and_forget ReactNativeModule::readFile(std::string filepath, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::readFile(std::wstring filePath, ReactPromise<std::string> promise) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.GetFileAsync(fileName) };
@@ -443,7 +443,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else if (result == HRESULT_FROM_WIN32(E_ACCESSDENIED)) // UnauthorizedAccessException
     {
@@ -457,17 +457,17 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::stat(std::string filepath, ReactPromise<JSValueObject> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::stat(std::wstring filePath, ReactPromise<JSValueObject> promise) noexcept
 try
 {
-    size_t pathLength{ filepath.length() };
+    size_t pathLength{ filePath.length() };
 
     if (pathLength <= 0) {
         promise.Reject("Invalid path.");
     }
     else {
-        bool hasTrailingSlash{ filepath[pathLength - 1] == '\\' || filepath[pathLength - 1] == '/' };
-        std::filesystem::path path(hasTrailingSlash ? filepath.substr(0, pathLength - 1) : filepath);
+        bool hasTrailingSlash{ filePath[pathLength - 1] == '\\' || filePath[pathLength - 1] == '/' };
+        std::filesystem::path path(hasTrailingSlash ? filePath.substr(0, pathLength - 1) : filePath);
         path.make_preferred();
 
         StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(path.parent_path().wstring()) };
@@ -478,17 +478,17 @@ try
         fileInfo["ctime"] = winrt::clock::to_time_t(item.DateCreated());
         fileInfo["mtime"] = winrt::clock::to_time_t(properties.DateModified());
         fileInfo["size"] = std::to_string(properties.Size());
-        fileInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? 1 : 0;
+        fileInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
         promise.Resolve(fileInfo);
     }
 }
 catch (...)
 {
-    promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+    promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
 }
 
 
-winrt::fire_and_forget ReactNativeModule::readDir(std::string directory, ReactPromise<JSValueArray> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::readDir(std::wstring directory, ReactPromise<JSValueArray> promise) noexcept
 try
 {
     std::filesystem::path path(directory);
@@ -508,7 +508,7 @@ try
         itemInfo["name"] = to_string(item.Name());
         itemInfo["path"] = to_string(item.Path());
         itemInfo["size"] = properties.Size();
-        itemInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? 1 : 0;
+        itemInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
 
         resultsArray.push_back(std::move(itemInfo));
     }
@@ -522,11 +522,11 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::read(std::string filepath, uint32_t length, uint64_t position, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::read(std::wstring filePath, uint32_t length, uint64_t position, ReactPromise<std::string> promise) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.GetFileAsync(fileName) };
@@ -546,7 +546,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else if (result == HRESULT_FROM_WIN32(E_ACCESSDENIED)) // UnauthorizedAccessException
     {
@@ -560,7 +560,7 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::hash(std::string filepath, std::string algorithm, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::hash(std::wstring filePath, std::string algorithm, ReactPromise<std::string> promise) noexcept
 try
 {
     // Note: SHA224 is not part of winrt 
@@ -571,7 +571,7 @@ try
     }
 
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.GetFileAsync(fileName) };
@@ -596,7 +596,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else if (result == HRESULT_FROM_WIN32(E_ACCESSDENIED)) // UnauthorizedAccessException
     {
@@ -610,14 +610,14 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::writeFile(std::string filepath, std::string base64Content, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::writeFile(std::wstring filePath, std::wstring base64Content, JSValueObject options, ReactPromise<void> promise) noexcept
 try
 {
-    winrt::hstring base64ContentStr{ winrt::to_hstring(base64Content) };
+    winrt::hstring base64ContentStr{ base64Content };
     Streams::IBuffer buffer{ Cryptography::CryptographicBuffer::DecodeFromBase64String(base64ContentStr) };
 
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.CreateFileAsync(fileName, CreationCollisionOption::ReplaceExisting) };
@@ -632,7 +632,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else
     {
@@ -642,20 +642,20 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::appendFile(std::string filepath, std::string base64Content, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::appendFile(std::wstring filePath, std::wstring base64Content, ReactPromise<void> promise) noexcept
 try
 {
-    size_t fileLength = filepath.length();
-    bool hasTrailingSlash{ filepath[fileLength - 1] == '\\' || filepath[fileLength - 1] == '/' };
-    std::filesystem::path path(hasTrailingSlash ? filepath.substr(0, fileLength - 1) : filepath);
+    size_t fileLength = filePath.length();
+    bool hasTrailingSlash{ filePath[fileLength - 1] == '\\' || filePath[fileLength - 1] == '/' };
+    std::filesystem::path path(hasTrailingSlash ? filePath.substr(0, fileLength - 1) : filePath);
 
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.CreateFileAsync(fileName, CreationCollisionOption::OpenIfExists) };
 
-    winrt::hstring base64ContentStr{ winrt::to_hstring(base64Content) };
+    winrt::hstring base64ContentStr{ base64Content };
     Streams::IBuffer buffer{ Cryptography::CryptographicBuffer::DecodeFromBase64String(base64ContentStr) };
     Streams::IRandomAccessStream stream{ co_await file.OpenAsync(FileAccessMode::ReadWrite) };
 
@@ -669,7 +669,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else
     {
@@ -677,16 +677,16 @@ catch (const hresult_error& ex)
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
 }
-winrt::fire_and_forget ReactNativeModule::write(std::string filepath, std::string base64Content, int position, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeModule::write(std::wstring filePath, std::wstring base64Content, int position, ReactPromise<void> promise) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
-    splitPath(filepath, directoryPath, fileName);
+    splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.GetFileAsync(fileName) };
 
-    winrt::hstring base64ContentStr{ winrt::to_hstring(base64Content) };
+    winrt::hstring base64ContentStr{ base64Content };
     Streams::IBuffer buffer{ Cryptography::CryptographicBuffer::DecodeFromBase64String(base64ContentStr) };
     Streams::IRandomAccessStream stream{ co_await file.OpenAsync(FileAccessMode::ReadWrite) };
 
@@ -706,7 +706,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) // FileNotFoundException
     {
-        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + filepath });
+        promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
     }
     else
     {
@@ -723,18 +723,18 @@ winrt::fire_and_forget ReactNativeModule::downloadFile(JSValueObject options, Re
     try
     {
         //Filepath
-        std::filesystem::path path(options["toFile"].AsString());
+        std::wstring filePath = winrt::to_hstring(options["toFile"].AsString()).c_str();
+        std::filesystem::path path(filePath);
         path.make_preferred();
         if (path.filename().empty())
         {
             promise.Reject("Failed to determine filename in path");
             co_return;
         }
-        auto filePath{ winrt::to_hstring(path.c_str()) };
 
         //URL
         std::string fromURLString{ options["fromUrl"].AsString() };
-        std::wstring URLForURI(fromURLString.begin(), fromURLString.end());
+        auto URLForURI = winrt::to_hstring(fromURLString);
         Uri uri{ URLForURI };
 
         //Headers
@@ -795,10 +795,13 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
         for (const auto& fileInfo : files)
         {
             auto const& fileObj{ fileInfo.AsObject() };
-            auto filepath{ fileObj["filepath"].AsString() };
+            auto filePath{ fileObj["filepath"].AsString() };
+
+            // Convert std::string to std::wstring
+            std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
 
             winrt::hstring directoryPath, fileName;
-            splitPath(filepath, directoryPath, fileName);
+            splitPath(wFilePath, directoryPath, fileName);
 
             try
             {
@@ -829,11 +832,11 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
 }
 
 
-void ReactNativeModule::touch(std::string filepath, int64_t mtime, int64_t ctime, bool modifyCreationTime, ReactPromise<std::string> promise) noexcept
+void ReactNativeModule::touch(std::wstring filePath, int64_t mtime, int64_t ctime, bool modifyCreationTime, ReactPromise<std::string> promise) noexcept
 try
 {
 
-    std::filesystem::path path(filepath);
+    std::filesystem::path path(filePath);
     path.make_preferred();
     auto s_path{ path.c_str() };
     PCWSTR actual_path{ s_path };
@@ -896,9 +899,9 @@ catch (const hresult_error& ex)
 }
 
 
-void ReactNativeModule::splitPath(const std::string& fullPath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept
+void ReactNativeModule::splitPath(const std::wstring& filePath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept
 {
-    std::filesystem::path path(fullPath);
+    std::filesystem::path path(filePath);
     path.make_preferred();
 
     directoryPath = path.has_parent_path() ? winrt::to_hstring(path.parent_path().c_str()) : L"";
@@ -1067,12 +1070,15 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             auto const& fileObj{ fileInfo.AsObject() };
             auto name{ winrt::to_hstring(fileObj["name"].AsString()) }; // name to be sent via http request
             auto filename{ winrt::to_hstring(fileObj["filename"].AsString()) }; // filename to be sent via http request
-            auto filepath{ fileObj["filepath"].AsString()}; // accessing the file
+            auto filePath{ fileObj["filepath"].AsString()}; // accessing the file
+                        
+            // Convert std::string to std::wstring
+            std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
 
             try
             {
                 winrt::hstring directoryPath, fileName;
-                splitPath(filepath, directoryPath, fileName);
+                splitPath(wFilePath, directoryPath, fileName);
                 StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
                 StorageFile file{ co_await folder.GetFileAsync(fileName) };
                 auto properties{ co_await file.GetBasicPropertiesAsync() };
@@ -1119,4 +1125,14 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
     {
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
+}
+
+void ReactNativeModule::addListener(std::string eventName) noexcept
+{
+    // Keep: Required for RN built in Event Emitter Calls.
+}
+
+void ReactNativeModule::removeListeners(int count) noexcept
+{
+    // Keep: Required for RN built in Event Emitter Calls.
 }
