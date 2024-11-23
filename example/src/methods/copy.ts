@@ -70,20 +70,20 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const source = PATH("copyFile-source.txt");
-      const target = PATH("copyFile-target.txt");
-      await tryUnlink(source);
-      await tryUnlink(target);
-      await writeFile(source, DUMMY_CONTENT);
+      const sourceFile = PATH("copyFile-source.txt");
+      const targetFile = PATH("copyFile-target.txt");
+      await tryUnlink(sourceFile);
+      await tryUnlink(targetFile);
+      await writeFile(sourceFile, DUMMY_CONTENT);
 
       // execute
-      await copyFile(source, target);
+      await copyFile(sourceFile, targetFile);
 
       //test
       if (
         //! the first expression actually tests writeFile and is obsolete
-        (await readFile(source)) !== DUMMY_CONTENT ||
-        (await readFile(target)) !== DUMMY_CONTENT
+        (await readFile(sourceFile)) !== DUMMY_CONTENT ||
+        (await readFile(targetFile)) !== DUMMY_CONTENT
       ) {
         return Result.error("can not move a file");
       }
@@ -99,10 +99,10 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const sourceFolder = PATH("copyFileSource");
-      const targetFolder = PATH("copyFileTarget");
-      const sourceFile = PATH("copyFileSource", "source.txt");
-      const targetFile = PATH("copyFileTarget", "source.txt");
+      const sourceFolder = PATH("copyFile-source");
+      const targetFolder = PATH("copyFile-target");
+      const sourceFile = PATH("copyFile-source", "source.txt");
+      const targetFile = PATH("copyFile-target", "source.txt");
       await tryUnlink(sourceFile);
       await tryUnlink(targetFile);
       await mkdir(sourceFolder);

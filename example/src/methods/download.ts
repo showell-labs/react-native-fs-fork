@@ -21,9 +21,10 @@ export const downloadTests: TestMethods = {
   // to cover all download-related functions & scenarious; however, to get this
   // function checked faster, placing it here for now.
   "downloadFile() should download files": async () => {
-    // prepate
+    // prepare
+    //! This url doesn't work
     const url =
-      "https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt";
+      "https://raw.githubusercontent.com/birdofpreyru/react-native-fs/refs/heads/master/example/assets/test/gööd-utf8.txt";
     const path = PATH("downloadFile-1");
     await tryUnlink(path);
     try {

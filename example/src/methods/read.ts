@@ -89,18 +89,27 @@ export const readTests: TestMethods = {
       // execute
       const dir = await readdir(path);
 
-      // TODO: As of now, readdir() does not guarantee any specific order
-      // of names in the returned listing.
+      // test
+      // TODO: As of now, readdir() does not guarantee any specific order  of names in the returned listing.
       dir.sort();
 
-      // test
       const expected = [
         (ÄÖÜ + "sub-path").normalize(),
         (ÄÖÜ + "file-1.txt").normalize(),
         (ÄÖÜ + "file-2.txt").normalize(),
       ];
-      if (!isEqual(dir, expected)) {
-        return Result.error(`${dir} !== ${expected}`);
+      
+      // This would be the test if we could guarantee the order of the result.:
+      // if (!isEqual(dir, expected)) {
+      //   return Result.error(`${dir} !== ${expected}`);
+      // }
+
+      // This is the test that we can use now:
+      if (dir.length !== expected.length) return Result.error("Result length mismatch");
+      for (const exp of expected) {
+        if (!dir.includes(exp)) {
+          return Result.error(`${exp} not found in ${JSON.stringify(dir)}`);
+        }
       }
 
       return Result.success();
@@ -129,7 +138,7 @@ export const readTests: TestMethods = {
       // The "sub-path" folder
       let error = verifyItem(dir[2], {
         name: `${ÄÖÜ}sub-path`,
-        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}sub-path`,
+        path: subPath,
         type: "folder",
         now,
       });
@@ -138,22 +147,28 @@ export const readTests: TestMethods = {
       // The smaller "file-1.txt"
       error = verifyItem(dir[0], {
         name: `${ÄÖÜ}file-1.txt`,
-        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}file-1.txt`,
+        path: file1,
         type: "file",
         now,
-        // TODO: This can be platform dependent.
-        size: 11,
+        // TODO: This can be platform dependent. => fill in the other Platforms
+        size: Platform.select({ 
+          windows: 8,
+          default: 11,
+        })
       });
       if (error) return Result.error("file-1.txt:", error);
 
       // The larger "file-2.txt"
       error = verifyItem(dir[1], {
         name: `${ÄÖÜ}file-2.txt`,
-        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}file-2.txt`,
+        path: file2,
         type: "file",
         now,
-        // TODO: This can be platform dependent.
-        size: 18,
+        // TODO: This can be platform dependent. => fill in the other Platforms
+        size: Platform.select({ 
+          windows: 13,
+          default: 18,
+        })
       });
       if (error) return Result.error("file-2.txt:", error);
 

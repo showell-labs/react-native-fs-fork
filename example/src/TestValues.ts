@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 export const SEPARATOR = Platform.OS === "windows" ? "\\" : "/";
 export const ÄÖÜ = 'öäü-';
 export const PATH = (...path: string[]) =>
-  TemporaryDirectoryPath + "/" + ÄÖÜ + path.join("/" + ÄÖÜ);
+  TemporaryDirectoryPath + SEPARATOR + ÄÖÜ + path.join(SEPARATOR + ÄÖÜ);
 export const CONTENT = "GÖÖÐ\n";
 export const CONTENT_UTF8 = "\x47\xC3\x96\xC3\x96\xC3\x90\x0A";
 export const DUMMY_CONTENT = "Dummy content";
