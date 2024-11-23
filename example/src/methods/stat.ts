@@ -11,7 +11,7 @@ import { Result, tryUnlink } from "../TestUtils";
 import { DUMMY_CONTENT, PATH, SEPARATOR, ÄÖÜ } from "../TestValues";
 
 export const statTests: TestMethods = {
-  // ! this test is way too long, it should be split into smaller tests
+  //! this test is way too long, it should be split into smaller tests
   "stat() should return file information": async () => {
     try {
       // prepare
@@ -90,7 +90,7 @@ export const statTests: TestMethods = {
               !isMatch(e, {
                 code: "ENOENT",
                 message:
-                  // ! this error message will not work anywhere else
+                  //! this error message will not work anywhere else
                   `ENOENT: no such file or directory, open '/data/user/0/drpogodin.reactnativefs.example/cache/${expectedPath}'`,
               })
             )

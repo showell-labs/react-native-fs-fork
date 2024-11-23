@@ -5,7 +5,7 @@ import {
   writeFile,
 } from "@dr.pogodin/react-native-fs";
 import type { TestMethods } from "../TestTypes";
-import { Result, tryUnlink } from "../TestUtils";
+import { notPlatform, Result, tryUnlink } from "../TestUtils";
 import { PATH, TEST_ASSET_UFT8, TEST_ASSET_UFT8_PATH } from "../TestValues";
 
 export const existsTests: TestMethods = {
@@ -23,6 +23,8 @@ export const existsTests: TestMethods = {
     }
   },
   "existsAssets() should verify that asset files exist [Android]": async () => {
+    if (notPlatform("android")) return Result.notAvailable("android");
+    
     try {
       if (!(await existsAssets(TEST_ASSET_UFT8_PATH)))
         return Result.error("file should exist");
@@ -35,6 +37,8 @@ export const existsTests: TestMethods = {
     }
   },
   "existsRes() should verify that resource files exist [Android]": async () => {
+    if (notPlatform("android")) return Result.notAvailable("android");
+    
     try {
       if (!(await existsRes(TEST_ASSET_UFT8)))
         return Result.error("file should exist");

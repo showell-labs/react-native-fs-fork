@@ -5,6 +5,8 @@ import type {
   PendingStatus,
   SuccessStatus,
 } from "./TestTypes";
+import { Platform, type PlatformOSType } from "react-native";
+
 export const Result = {
   error: (...message: string[]): ErrorStatus => ({
     type: "error",
@@ -19,11 +21,18 @@ export const Result = {
     message: message.join(" "),
   }),
   pending: (): PendingStatus => ({ type: "pending" }),
-  notAvailable: (): NotAvailableStatus => ({ type: "notAvailable" }),
+  notAvailable: (...platforms: PlatformOSType[]): NotAvailableStatus => ({
+    type: "notAvailable",
+    message: `not available on ${Platform.OS} but [${platforms.join(", ")}]`,
+  }),
 };
 
 export async function tryUnlink(path: string): Promise<void> {
   try {
     await unlink(path);
   } catch {}
+}
+
+export function notPlatform(...supported: PlatformOSType[]): boolean {
+  return !supported.includes(Platform.OS);
 }

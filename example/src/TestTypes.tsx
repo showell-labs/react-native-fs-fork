@@ -12,6 +12,7 @@ export interface PendingStatus {
 }
 export interface NotAvailableStatus {
   type: 'notAvailable';
+  message: string;
 }
 
 export type Status = ErrorStatus | SuccessStatus | PendingStatus | NotAvailableStatus;

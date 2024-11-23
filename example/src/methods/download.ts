@@ -6,7 +6,7 @@ import {
 } from "@dr.pogodin/react-native-fs";
 import { AppState, Platform } from "react-native";
 import type { TestMethods } from "../TestTypes";
-import { Result, tryUnlink } from "../TestUtils";
+import { notPlatform, Result, tryUnlink } from "../TestUtils";
 import { CONTENT, PATH } from "../TestValues";
 
 // const downloadFilePath = PATH_UTF8("downloadFile");
@@ -80,8 +80,7 @@ export const downloadTests: TestMethods = {
   },
   // FOR THIS TEST TO RUN THE EXAMPLE APP SHOULD BE SENT TO THE BACKGROUND!
   "downloadFile() should download files in background [iOS]": async () => {
-    // ! The test should not fail if the platform is not supported
-    if (Platform.OS !== "ios") return Result.error("iOS only test");
+    if (notPlatform("ios")) return Result.notAvailable("ios");
 
     // prepare
     const url =

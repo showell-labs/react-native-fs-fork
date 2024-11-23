@@ -7,7 +7,7 @@ import {
 import { Platform } from "react-native";
 import { FILE_DIR, waitServer } from "../testServer";
 import type { TestMethods } from "../TestTypes";
-import { Result, tryUnlink } from "../TestUtils";
+import { notPlatform, Result, tryUnlink } from "../TestUtils";
 import { CONTENT, PATH } from "../TestValues";
 
 const UPLOAD_FILES_CONTROL_ANDROID = `--*****
@@ -127,6 +127,7 @@ export const uploadTests: TestMethods = {
     }
   },
   "stopUpload() should stop an upload process [iOS]": async () => {
+    if (notPlatform("ios")) return Result.notAvailable("ios");
     const uploadFileName = "upload-file-3.txt"; //! no support for ÄÖÜ
     try {
       // prepare

@@ -10,7 +10,7 @@ import {
 } from "@dr.pogodin/react-native-fs";
 import { Platform } from "react-native";
 import type { TestMethods } from "../TestTypes";
-import { Result, tryUnlink } from "../TestUtils";
+import { Result, notPlatform, tryUnlink } from "../TestUtils";
 import {
   CONTENT,
   DUMMY_CONTENT,
@@ -70,8 +70,8 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const source = PATH("copyFile", "source.txt");
-      const target = PATH("copyFile", "target.txt");
+      const source = PATH("copyFile-source.txt");
+      const target = PATH("copyFile-target.txt");
       await tryUnlink(source);
       await tryUnlink(target);
       await writeFile(source, DUMMY_CONTENT);
@@ -101,8 +101,8 @@ export const copyTests: TestMethods = {
       // prepare
       const sourceFolder = PATH("copyFileSource");
       const targetFolder = PATH("copyFileTarget");
-      const sourceFile = `${sourceFolder}/source.txt`;
-      const targetFile = `${targetFolder}/source.txt`;
+      const sourceFile = PATH("copyFileSource", "source.txt");
+      const targetFile = PATH("copyFileTarget", "source.txt");
       await tryUnlink(sourceFile);
       await tryUnlink(targetFile);
       await mkdir(sourceFolder);
@@ -115,7 +115,7 @@ export const copyTests: TestMethods = {
         // checks here, similar to moveFile() checks.
         // actually this is not a test at all it just checks if the function does not throw and just on ios and macos
         //! the platform check should be done before the test and return Status.notAvailable() if the platform is not supported
-        return ["android", "windows"].includes(Platform.OS)
+        return ["android-windows"].includes(Platform.OS)
           ? Result.error()
           : Result.success();
       } catch (e: any) {
@@ -145,11 +145,12 @@ export const copyTests: TestMethods = {
     }
   },
   "copyFolder() should copy folders [WINDOWS]": async () => {
+    if (notPlatform("windows")) return Result.notAvailable("windows");
+    
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
     //    overwrites it? Is it different for folders and files?
     // -  What does it throw when attempting to move a non-existing item?
-    //! this test is not independent, it depends on the writeFile test
     try {
       // prepare
       const sourceFolder = PATH("copyFolderSource");
@@ -197,6 +198,8 @@ export const copyTests: TestMethods = {
     }
   },
   "copyFileAssets() should copy file assets [Android]": async () => {
+    if (notPlatform("android")) return Result.notAvailable("android");
+    
     // prepare
     const target = PATH("copyFileAssets-target.txt");
     await tryUnlink(target);
@@ -215,6 +218,8 @@ export const copyTests: TestMethods = {
   },
   "copyFileAssets() should throw when copying file assets from invalid paths [Android]":
     async () => {
+      if (notPlatform("android")) return Result.notAvailable("android");
+      
       // prepare
       const target = PATH("copyFileAssets-invalid-target.txt");
       await tryUnlink(target);
@@ -233,6 +238,8 @@ export const copyTests: TestMethods = {
   //! shouldn't the old tests be updated instead of adding new ones?
   "copyFileAssets() should copy file assets for the updated function behavior [Android] [NEW]":
     async () => {
+      if (notPlatform("android")) return Result.notAvailable("android");
+      
       // prepare
       const copyFileAssetsNewPath = PATH("copyFileAssets-new");
       await tryUnlink(copyFileAssetsNewPath);
@@ -251,6 +258,8 @@ export const copyTests: TestMethods = {
       }
     },
   "copyFileRes() should copy file resources [Android]": async () => {
+    if (notPlatform("android")) return Result.notAvailable("android");
+    
     // prepare
     const target = PATH("copyFileRes-target.txt");
     await tryUnlink(target);
