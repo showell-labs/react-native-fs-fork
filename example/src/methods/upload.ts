@@ -1,14 +1,14 @@
 import {
   readFile,
   stopUpload,
-  TemporaryDirectoryPath,
   uploadFiles,
   writeFile,
 } from "@dr.pogodin/react-native-fs";
 import { Platform } from "react-native";
-import { tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
 import { FILE_DIR, waitServer } from "../testServer";
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { CONTENT, PATH } from "../TestValues";
 
 const UPLOAD_FILES_CONTROL_ANDROID = `--*****
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
@@ -49,26 +49,28 @@ const UPLOAD_FILES_CONTROL = Platform.select({
 });
 
 export const uploadTests: TestMethods = {
-  "uploadFiles()": async () => {
+  "uploadFiles() should upload files": async () => {
     try {
+      // prepare
       const server = await waitServer();
+      const file = PATH("upload-file-1.txt");
+      const uploadFileName = "upload-file-1.txt"; //! no support for ÄÖÜ
+      await tryUnlink(file);
+      await writeFile(file, CONTENT);
 
-      const good = "GÖÖÐ\n";
-      const path = `${TemporaryDirectoryPath}/upload-files.txt`;
-      await writeFile(path, good);
-
-      const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
+      const targetDevicePath = `${FILE_DIR}/dav/${uploadFileName}`;
 
       await tryUnlink(targetDevicePath);
 
+      // execute
       const res = uploadFiles({
-        toUrl: `${server?.origin!}/dav/upload-files.txt`,
+        toUrl: `${server?.origin!}/dav/${uploadFileName}`,
         method: "PUT",
         files: [
           {
             name: "upload-files-source-file",
             filename: "upload-files-source-file.txt",
-            filepath: path,
+            filepath: file,
           },
         ],
       });
@@ -77,6 +79,7 @@ export const uploadTests: TestMethods = {
       let uploadedFile = await readFile(targetDevicePath);
       uploadedFile = uploadedFile.replace(/\r\n/g, "\n");
 
+      // test
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
         console.log("MISMATCH", uploadedFile, UPLOAD_FILES_CONTROL);
       }
@@ -90,26 +93,28 @@ export const uploadTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "uploadFiles() - HTTP error handling": async () => {
+  "uploadFiles() should handle HTTP errors": async () => {
     try {
+      // prepare
       const server = await waitServer();
+      const file = PATH("upload-file-2.txt");
+      const uploadFileName = "upload-file-2.txt"; //! no support for ÄÖÜ
+      await tryUnlink(file);
+      await writeFile(file, CONTENT);
 
-      const good = "GÖÖÐ\n";
-      const path = `${TemporaryDirectoryPath}/upload-files.txt`;
-      await writeFile(path, good);
-
-      const targetDevicePath = `${FILE_DIR}/dav/upload-files.txt`;
+      const targetDevicePath = `${FILE_DIR}/dav/${uploadFileName}`;
 
       await tryUnlink(targetDevicePath);
 
+      // execute AND test
       const res = uploadFiles({
-        toUrl: `${server?.origin!}/invalid-path/upload-files.txt`,
+        toUrl: `${server?.origin!}/invalid-path/${uploadFileName}`,
         method: "PUT",
         files: [
           {
             name: "upload-files-source-file",
             filename: "upload-files-source-file.txt",
-            filepath: path,
+            filepath: file,
           },
         ],
       });
@@ -121,26 +126,28 @@ export const uploadTests: TestMethods = {
         : Result.success();
     }
   },
-  "stopUpload()": async () => {
+  "stopUpload() should stop an upload process [iOS]": async () => {
+    const uploadFileName = "upload-file-3.txt"; //! no support for ÄÖÜ
     try {
+      // prepare
       const server = await waitServer();
+      const file = PATH("upload-file-3.txt");
+      await tryUnlink(file);
+      await writeFile(file, CONTENT);
 
-      const good = "GÖÖÐ\n";
-      const path = `${TemporaryDirectoryPath}/stöp-upload.txt`;
-      await writeFile(path, good);
-
-      const targetDevicePath = `${FILE_DIR}/dav/stöp-upload.txt`;
+      const targetDevicePath = `${FILE_DIR}/dav/${uploadFileName}`;
 
       await tryUnlink(targetDevicePath);
 
+      // execute AND test
       const res = uploadFiles({
-        toUrl: `${server?.origin!}/dav/stöp-upload.txt`,
+        toUrl: `${server?.origin!}/dav/${uploadFileName}`,
         method: "PUT",
         files: [
           {
             name: "upload-files-source-file",
             filename: "upload-files-source-file.txt",
-            filepath: path,
+            filepath: file,
           },
         ],
       });
@@ -148,11 +155,11 @@ export const uploadTests: TestMethods = {
       await res.promise;
 
       await readFile(targetDevicePath);
-      return Result.error(`File should not exist`);
+      return Result.error(`File upload should have been stopped`);
     } catch (e: any) {
       if (
         e.message.startsWith("ENOENT: no such file or directory, open") &&
-        e.message.endsWith("/tmp/test-server/dav/stöp-upload.txt'")
+        e.message.endsWith(`/tmp/test-server/dav/${uploadFileName}'`)
       ) {
         return Result.success();
       }

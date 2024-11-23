@@ -1,33 +1,34 @@
-import {
-  appendFile,
-  readFile,
-  TemporaryDirectoryPath,
-  writeFile,
-} from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import { appendFile, readFile, writeFile } from "@dr.pogodin/react-native-fs";
+import type { TestMethods } from "../TestTypes";
+import { Result } from "../TestUtils";
+import { CONTENT, CONTENT_UTF8, PATH } from "../TestValues";
 
 export const appendTests: TestMethods = {
-  "appendFile()": async () => {
+  "appendFile() should append content to files": async () => {
     // TODO: I guess, this test should be improved and elaborated...
-    // The current version is just copied & modified from the "readFile() and
-    // writeFile()" test, without much thinking about it.
-    const good = "GÖÖÐ\n";
-    const utf8 = "\x47\xC3\x96\xC3\x96\xC3\x90\x0A"; // === "GÖÖÐ\n"
-    const path = `${TemporaryDirectoryPath}/ö-append-file-test`;
+    // The current version is just copied & modified from the "readFile() and writeFile()" test, without much thinking about it.
     try {
-      await writeFile(path, utf8, "ascii");
-      await appendFile(path, utf8, "ascii");
+      // prepare
+      const file = PATH("appendFile");
+      await writeFile(file, CONTENT_UTF8, "ascii");
 
-      let res = await readFile(path);
-      if (res !== `${good}${good}`)
+      // execute
+      await appendFile(file, CONTENT_UTF8, "ascii");
+
+      // test
+      let res = await readFile(file);
+      if (res !== `${CONTENT}${CONTENT}`)
         return Result.error("failed to append utf8");
 
-      await writeFile(path, good);
-      await appendFile(path, good);
+      // prepare 2
+      await writeFile(file, CONTENT);
 
-      res = await readFile(path);
-      if (res !== `${good}${good}`)
+      // execute 2
+      await appendFile(file, CONTENT);
+
+      // test 2
+      res = await readFile(file);
+      if (res !== `${CONTENT}${CONTENT}`)
         return Result.error("failed to append text");
 
       return Result.success();

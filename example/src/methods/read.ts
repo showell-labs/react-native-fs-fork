@@ -6,66 +6,101 @@ import {
   readDirAssets,
   readFileAssets,
   readFileRes,
-  TemporaryDirectoryPath,
   writeFile,
+  type ReadDirResItemT,
 } from "@dr.pogodin/react-native-fs";
 import { isEqual } from "lodash";
 import { Platform } from "react-native";
-import { SEPARATOR, tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import {
+  CONTENT,
+  CONTENT_UTF8,
+  DUMMY_CONTENT,
+  PATH,
+  SEPARATOR,
+  TEST_ASSET_LATIN1,
+  TEST_ASSET_LATIN1_PATH,
+  TEST_ASSET_UFT8,
+  TEST_ASSET_UFT8_PATH,
+  ÄÖÜ,
+} from "../TestValues";
 
 export const readTests: TestMethods = {
-  "read()": async () => {
+  "read() should read files": async () => {
     try {
-      const good = "GÖÖÐ\n";
-      const utf8 = "\x47\xC3\x96\xC3\x96\xC3\x90\x0A";
-      const path = `${TemporaryDirectoryPath}/ö-read-test`;
-      await writeFile(path, utf8, "ascii");
+      // prepare
+      const path = PATH("read");
+      await tryUnlink(path);
 
-      const expected = ["android", "windows"].includes(Platform.OS) ? "" : good;
-      if ((await read(path)) !== expected)
-        return Result.error(`Platform dependent read !== ${expected}`);
-      if ((await read(path, 8)) !== good)
-        return Result.error(`read(8) !== ${good}`);
-      if ((await read(path, 5)) !== "GÖÖ")
-        return Result.error("read(5) !== GÖÖ");
+      // execute
+      await writeFile(path, CONTENT_UTF8, "ascii");
+
+      //! is this just another way to disable the test on several platforms?
+      const expected = ["android", "windows"].includes(Platform.OS)
+        ? ""
+        : CONTENT;
+
+      // test
+      let res = await read(path);
+      if (res !== expected)
+        return Result.error(`Platform dependent: ${res} !== ${expected}`);
+
+      res = await read(path, 8);
+      if (res !== CONTENT)
+        return Result.error(`read(8): ${res} !== ${CONTENT}`);
+
+      res = await read(path, 5);
+      if (res !== "GÖÖ") return Result.error(`read(5): ${res} !== GÖÖ`);
+
       // NOTE: No matter the encoding, the length is in bytes, rather than
       // in read symbols.
-      if ((await read(path, 4, 1)) !== "ÖÖ")
-        return Result.error("read(4, 1) !== ÖÖ");
-      if ((await read(path, 2, 1, "ascii")) !== "\xC3\x96")
-        return Result.error("read(2, 1, ascii) !== Ö");
-      if ((await read(path, 2, 1, "base64")) !== "w5Y=")
-        return Result.error("read(2, 1, base64) !== w5Y=");
+      res = await read(path, 4, 1);
+      if (res !== "ÖÖ") return Result.error(`read(4, 1): ${res} !== ÖÖ`);
+
+      res = await read(path, 2, 1, "ascii");
+      if (res !== "\xC3\x96")
+        return Result.error("read(2, 1, ascii): ${res} !== Ö");
+
+      res = await read(path, 2, 1, "base64");
+      if (res !== "w5Y=")
+        return Result.error("read(2, 1, base64): ${res} !== w5Y=");
 
       return Result.success();
     } catch (e) {
       return Result.catch(e);
     }
   },
-  "readdir()": async () => {
+  "readdir() should read directories' item names": async () => {
     try {
-      const path = `${TemporaryDirectoryPath}/ö-read-dir-test`;
+      // prepare
+      const path = PATH("readDir");
+      const file = PATH("readDir", "file-1.txt");
+      const file2 = PATH("readDir", "file-2.txt");
+      const subPath = PATH("readDir", "sub-path");
+      const subFile = PATH("readDir", "sub-path", "file-3.txt");
       await tryUnlink(path);
-      await mkdir(`${path}/földer`);
-      await writeFile(`${path}/ö-file-a.txt`, "A test file");
-      await writeFile(`${path}/ö-file-b.txt`, "A second test file");
+      await mkdir(path);
+      await mkdir(subPath);
+      await writeFile(file, "A test file");
+      await writeFile(file2, "A test file");
+      await writeFile(subFile, "A second test file");
+
+      // execute
       const dir = await readdir(path);
 
       // TODO: As of now, readdir() does not guarantee any specific order
       // of names in the returned listing.
       dir.sort();
 
-      if (
-        !isEqual(dir, [
-          "földer".normalize(),
-          "ö-file-a.txt".normalize(),
-          "ö-file-b.txt".normalize(),
-        ])
-      ) {
-        return Result.error(
-          `${dir} !== ["földer", "ö-file-a.txt", "ö-file-b.txt"]`
-        );
+      // test
+      const expected = [
+        (ÄÖÜ + "sub-path").normalize(),
+        (ÄÖÜ + "file-1.txt").normalize(),
+        (ÄÖÜ + "file-2.txt").normalize(),
+      ];
+      if (!isEqual(dir, expected)) {
+        return Result.error(`${dir} !== ${expected}`);
       }
 
       return Result.success();
@@ -73,144 +108,107 @@ export const readTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "readDir()": async () => {
+  "readDir() should read directories with details": async () => {
     try {
-      let path = TemporaryDirectoryPath;
-      if (!path.endsWith(SEPARATOR)) path += SEPARATOR;
-      path += "read-dir-test";
+      // prepare
+      const path = PATH("readDir");
+      const subPath = PATH("readDir", "sub-path");
+      const file1 = PATH("readDir", "file-1.txt");
+      const file2 = PATH("readDir", "file-2.txt");
       await tryUnlink(path);
       const now = Date.now();
-      await mkdir(`${path}/földer`);
-      await writeFile(`${path}/ö-file-a.txt`, "A test file");
-      await writeFile(`${path}/ö-file-b.txt`, "A second test file");
+      await mkdir(subPath);
+      await writeFile(file1, CONTENT);
+      await writeFile(file2, DUMMY_CONTENT);
+
       const dir = await readDir(path);
 
       // TODO: Currently there is no guarantee on the sort order of the result.
       dir.sort((a, b) => a.name.localeCompare(b.name));
 
-      // First object is a folder created by mkdir.
-      let item = dir[0];
-      //! WTF
-      if (
-        !item ||
-        (Platform.OS === "android"
-          ? item.ctime !== null
-          : item.ctime!.valueOf() < now - 1000 ||
-            item.ctime!.valueOf() > now + 1000) ||
-        !item.isDirectory() ||
-        item.isFile() ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== "földer".normalize() ||
-        item.path !== `${path}${SEPARATOR}földer`.normalize() ||
-        // TODO: This is platform dependent,
-        // also... why a folder size is 4096 or whatever bytes?
-        // Is it really a value reported by OS, or is it
-        // something resulting from how the library works?
-        item.size !==
-          Platform.select({
-            android: 4096,
-            windows: 0,
-            default: 64,
-          })
-      ) {
-        return Result.error("First object is not a folder created by mkdir");
-      }
+      // The "sub-path" folder
+      let error = verifyItem(dir[2], {
+        name: `${ÄÖÜ}sub-path`,
+        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}sub-path`,
+        type: "folder",
+        now,
+      });
+      if (error) return Result.error("sub-path:", error);
 
-      // Second object is the smaller "file-a.txt"
-      item = dir[1];
-      if (
-        !item ||
-        (Platform.OS === "android"
-          ? item.ctime !== null
-          : item.ctime!.valueOf() < now - 1000 ||
-            item.ctime!.valueOf() > now + 1000) ||
-        item.isDirectory() ||
-        !item.isFile() ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== "ö-file-a.txt".normalize() ||
-        item.path !== `${path}${SEPARATOR}ö-file-a.txt`.normalize() ||
+      // The smaller "file-1.txt"
+      error = verifyItem(dir[0], {
+        name: `${ÄÖÜ}file-1.txt`,
+        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}file-1.txt`,
+        type: "file",
+        now,
         // TODO: This can be platform dependent.
-        item.size !== 11
-      ) {
-        return Result.error('Second object is not the smaller "file-a.txt"');
-      }
+        size: 11,
+      });
+      if (error) return Result.error("file-1.txt:", error);
 
-      // Second object is the larger "file-b.txt"
-      item = dir[2];
-      if (
-        !item ||
-        (Platform.OS === "android"
-          ? item.ctime !== null
-          : item.ctime!.valueOf() < now - 1000 ||
-            item.ctime!.valueOf() > now + 1000) ||
-        item.isDirectory() ||
-        !item.isFile() ||
-        !(item.mtime instanceof Date) ||
-        item.mtime.valueOf() < now - 1000 ||
-        item.mtime.valueOf() > now + 1000 ||
-        item.name !== "ö-file-b.txt".normalize() ||
-        item.path !== `${path}${SEPARATOR}ö-file-b.txt`.normalize() ||
+      // The larger "file-2.txt"
+      error = verifyItem(dir[1], {
+        name: `${ÄÖÜ}file-2.txt`,
+        path: `${ÄÖÜ}readDir${SEPARATOR}${ÄÖÜ}file-2.txt`,
+        type: "file",
+        now,
         // TODO: This can be platform dependent.
-        item.size !== 18
-      ) {
-        return Result.error('Third object is not the larger "file-b.txt"');
-      }
+        size: 18,
+      });
+      if (error) return Result.error("file-2.txt:", error);
 
       return Result.success();
     } catch (e) {
       return Result.catch(e);
     }
   },
-  "readDirAssets()": async () => {
-    try {
-      let assets = await readDirAssets("test");
+  "readDirAssets() should list assets' names from an asset directory [Android]":
+    async () => {
+      try {
+        let assets = await readDirAssets("test");
 
-      for (let i = 0; i < assets.length; ++i) {
-        const a = assets[i];
-        if (a?.isDirectory() || !a?.isFile())
-          return Result.error(`Item ${i} is not a file`);
+        for (let i = 0; i < assets.length; ++i) {
+          const a = assets[i];
+          if (a?.isDirectory() || !a?.isFile())
+            return Result.error(`Item ${i} is not a file`);
+        }
+
+        const assets2 = assets.map((asset) => ({
+          name: asset.name,
+          path: asset.path,
+          size: asset.size,
+        }));
+
+        if (
+          !isEqual(assets2, [
+            {
+              name: TEST_ASSET_LATIN1,
+              path: TEST_ASSET_LATIN1_PATH,
+              size: -1,
+            },
+            {
+              name: TEST_ASSET_UFT8,
+              path: TEST_ASSET_UFT8_PATH,
+              size: -1,
+            },
+          ])
+        ) {
+          return Result.error(
+            `Assets do not match the expected list: ${JSON.stringify(assets2)}`
+          );
+        }
+
+        assets = await readDirAssets("");
+        const asset = assets.find((a) => a.name === "test");
+        if (!asset?.isDirectory() || asset?.isFile())
+          return Result.error("test asset is not a directory");
+
+        return Result.success();
+      } catch (e) {
+        return Result.catch(e);
       }
 
-      const assets2 = assets.map((asset) => ({
-        name: asset.name,
-        path: asset.path,
-        size: asset.size,
-      }));
-
-      if (
-        !isEqual(assets2, [
-          {
-            name: "gööd-latin1.txt",
-            path: "test/gööd-latin1.txt",
-            size: -1,
-          },
-          {
-            name: "gööd-utf8.txt",
-            path: "test/gööd-utf8.txt",
-            size: -1,
-          },
-        ])
-      ) {
-        return Result.error(
-          `Assets do not match the expected list: ${JSON.stringify(assets2)}`
-        );
-      }
-
-      assets = await readDirAssets("");
-      const asset = assets.find((a) => a.name === "test");
-      if (!asset?.isDirectory() || asset?.isFile())
-        return Result.error("test asset is not a directory");
-
-      return Result.success();
-    } catch (e) {
-      return Result.catch(e);
-    }
-
-    /*  TODO: This would be the ideal test, but because isDirectory and isFile
+      /*  TODO: This would be the ideal test, but because isDirectory and isFile
         are functions, making this isEqual check falsy. We'll hovewer probably
         drop these functions in future, and thus use this test then. Also,
         note that currently it does not return ctime, mtime, size values
@@ -240,49 +238,53 @@ export const readTests: TestMethods = {
       return { type: 'error'};
     }
     */
-  },
-  "readFileAssets()": async () => {
-    try {
-      let res = await readFileAssets("test/gööd-latin1.txt", "ascii");
-      if (res !== "GÖÖÐ\n") return Result.error(`ascii: ${res} !== GÖÖÐ\n`);
+    },
+  "readFileAssets() should read an asset file from an asset directory [Android]":
+    async () => {
+      try {
+        let res = await readFileAssets(TEST_ASSET_LATIN1_PATH, "ascii");
+        if (res !== CONTENT)
+          return Result.error(`ascii: ${res} !== ${CONTENT}`);
 
-      res = await readFileAssets("test/gööd-utf8.txt", "ascii");
-      if (res !== "\x47\xC3\x96\xC3\x96\xC3\x90\x0A")
-        return Result.error(`ascii: ${res} !== GÖÖÐ\n`);
+        res = await readFileAssets(TEST_ASSET_UFT8_PATH, "ascii");
+        if (res !== "\x47\xC3\x96\xC3\x96\xC3\x90\x0A")
+          return Result.error(`ascii: ${res} !== ${CONTENT}`);
 
-      res = await readFileAssets("test/gööd-utf8.txt", "utf8");
-      if (res !== "GÖÖÐ\n") return Result.error(`utf8: ${res} !== GÖÖÐ\n`);
+        res = await readFileAssets(TEST_ASSET_UFT8_PATH, "utf8");
+        if (res !== CONTENT) return Result.error(`utf8: ${res} !== ${CONTENT}`);
 
-      res = await readFileAssets("test/gööd-utf8.txt");
-      if (res !== "GÖÖÐ\n") return Result.error(`default: ${res} !== GÖÖÐ\n`);
+        res = await readFileAssets(TEST_ASSET_UFT8_PATH);
+        if (res !== CONTENT)
+          return Result.error(`default: ${res} !== ${CONTENT}`);
 
-      res = await readFileAssets("test/gööd-latin1.txt", "base64");
-      if (res !== "R9bW0Ao=")
-        return Result.error(`base64: ${res} !== R9bW0Ao=`);
+        res = await readFileAssets(TEST_ASSET_LATIN1_PATH, "base64");
+        if (res !== "R9bW0Ao=")
+          return Result.error(`base64: ${res} !== R9bW0Ao=`);
 
-      res = await readFileAssets("test/gööd-utf8.txt", "base64");
-      if (res !== "R8OWw5bDkAo=")
-        return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);
+        res = await readFileAssets(TEST_ASSET_UFT8_PATH, "base64");
+        if (res !== "R8OWw5bDkAo=")
+          return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);
 
-      return Result.success();
-    } catch (e) {
-      return Result.catch(e);
-    }
-  },
-  "readFileRes()": async () => {
+        return Result.success();
+      } catch (e) {
+        return Result.catch(e);
+      }
+    },
+  "readFileRes() should read a resource file [Android]": async () => {
     try {
       let res = await readFileRes("good_latin1.txt", "ascii");
-      if (res !== "GÖÖÐ\n") return Result.error(`ascii: ${res} !== GÖÖÐ\n`);
+      if (res !== CONTENT) return Result.error(`ascii: ${res} !== ${CONTENT}`);
 
       res = await readFileRes("good_utf8.txt", "ascii");
       if (res !== "\x47\xC3\x96\xC3\x96\xC3\x90\x0A")
-        return Result.error(`ascii: ${res} !== GÖÖÐ\n`);
+        return Result.error(`ascii: ${res} !== ${CONTENT}`);
 
       res = await readFileRes("good_utf8.txt", "utf8");
-      if (res !== "GÖÖÐ\n") return Result.error(`utf8: ${res} !== GÖÖÐ\n`);
+      if (res !== CONTENT) return Result.error(`utf8: ${res} !== ${CONTENT}`);
 
       res = await readFileRes("good_utf8.txt");
-      if (res !== "GÖÖÐ\n") return Result.error(`default: ${res} !== GÖÖÐ\n`);
+      if (res !== CONTENT)
+        return Result.error(`default: ${res} !== ${CONTENT}`);
 
       res = await readFileRes("good_latin1.txt", "base64");
       if (res !== "R9bW0Ao=")
@@ -298,3 +300,56 @@ export const readTests: TestMethods = {
     }
   },
 };
+
+type ExpectedType = {
+  name: string;
+  path: string;
+  type: "file" | "folder";
+  now: number;
+  size?: number;
+};
+function verifyItem(
+  given: ReadDirResItemT | undefined,
+  expected: ExpectedType
+): string {
+  if (!given) return "Item is undefined";
+  if (given.name !== expected.name)
+    return `incorrect name ${given.name.normalize()} !== ${expected.name.normalize()}`;
+  if (given.path !== expected.path)
+    return `incorrect path ${given.path.normalize()} !== ${expected.path.normalize()}`;
+  if (expected.type === "file" && !given.isFile()) return "not a file";
+  if (expected.type === "folder" && !given.isDirectory()) return "not a folder";
+
+  // ctime
+  if (Platform.OS === "android" && given.ctime !== null)
+    return "ctime is not null for Android";
+  else if (!(given.ctime instanceof Date)) return "ctime is not a Date";
+  else if (
+    given.ctime.valueOf() < expected.now - 1000 ||
+    given.ctime.valueOf() > expected.now + 1000
+  )
+    return `ctime is not within the expected range: ${given.ctime.valueOf()} !== ${
+      expected.now
+    }`;
+
+  // mtime
+  if (!(given.mtime instanceof Date)) return "mtime is not a Date";
+  if (
+    given.mtime.valueOf() < expected.now - 1000 ||
+    given.mtime.valueOf() > expected.now + 1000
+  )
+    return `mtime is not within the expected range: ${given.mtime.valueOf()} !== ${
+      expected.now
+    }`;
+
+  const expectedSize =
+    expected.size ??
+    Platform.select({
+      android: 4096,
+      windows: 0,
+      default: 64,
+    });
+  if (given.size !== expectedSize)
+    return `size is not the expected value: ${given.size} !== ${expectedSize}`;
+  return "";
+}

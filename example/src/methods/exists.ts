@@ -2,28 +2,29 @@ import {
   exists,
   existsAssets,
   existsRes,
-  TemporaryDirectoryPath,
   writeFile,
 } from "@dr.pogodin/react-native-fs";
-import { tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { PATH, TEST_ASSET_UFT8, TEST_ASSET_UFT8_PATH } from "../TestValues";
 
 export const existsTests: TestMethods = {
-  "exists()": async () => {
-    const path = `${TemporaryDirectoryPath}/ö-test-exists-file`;
-    await tryUnlink(path);
+  "exists() should verify that files exist": async () => {
+    const target = PATH("exists");
+    await tryUnlink(target);
     try {
-      if (await exists(path)) return Result.error("file should not exist yet");
-      await writeFile(path, "xxx");
-      if (!(await exists(path))) return Result.error("file should exist");
+      if (await exists(target))
+        return Result.error("file should not exist yet");
+      await writeFile(target, "xxx");
+      if (!(await exists(target))) return Result.error("file should exist");
       return Result.success();
     } catch (e) {
       return Result.catch(e);
     }
   },
-  "existsAssets()": async () => {
+  "existsAssets() should verify that asset files exist [Android]": async () => {
     try {
-      if (!(await existsAssets("test/gööd-utf8.txt")))
+      if (!(await existsAssets(TEST_ASSET_UFT8_PATH)))
         return Result.error("file should exist");
       if (await existsAssets("test/non-existing.txt"))
         return Result.error("file should not exist");
@@ -33,9 +34,9 @@ export const existsTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "existsRes()": async () => {
+  "existsRes() should verify that resource files exist [Android]": async () => {
     try {
-      if (!(await existsRes("good_utf8.txt")))
+      if (!(await existsRes(TEST_ASSET_UFT8)))
         return Result.error("file should exist");
       if (await existsRes("non_existing.txt"))
         return Result.error("file should not exist");

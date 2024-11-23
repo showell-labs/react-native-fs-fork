@@ -1,11 +1,8 @@
-import { Platform, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
-import {
-  unlink
-} from '@dr.pogodin/react-native-fs';
 
 import TestCase from './TestCase';
-import { type StatusOrEvaluator } from './TestStatus';
+import { type StatusOrEvaluator } from './TestTypes';
 
 import { appendTests } from './methods/append';
 import { copyTests } from './methods/copy';
@@ -26,24 +23,8 @@ import { uploadTests } from './methods/upload';
 import { writeTests } from './methods/write';
 import styles from './styles';
 
-/*
-function logCharCodes(datum: string) {
-  for (let i = 0; i < datum.length; ++i) {
-    console.log(datum.charCodeAt(i).toString(16));
-  }
-}
-*/
-
-export const SEPARATOR = Platform.OS === 'windows' ? '\\' : '/';
-
-export async function tryUnlink(path: string): Promise<void> {
-  try {
-    await unlink(path);
-  } catch { }
-}
 
 
-export type TestMethods = { [name: string]: StatusOrEvaluator; };
 
 const tests: { [name: string]: StatusOrEvaluator; } = {
   ...appendTests,

@@ -3,29 +3,38 @@ import {
   downloadFile,
   readFile,
   stopDownload,
-  TemporaryDirectoryPath,
 } from "@dr.pogodin/react-native-fs";
 import { AppState, Platform } from "react-native";
-import { tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { CONTENT, PATH } from "../TestValues";
+
+// const downloadFilePath = PATH_UTF8("downloadFile");
+
+// const targetFile = FILE_UTF8("target");
+// const targetFile2 = FILE_UTF8("target2");
+// const targetFile3 = FILE_UTF8("target3");
+// const targetFile4 = FILE_UTF8("target4");
 
 export const downloadTests: TestMethods = {
   // TODO: This should live in a dedicated module, with a bunch of tests needed
   // to cover all download-related functions & scenarious; however, to get this
   // function checked faster, placing it here for now.
-  "downloadFile()": async () => {
+  "downloadFile() should download files": async () => {
+    // prepate
     const url =
       "https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt";
-    const path = `${TemporaryDirectoryPath}/döwnload-file-01`;
-    const good = "GÖÖÐ\n";
+    const path = PATH("downloadFile-1");
     await tryUnlink(path);
     try {
+      // execute
       const { jobId, promise } = downloadFile({
         fromUrl: url,
         toFile: path,
       });
       const res = await promise;
 
+      // test
       if (typeof jobId !== "number")
         return Result.error(`type ${typeof jobId} !== number`);
       if (res.bytesWritten !== 8)
@@ -34,18 +43,21 @@ export const downloadTests: TestMethods = {
         return Result.error(`statusCode ${res.statusCode} !== 200`);
 
       const file = await readFile(path);
-      if (file !== good) return Result.error(`${file} !== ${good}`);
+      if (file !== CONTENT) return Result.error(`${file} !== ${CONTENT}`);
       return Result.success();
     } catch (e) {
       return Result.catch(e);
     }
   },
 
-  "downloadFile() - progress callback": async () => {
+  "downloadFile() should utilize  progress callback": async () => {
     try {
+      // prepare
       const url = "https://www.youtube.com/";
-      const path = `${TemporaryDirectoryPath}/döwnload-file-01b`;
+      const path = PATH("downloadFile-2");
+      await tryUnlink(path);
 
+      // execute AND test
       return new Promise((resolve) => {
         const timeoutId = setTimeout(
           () => resolve(Result.error("timeout reached")),
@@ -67,15 +79,17 @@ export const downloadTests: TestMethods = {
     }
   },
   // FOR THIS TEST TO RUN THE EXAMPLE APP SHOULD BE SENT TO THE BACKGROUND!
-  "[iOS] Background downloadFile()": async () => {
+  "downloadFile() should download files in background [iOS]": async () => {
     // ! The test should not fail if the platform is not supported
     if (Platform.OS !== "ios") return Result.error("iOS only test");
 
+    // prepare
     const url =
       "https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt";
-    const path = `${TemporaryDirectoryPath}/backgröund-download-file-01`;
-    const good = "GÖÖÐ\n";
+    const path = PATH("downloadFile-3");
     await tryUnlink(path);
+
+    // execute AND test
     try {
       console.info(
         "Send the app to background to run the iOS background download test"
@@ -91,17 +105,17 @@ export const downloadTests: TestMethods = {
               sub.remove();
               const res = await downloadPromise;
               completeHandlerIOS(jobId);
-              if (
-                typeof jobId !== "number" ||
-                res.bytesWritten !== 8 ||
-                res.statusCode !== 200
-              ) {
-                resolve(Result.error("Background download test failed"));
-                return;
-              }
+
+              if (typeof jobId !== "number")
+                return Result.error(`type ${typeof jobId} !== number`);
+              if (res.bytesWritten !== 8)
+                return Result.error(`bytesWritten ${res.bytesWritten} !== 8`);
+              if (res.statusCode !== 200)
+                return Result.error(`statusCode ${res.statusCode} !== 200`);
+
               const file = await readFile(path);
-              if (file !== good) {
-                resolve(Result.error("Background download test failed"));
+              if (file !== CONTENT) {
+                resolve(Result.error(`${file} !== ${CONTENT}`));
                 return;
               }
               resolve(Result.success());
@@ -116,11 +130,14 @@ export const downloadTests: TestMethods = {
   },
 
   // TODO: This is quite a sloppy test.
-  "stopDownload()": async () => {
+  "stopDownload() should stop downloads": async () => {
+    // prepare
     const url =
       "https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt";
-    const path = `${TemporaryDirectoryPath}/ö-stop-download-test`;
+    const path = PATH("downloadFile-4");
     await tryUnlink(path);
+
+    // execute AND test
     try {
       const { jobId, promise } = downloadFile({
         fromUrl: url,

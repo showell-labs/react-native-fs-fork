@@ -1,11 +1,11 @@
 import { pathForGroup } from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result } from "../TestUtils";
 
 export const pathForGroupTests: TestMethods = {
   // TODO: This is yet another dummy test, that should be enhanced (but not
   // a priority).
-  "pathForGroup()": async () => {
+  "pathForGroup() should return shared group directories [iOS]": async () => {
     try {
       await pathForGroup("dummy-group");
       return Result.error(`dummy test`);

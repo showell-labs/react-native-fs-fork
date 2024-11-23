@@ -1,5 +1,4 @@
 import {
-  TemporaryDirectoryPath,
   exists,
   mkdir,
   moveFile,
@@ -7,46 +6,72 @@ import {
   writeFile,
 } from "@dr.pogodin/react-native-fs";
 import { Platform } from "react-native";
-import { tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { DUMMY_CONTENT, PATH } from "../TestValues";
 
 export const moveFileTests: TestMethods = {
-  "moveFile()": async () => {
+  "moveFile() should move files": async () => {
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
     //    overwrites it? Is it different for folders and files?
     // -  What does it throw when attempting to move a non-existing item?
     try {
-      const path = `${TemporaryDirectoryPath}/möve-file-test`;
-      await tryUnlink(path);
-      await mkdir(`${path}/földer`);
-      await writeFile(`${path}/ö-test-file.txt`, "Dummy content");
-      await writeFile(
-        `${path}/földer/anöther-test-file.txt`,
-        "Another dummy content"
-      );
+      // prepare
+      const sourcePath = PATH("moveFile", "source");
+      const sourceFile = PATH("moveFile", "source", "file.txt");
+      const targetPath = PATH("moveFile", "target");
+      const targetFile = PATH("moveFile", "target", "file.txt");
 
-      // Can it move a file?
-      await moveFile(`${path}/ö-test-file.txt`, `${path}/möved-file.txt`);
+      await tryUnlink(sourcePath);
+      await tryUnlink(targetPath);
+      await mkdir(sourcePath);
+      await mkdir(targetPath);
+      await writeFile(sourceFile, DUMMY_CONTENT);
 
-      if (await exists(`${path}/ö-test-file.txt`)) {
-        return Result.error(`file should not exist: ${path}/ö-test-file.txt`);
-      }
-      if ((await readFile(`${path}/möved-file.txt`)) !== "Dummy content") {
-        return Result.error(`file should be moved`);
-      }
+      // execute
+      await moveFile(sourceFile, targetFile);
 
-      // Can it move a folder with its content?
+      // test
+      if (await exists(sourceFile))
+        return Result.error(`source file should not exist: ${sourceFile}`);
+      if ((await readFile(targetFile)) !== DUMMY_CONTENT)
+        return Result.error(`target file should be moved`);
+
+      return Result.success();
+    } catch (e) {
+      return Result.catch(e);
+    }
+  },
+  "moveFile() should move folders too": async () => {
+    // TODO: It should be also tested and documented:
+    // -  How does it behave if the target item exists? Does it throw or
+    //    overwrites it? Is it different for folders and files?
+    // -  What does it throw when attempting to move a non-existing item?
+    try {
+      // prepare
+      const sourcePath = PATH("moveFile-folder", "source");
+      const sourceFile = PATH("moveFile-folder", "source", "file.txt");
+      const targetPath = PATH("moveFile-folder", "target");
+      const targetFile = PATH("moveFile-folder", "subPath", "file.txt");
+      await tryUnlink(sourcePath);
+      await tryUnlink(targetPath);
+      await mkdir(sourcePath);
+      await mkdir(targetPath);
+      await writeFile(sourceFile, DUMMY_CONTENT);
+
+      // execute AND test
       try {
-        await moveFile(`${path}/földer`, `${path}/möved-folder`);
-        if (
-          (await exists(`${path}/földer`)) ||
-          !(await exists(`${path}/möved-folder/anöther-test-file.txt`)) ||
-          (await readFile(`${path}/möved-folder/anöther-test-file.txt`)) !==
-            "Another dummy content"
-        ) {
-          return Result.error(`folder should be moved`);
-        }
+        await moveFile(sourcePath, targetPath);
+
+        if (await exists(sourcePath))
+          return Result.error(`source folder should not exist: ${sourcePath}`);
+        if (!(await exists(targetPath)))
+          return Result.error(`target folder should be moved: ${targetPath}`);
+        if (!(await exists(targetFile)))
+          return Result.error(`target file should be moved: ${targetFile}`);
+        if ((await readFile(targetFile)) !== DUMMY_CONTENT)
+          return Result.error(`target file should have source content`);
       } catch (e: any) {
         if (
           Platform.OS !== "windows" ||

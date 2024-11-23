@@ -1,10 +1,10 @@
 import { getFSInfo } from "@dr.pogodin/react-native-fs";
 import { Platform } from "react-native";
-import type { TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result } from "../TestUtils";
 
 export const getFSInfoTests: TestMethods = {
-  "getFSInfo()": async () => {
+  "getFSInfo() should return the file system information": async () => {
     try {
       const res = await getFSInfo();
 

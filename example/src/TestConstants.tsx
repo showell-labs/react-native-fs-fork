@@ -1,11 +1,10 @@
 import { Text, View } from 'react-native';
+import styles from './styles';
+import TestCase from './TestCase';
+import { type Status } from './TestTypes';
+import { Result } from './TestUtils';
 
 const RNFS = require('@dr.pogodin/react-native-fs');
-
-import TestCase from './TestCase';
-import { Result, type Status } from './TestStatus';
-
-import styles from './styles';
 
 const constants = [
   'CachesDirectoryPath',

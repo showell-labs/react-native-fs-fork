@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Result, type Status, type StatusOrEvaluator } from './TestStatus';
+import { type Status, type StatusOrEvaluator } from './TestTypes';
+import { Result } from './TestUtils';
 
 type TestCaseProps = {
   name: string;

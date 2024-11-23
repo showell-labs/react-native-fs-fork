@@ -1,16 +1,12 @@
-import {
-  exists,
-  hash,
-  TemporaryDirectoryPath,
-  writeFile,
-} from "@dr.pogodin/react-native-fs";
+import { exists, hash, writeFile } from "@dr.pogodin/react-native-fs";
 import { Platform } from "react-native";
-import { tryUnlink, type TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { PATH } from "../TestValues";
 
 export const hashTests: TestMethods = {
-  "hash()": async () => {
-    const path = `${TemporaryDirectoryPath}/ö-hash`;
+  "hash() should calculate the file hash": async () => {
+    const path = PATH("hash");
     await tryUnlink(path);
     try {
       if (await exists(path))

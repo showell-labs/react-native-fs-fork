@@ -1,16 +1,17 @@
-import {
-  scanFile,
-  TemporaryDirectoryPath,
-  writeFile,
-} from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import { scanFile, writeFile } from "@dr.pogodin/react-native-fs";
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { PATH } from "../TestValues";
 
 export const scanFileTests: TestMethods = {
-  "scanFile()": async () => {
+  "scanFile() should scan a file [Android]": async () => {
     try {
-      const path = `${TemporaryDirectoryPath}/ö-scan-file-test`;
+      // prepare
+      const path = PATH("scanFile");
+      await tryUnlink(path);
       await writeFile(path, "xxx");
+
+      // execute AND test
       await scanFile(path);
       // TODO: Currently scanFile() returns "null" here, indicating the scan has
       // failed... not sure why, perhaps it can't access the temporary directory

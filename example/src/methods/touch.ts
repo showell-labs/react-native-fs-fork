@@ -1,22 +1,16 @@
-import {
-  stat,
-  TemporaryDirectoryPath,
-  touch,
-  unlink,
-  writeFile,
-} from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestBaseMethods";
-import { Result } from '../TestStatus';
+import { stat, touch, writeFile } from "@dr.pogodin/react-native-fs";
+import type { TestMethods } from "../TestTypes";
+import { Result, tryUnlink } from "../TestUtils";
+import { PATH } from "../TestValues";
 
 export const touchTests: TestMethods = {
-  "touch()": async () => {
+  "touch() should modify timestamps of a file": async () => {
     // TODO: This test fails on Windows, but I guess because stat()
     // does not work there the same as on other platforms.
     try {
-      const filePath = `${TemporaryDirectoryPath}/töuch-test`;
-      try {
-        await unlink(filePath);
-      } catch {}
+      // prepare
+      const filePath = PATH("touch");
+      await tryUnlink(filePath);
       await writeFile(filePath, "xxx");
       const a = await stat(filePath);
       const b = await stat(filePath);
@@ -31,18 +25,21 @@ export const touchTests: TestMethods = {
           `a.mtime: ${a.mtime.valueOf()} !== b.mtime: ${b.mtime.valueOf()}`
         );
       }
+      const newTime = 1705969300000;
 
-      const M_TIME = 1705969300000;
-      await touch(filePath, new Date(M_TIME), new Date(M_TIME));
+      // execute
+      await touch(filePath, new Date(newTime), new Date(newTime));
+
+      // test
       const c = await stat(filePath);
-      if (c.ctime.valueOf() !== M_TIME) {
+      if (c.ctime.valueOf() !== newTime) {
         return Result.error(
-          `c.ctime ${c.ctime.valueOf()} !== M_TIME ${M_TIME}`
+          `c.ctime ${c.ctime.valueOf()} !== M_TIME ${newTime}`
         );
       }
-      if (c.mtime.valueOf() !== M_TIME) {
+      if (c.mtime.valueOf() !== newTime) {
         return Result.error(
-          `c.mtime ${c.mtime.valueOf()} !== M_TIME ${M_TIME}`
+          `c.mtime ${c.mtime.valueOf()} !== M_TIME ${newTime}`
         );
       }
       return Result.success();
