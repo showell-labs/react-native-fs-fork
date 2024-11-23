@@ -1,27 +1,34 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Result, type Status, type StatusOrEvaluator } from './TestStatus';
 
-export default function TestCase({ details, name, status }: PropsT) {
+type TestCaseProps = {
+  name: string;
+  status: StatusOrEvaluator;
+};
+export default function TestCase({ name, status }: Readonly<TestCaseProps>) {
   const [statusState, setStatusState] = React.useState<Status>(
-    typeof status === 'string' ? status : 'wait',
+    'type' in status ? status : Result.pending(),
   );
 
   React.useEffect(() => {
-    if (typeof status === 'string') {
+    if ('type' in status) {
       setStatusState(status);
     } else {
       (async () => {
-        setStatusState('wait');
+        setStatusState(Result.pending(),);
         const res = await status();
         setStatusState(res);
       })();
     }
   }, [status]);
 
+  const msg = React.useMemo(() => 'message' in statusState ? statusState.message : undefined, [statusState]);
+
   return (
-    <View style={[styles.container, styles[statusState]]}>
+    <View style={[styles.container, styles[statusState.type]]}>
       <Text style={styles.name}>{name}</Text>
-      {details && <Text>{details}</Text>}
+      {!!msg && <Text>{msg}</Text>}
     </View>
   );
 }
@@ -33,26 +40,18 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: 'bold',
   },
-  fail: {
+  error: {
     backgroundColor: 'red',
   },
-  pass: {
+  success: {
     backgroundColor: 'limegreen',
   },
-  wait: {
+  pending: {
     backgroundColor: 'yellow',
+  },
+  notAvailable: {
+    backgroundColor: 'gray',
   },
 });
 
-export type Status = 'fail' | 'pass' | 'wait';
 
-export type StatusOrEvaluator =
-  | Status
-  | (() => Status)
-  | (() => Promise<Status>);
-
-type PropsT = {
-  name: string;
-  details?: string;
-  status: StatusOrEvaluator;
-};

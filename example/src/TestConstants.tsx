@@ -2,7 +2,8 @@ import { Text, View } from 'react-native';
 
 const RNFS = require('@dr.pogodin/react-native-fs');
 
-import TestCase, { type Status } from './TestCase';
+import TestCase from './TestCase';
+import { Result, type Status } from './TestStatus';
 
 import styles from './styles';
 
@@ -25,23 +26,18 @@ export default function TestConstants() {
     <View>
       <Text style={styles.title}>Constants</Text>
       {constants.map((name) => {
-        let status: Status = 'pass';
+        let status: Status;
 
         // TODO: We should ensure that all paths don't have the trailing slash,
         // (i.e. all they are consistent across platforms, but it will be
         // a breaking change, thus some time later).
         if (RNFS[name] === undefined /* || RNFS[name]?.endsWith('/') */) {
-          status = 'fail';
+          status = Result.error(`${name} is not defined!`);
+        } else {
+          status = Result.success(RNFS[name]);
         }
 
-        return (
-          <TestCase
-            name={name}
-            details={RNFS[name]}
-            key={name}
-            status={status}
-          />
-        );
+        return <TestCase name={name} key={name} status={status} />;
       })}
     </View>
   );
