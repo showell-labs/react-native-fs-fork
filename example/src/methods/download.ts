@@ -4,6 +4,7 @@ import {
   readFile,
   stopDownload,
 } from '@dr.pogodin/react-native-fs';
+
 import { AppState } from 'react-native';
 import type { TestMethods } from '../TestTypes';
 import { notPlatform, Result, tryUnlink } from '../TestUtils';
@@ -106,12 +107,18 @@ export const downloadTests: TestMethods = {
               const res = await downloadPromise;
               completeHandlerIOS(jobId);
 
-              if (typeof jobId !== 'number')
-                {return Result.error(`type ${typeof jobId} !== number`);}
-              if (res.bytesWritten !== 8)
-                {return Result.error(`bytesWritten ${res.bytesWritten} !== 8`);}
-              if (res.statusCode !== 200)
-                {return Result.error(`statusCode ${res.statusCode} !== 200`);}
+              if (typeof jobId !== 'number') {
+                resolve(Result.error(`type ${typeof jobId} !== number`));
+                return;
+              }
+              if (res.bytesWritten !== 8) {
+                resolve(Result.error(`bytesWritten ${res.bytesWritten} !== 8`));
+                return;
+              }
+              if (res.statusCode !== 200) {
+                resolve(Result.error(`statusCode ${res.statusCode} !== 200`));
+                return;
+              }
 
               const file = await readFile(path);
               if (file !== CONTENT) {
