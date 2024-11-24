@@ -684,7 +684,7 @@ try
     splitPath(filePath, directoryPath, fileName);
 
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-    StorageFile file{ co_await folder.GetFileAsync(fileName) };
+    StorageFile file{ co_await folder.CreateFileAsync(fileName, CreationCollisionOption::OpenIfExists) };
 
     winrt::hstring base64ContentStr{ base64Content };
     Streams::IBuffer buffer{ Cryptography::CryptographicBuffer::DecodeFromBase64String(base64ContentStr) };
