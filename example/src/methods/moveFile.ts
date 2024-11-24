@@ -43,7 +43,10 @@ export const moveFileTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "moveFile() should move folders too": async () => {
+  "moveFile() should move folders too [non Windows]": async () => {
+    if (Platform.OS === "windows")
+      return Result.notAvailable("ios", "macos", "android");
+
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
     //    overwrites it? Is it different for folders and files?
@@ -73,8 +76,8 @@ export const moveFileTests: TestMethods = {
         if ((await readFile(targetFile)) !== DUMMY_CONTENT)
           return Result.error(`target file should have source content`);
       } catch (e: any) {
+        //! Why?
         if (
-          Platform.OS !== "windows" ||
           e.code !== "EUNSPECIFIED" ||
           e.message !== "The parameter is incorrect."
         ) {

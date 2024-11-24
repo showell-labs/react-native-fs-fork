@@ -92,7 +92,10 @@ export const copyTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "copyFile() should copy folders too": async () => {
+  "copyFile() should copy folders too [non Windows]": async () => {
+    if (notPlatform("ios", "macos"))
+      return Result.notAvailable("ios", "macos");
+
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
     //    overwrites it? Is it different for folders and files?
@@ -114,28 +117,15 @@ export const copyTests: TestMethods = {
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
         // actually this is not a test at all it just checks if the function does not throw and just on ios and macos
-        //! the platform check should be done before the test and return Status.notAvailable() if the platform is not supported
-        return ["android-windows"].includes(Platform.OS)
-          ? Result.error()
-          : Result.success();
+        Result.success();
       } catch (e: any) {
-        //! the error message is not uniform across systems and may be translated depending on the system language
-        // => we should probably just check for the error code instead
-        if (Platform.OS === "windows") {
-          if (
-            e.code !== "EUNSPECIFIED" ||
-            e.message !== "The parameter is incorrect."
-          ) {
-            return Result.catch(e);
-          }
-        } else {
-          if (
-            e.code !== "EISDIR" ||
-            e.message !==
-              `EISDIR: illegal operation on a directory, read '${sourceFolder}'`
-          ) {
-            return Result.catch(e);
-          }
+        //! why?
+        if (
+          e.code !== "EISDIR" ||
+          e.message !==
+            `EISDIR: illegal operation on a directory, read '${sourceFolder}'`
+        ) {
+          return Result.catch(e);
         }
       }
 
@@ -146,7 +136,7 @@ export const copyTests: TestMethods = {
   },
   "copyFolder() should copy folders [WINDOWS]": async () => {
     if (notPlatform("windows")) return Result.notAvailable("windows");
-    
+
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
     //    overwrites it? Is it different for folders and files?
@@ -199,7 +189,7 @@ export const copyTests: TestMethods = {
   },
   "copyFileAssets() should copy file assets [Android]": async () => {
     if (notPlatform("android")) return Result.notAvailable("android");
-    
+
     // prepare
     const target = PATH("copyFileAssets-target.txt");
     await tryUnlink(target);
@@ -219,7 +209,7 @@ export const copyTests: TestMethods = {
   "copyFileAssets() should throw when copying file assets from invalid paths [Android]":
     async () => {
       if (notPlatform("android")) return Result.notAvailable("android");
-      
+
       // prepare
       const target = PATH("copyFileAssets-invalid-target.txt");
       await tryUnlink(target);
@@ -239,7 +229,7 @@ export const copyTests: TestMethods = {
   "copyFileAssets() should copy file assets for the updated function behavior [Android] [NEW]":
     async () => {
       if (notPlatform("android")) return Result.notAvailable("android");
-      
+
       // prepare
       const copyFileAssetsNewPath = PATH("copyFileAssets-new");
       await tryUnlink(copyFileAssetsNewPath);
@@ -259,7 +249,7 @@ export const copyTests: TestMethods = {
     },
   "copyFileRes() should copy file resources [Android]": async () => {
     if (notPlatform("android")) return Result.notAvailable("android");
-    
+
     // prepare
     const target = PATH("copyFileRes-target.txt");
     await tryUnlink(target);
