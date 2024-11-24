@@ -1,16 +1,16 @@
-import { getAllExternalFilesDirs } from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestTypes";
-import { notPlatform, Result } from "../TestUtils";
+import { getAllExternalFilesDirs } from '@dr.pogodin/react-native-fs';
+import type { TestMethods } from '../TestTypes';
+import { notPlatform, Result } from '../TestUtils';
 
 export const getAllExternalFilesDirsTests: TestMethods = {
   // TODO: This is not a very strict test.
-  "getAllExternalFilesDirs() should return a list of all external directories [Android]":
+  'getAllExternalFilesDirs() should return a list of all external directories [Android]':
     async () => {
-      if (notPlatform("android")) return Result.notAvailable("android");
-      
+      if (notPlatform('android')) return Result.notAvailable('android');
+
       try {
         const res = await getAllExternalFilesDirs();
-        if (!Array.isArray(res) || res.some((x) => typeof x !== "string")) {
+        if (!Array.isArray(res) || res.some((x) => typeof x !== 'string')) {
           return Result.error(
             `result is not a string[]: ${JSON.stringify(res)}`
           );

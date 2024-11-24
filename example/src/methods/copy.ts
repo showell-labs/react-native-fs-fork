@@ -7,17 +7,17 @@ import {
   mkdir,
   readFile,
   writeFile,
-} from "@dr.pogodin/react-native-fs";
-import { Platform } from "react-native";
-import type { TestMethods } from "../TestTypes";
-import { Result, notPlatform, tryUnlink } from "../TestUtils";
+} from '@dr.pogodin/react-native-fs';
+import { Platform } from 'react-native';
+import type { TestMethods } from '../TestTypes';
+import { Result, notPlatform, tryUnlink } from '../TestUtils';
 import {
   CONTENT,
   DUMMY_CONTENT,
   PATH,
   TEST_ASSET_UFT8,
   TEST_ASSET_UFT8_PATH,
-} from "../TestValues";
+} from '../TestValues';
 
 export const copyTests: TestMethods = {
   // TODO reenable tests
@@ -62,7 +62,7 @@ export const copyTests: TestMethods = {
     }
   },
   */
-  "copyFile() should copy files": async () => {
+  'copyFile() should copy files': async () => {
     //! this test does not pass initially, because the file seems not to exist (maybe because  writeFile fails too)
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -70,8 +70,8 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const sourceFile = PATH("copyFile-source.txt");
-      const targetFile = PATH("copyFile-target.txt");
+      const sourceFile = PATH('copyFile-source.txt');
+      const targetFile = PATH('copyFile-target.txt');
       await tryUnlink(sourceFile);
       await tryUnlink(targetFile);
       await writeFile(sourceFile, DUMMY_CONTENT);
@@ -85,16 +85,16 @@ export const copyTests: TestMethods = {
         (await readFile(sourceFile)) !== DUMMY_CONTENT ||
         (await readFile(targetFile)) !== DUMMY_CONTENT
       ) {
-        return Result.error("can not move a file");
+        return Result.error('can not move a file');
       }
       return Result.success();
     } catch (e: any) {
       return Result.catch(e);
     }
   },
-  "copyFile() should copy folders too [non Windows]": async () => {
-    if (notPlatform("ios", "macos"))
-      return Result.notAvailable("ios", "macos");
+  'copyFile() should copy folders too [non Windows]': async () => {
+    if (notPlatform('ios', 'macos'))
+      {return Result.notAvailable('ios', 'macos');}
 
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -102,10 +102,10 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const sourceFolder = PATH("copyFile-source");
-      const targetFolder = PATH("copyFile-target");
-      const sourceFile = PATH("copyFile-source", "source.txt");
-      const targetFile = PATH("copyFile-target", "source.txt");
+      const sourceFolder = PATH('copyFile-source');
+      const targetFolder = PATH('copyFile-target');
+      const sourceFile = PATH('copyFile-source', 'source.txt');
+      const targetFile = PATH('copyFile-target', 'source.txt');
       await tryUnlink(sourceFile);
       await tryUnlink(targetFile);
       await mkdir(sourceFolder);
@@ -121,7 +121,7 @@ export const copyTests: TestMethods = {
       } catch (e: any) {
         //! why?
         if (
-          e.code !== "EISDIR" ||
+          e.code !== 'EISDIR' ||
           e.message !==
             `EISDIR: illegal operation on a directory, read '${sourceFolder}'`
         ) {
@@ -134,8 +134,8 @@ export const copyTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "copyFolder() should copy folders [WINDOWS]": async () => {
-    if (notPlatform("windows")) return Result.notAvailable("windows");
+  'copyFolder() should copy folders [WINDOWS]': async () => {
+    if (notPlatform('windows')) return Result.notAvailable('windows');
 
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -143,8 +143,8 @@ export const copyTests: TestMethods = {
     // -  What does it throw when attempting to move a non-existing item?
     try {
       // prepare
-      const sourceFolder = PATH("copyFolderSource");
-      const targetFolder = PATH("copyFolderTarget");
+      const sourceFolder = PATH('copyFolderSource');
+      const targetFolder = PATH('copyFolderTarget');
       const sourceFile = `${sourceFolder}/source.txt`;
       const targetFile = `${targetFolder}/source.txt`;
       await tryUnlink(sourceFile);
@@ -159,21 +159,21 @@ export const copyTests: TestMethods = {
         // TODO: For platforms that allow to copy folders, we should do more
         // checks here, similar to moveFile() checks.
         //! the platform check should be done before the copyFolder call and return Status.notAvailable() if the platform is not supported
-        return ["android"].includes(Platform.OS)
+        return ['android'].includes(Platform.OS)
           ? Result.error()
           : Result.success();
       } catch (e: any) {
         //! the error message is not uniform across systems and may be translated depending on the system language
-        if (Platform.OS === "windows") {
+        if (Platform.OS === 'windows') {
           if (
-            e.code !== "EUNSPECIFIED" ||
-            e.message !== "The parameter is incorrect."
+            e.code !== 'EUNSPECIFIED' ||
+            e.message !== 'The parameter is incorrect.'
           ) {
             return Result.catch(e);
           }
         } else {
           if (
-            e.code !== "EISDIR" ||
+            e.code !== 'EISDIR' ||
             e.message !==
               `EISDIR: illegal operation on a directory, read '${sourceFolder}'`
           ) {
@@ -187,17 +187,17 @@ export const copyTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "copyFileAssets() should copy file assets [Android]": async () => {
-    if (notPlatform("android")) return Result.notAvailable("android");
+  'copyFileAssets() should copy file assets [Android]': async () => {
+    if (notPlatform('android')) return Result.notAvailable('android');
 
     // prepare
-    const target = PATH("copyFileAssets-target.txt");
+    const target = PATH('copyFileAssets-target.txt');
     await tryUnlink(target);
 
     // execute AND test
     try {
       if (await exists(target))
-        return Result.error(`${target} should not exist`);
+        {return Result.error(`${target} should not exist`);}
       await copyFileAssets(TEST_ASSET_UFT8_PATH, target);
       const res = await readFile(target);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);
@@ -206,38 +206,38 @@ export const copyTests: TestMethods = {
       return Result.catch(e);
     }
   },
-  "copyFileAssets() should throw when copying file assets from invalid paths [Android]":
+  'copyFileAssets() should throw when copying file assets from invalid paths [Android]':
     async () => {
-      if (notPlatform("android")) return Result.notAvailable("android");
+      if (notPlatform('android')) return Result.notAvailable('android');
 
       // prepare
-      const target = PATH("copyFileAssets-invalid-target.txt");
+      const target = PATH('copyFileAssets-invalid-target.txt');
       await tryUnlink(target);
 
       // execute AND test
       try {
         if (await exists(target))
-          return Result.error(`${target} should not exist`);
-        await copyFileAssets("invalid-path", target);
-        return Result.error("should throw an error for invalid path");
+          {return Result.error(`${target} should not exist`);}
+        await copyFileAssets('invalid-path', target);
+        return Result.error('should throw an error for invalid path');
       } catch {
         return Result.success();
       }
     },
   // NOTE: This is a new test, for the updated function behavior.
   //! shouldn't the old tests be updated instead of adding new ones?
-  "copyFileAssets() should copy file assets for the updated function behavior [Android] [NEW]":
+  'copyFileAssets() should copy file assets for the updated function behavior [Android] [NEW]':
     async () => {
-      if (notPlatform("android")) return Result.notAvailable("android");
+      if (notPlatform('android')) return Result.notAvailable('android');
 
       // prepare
-      const copyFileAssetsNewPath = PATH("copyFileAssets-new");
+      const copyFileAssetsNewPath = PATH('copyFileAssets-new');
       await tryUnlink(copyFileAssetsNewPath);
       // await mkdir(copyFileAssetsNewPath); //! why commented out?
 
       // execute AND test
       try {
-        await copyFileAssets("test", copyFileAssetsNewPath);
+        await copyFileAssets('test', copyFileAssetsNewPath);
         const res = await readFile(
           `${copyFileAssetsNewPath}/${TEST_ASSET_UFT8}`
         );
@@ -247,17 +247,17 @@ export const copyTests: TestMethods = {
         return Result.catch(e);
       }
     },
-  "copyFileRes() should copy file resources [Android]": async () => {
-    if (notPlatform("android")) return Result.notAvailable("android");
+  'copyFileRes() should copy file resources [Android]': async () => {
+    if (notPlatform('android')) return Result.notAvailable('android');
 
     // prepare
-    const target = PATH("copyFileRes-target.txt");
+    const target = PATH('copyFileRes-target.txt');
     await tryUnlink(target);
 
     // execute AND test
     try {
       if (await exists(target))
-        return Result.error(`${target} should not exist`);
+        {return Result.error(`${target} should not exist`);}
       await copyFileRes(TEST_ASSET_UFT8, target);
       const res = await readFile(target);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);

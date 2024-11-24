@@ -3,7 +3,7 @@ import styles from './styles';
 import TestCase from './TestCase';
 import { type Status } from './TestTypes';
 import { Result } from './TestUtils';
-import { isNil, isString } from 'lodash';
+import { isString } from 'lodash';
 
 const RNFS = require('@dr.pogodin/react-native-fs');
 

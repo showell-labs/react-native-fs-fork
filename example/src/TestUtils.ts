@@ -1,29 +1,29 @@
-import { unlink } from "@dr.pogodin/react-native-fs";
+import { unlink } from '@dr.pogodin/react-native-fs';
 import type {
   ErrorStatus,
   NotAvailableStatus,
   PendingStatus,
   SuccessStatus,
-} from "./TestTypes";
-import { Platform, type PlatformOSType } from "react-native";
+} from './TestTypes';
+import { Platform, type PlatformOSType } from 'react-native';
 
 export const Result = {
   error: (...message: string[]): ErrorStatus => ({
-    type: "error",
-    message: message.join(" "),
+    type: 'error',
+    message: message.join(' '),
   }),
   catch: (error: any): ErrorStatus => ({
-    type: "error",
+    type: 'error',
     message: `${error.code}: ${error.message}`,
   }),
   success: (...message: string[]): SuccessStatus => ({
-    type: "success",
-    message: message.join(" "),
+    type: 'success',
+    message: message.join(' '),
   }),
-  pending: (): PendingStatus => ({ type: "pending" }),
+  pending: (): PendingStatus => ({ type: 'pending' }),
   notAvailable: (...platforms: PlatformOSType[]): NotAvailableStatus => ({
-    type: "notAvailable",
-    message: `not available on ${Platform.OS} but [${platforms.join(", ")}]`,
+    type: 'notAvailable',
+    message: `not available on ${Platform.OS} but [${platforms.join(', ')}]`,
   }),
 };
 

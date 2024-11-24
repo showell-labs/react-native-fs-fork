@@ -1,16 +1,16 @@
-import { scanFile, writeFile } from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestTypes";
-import { notPlatform, Result, tryUnlink } from "../TestUtils";
-import { PATH } from "../TestValues";
+import { scanFile, writeFile } from '@dr.pogodin/react-native-fs';
+import type { TestMethods } from '../TestTypes';
+import { notPlatform, Result, tryUnlink } from '../TestUtils';
+import { PATH } from '../TestValues';
 
 export const scanFileTests: TestMethods = {
-  "scanFile() should scan a file [Android]": async () => {
-    if (notPlatform("android")) return Result.notAvailable("android");
+  'scanFile() should scan a file [Android]': async () => {
+    if (notPlatform('android')) return Result.notAvailable('android');
     try {
       // prepare
-      const path = PATH("scanFile");
+      const path = PATH('scanFile');
       await tryUnlink(path);
-      await writeFile(path, "xxx");
+      await writeFile(path, 'xxx');
 
       // execute AND test
       await scanFile(path);

@@ -1,17 +1,17 @@
-import { stat, touch, writeFile } from "@dr.pogodin/react-native-fs";
-import type { TestMethods } from "../TestTypes";
-import { Result, tryUnlink } from "../TestUtils";
-import { PATH } from "../TestValues";
+import { stat, touch, writeFile } from '@dr.pogodin/react-native-fs';
+import type { TestMethods } from '../TestTypes';
+import { Result, tryUnlink } from '../TestUtils';
+import { PATH } from '../TestValues';
 
 export const touchTests: TestMethods = {
-  "touch() should modify timestamps of a file": async () => {
+  'touch() should modify timestamps of a file': async () => {
     // TODO: This test fails on Windows, but I guess because stat()
     // does not work there the same as on other platforms.
     try {
       // prepare
-      const filePath = PATH("touch");
+      const filePath = PATH('touch');
       await tryUnlink(filePath);
-      await writeFile(filePath, "xxx");
+      await writeFile(filePath, 'xxx');
       const a = await stat(filePath);
       const b = await stat(filePath);
 
