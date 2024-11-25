@@ -231,6 +231,8 @@ export function pickFile(
 ): Promise<string[]> {
   return RNFS.pickFile({
     mimeTypes: options.mimeTypes || ['*/*'],
+    pickerType: options.pickerType || 'singleFile',
+    fileExtensions: options.fileExtensions || [],
   });
 }
 

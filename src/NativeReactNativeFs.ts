@@ -4,6 +4,8 @@ import { TurboModuleRegistry } from 'react-native';
 // Note: It would be better to have all these type definitions in a dedicated
 // module, however as of its current version RN's Codegen does not seem to handle
 // type imports correctly.
+// TODO everything needs jsdoc comments. probably the same as in the README.md file. 
+// It's better to read jsdoc through intellisense than to open and find things in the README.md.
 
 export type DownloadBeginCallbackResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
@@ -40,8 +42,20 @@ export type NativeDownloadFileOptionsT = {
   hasResumableCallback: boolean;
 };
 
+export type FileExtension = `.${string}`;
 export type PickFileOptionsT = {
+  /** **[Android - iOS - macOS]** The mime types that restrict the type of files that can be picked. 
+   * - For more information, see [Common MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types). */
   mimeTypes: string[];
+  /** **[Windows]** 
+   * The type of objects to pick can be either a single file, multiple files or one folder. 
+   * - Multiple folders are not supported by windows.
+   * - Defaults to `'singleFile'` */
+  pickerType: 'singleFile' | 'multipleFiles' | 'folder';
+  /** **[Windows]** The file extensions to pick from. 
+   * - Only applies to `pickerType !== 'folder'`
+   * - Defaults to `[]` (all file extensions) */
+  fileExtensions: FileExtension[]
 };
 
 export type DownloadFileOptionsT = {

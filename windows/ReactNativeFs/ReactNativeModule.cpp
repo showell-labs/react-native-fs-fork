@@ -16,6 +16,8 @@
 #include <winrt/Windows.Web.Http.Headers.h>
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Storage.Pickers.h>
+#include <winrt/Windows.Storage.AccessCache.h>
 
 #include "RNFSException.h"
 
@@ -24,6 +26,7 @@ using namespace winrt::ReactNativeFs;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
+using namespace winrt::Windows::Storage::Pickers;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Web::Http;
 
@@ -1119,4 +1122,163 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
     {
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
+}
+
+
+void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArray> promise) noexcept
+{
+    m_reactContext.UIDispatcher().Post([this, options = std::move(options), promise = std::move(promise)]() mutable {
+        try
+        {
+            // read options
+            std::string pickerType = "multipleFiles"; // Default value
+            if (options.find("pickerType") != options.end())
+            {
+                pickerType = options["pickerType"].AsString();
+            }
+
+            std::vector<std::wstring> fileTypes;
+            if (options.find("fileExtensions") != options.end())
+            {
+                for (const auto& mimeType : options["fileExtensions"].AsArray())
+                {
+                    fileTypes.push_back(std::wstring(winrt::to_hstring(mimeType.AsString())));
+                }
+            }
+
+            // folder picker
+            if (pickerType == "folder")
+            {
+                FolderPicker picker;
+                picker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
+                picker.FileTypeFilter().Append(L"*");
+
+                picker.PickSingleFolderAsync().Completed([promise = std::move(promise)](IAsyncOperation<StorageFolder> const& operation, AsyncStatus const status) mutable {
+                    try
+                    {
+                        if (status == AsyncStatus::Completed)
+                        {
+                            StorageFolder folder = operation.GetResults();
+                            if (folder)
+                            {
+                                JSValueArray result;
+                                result.push_back(JSValueObject{
+                                    {"name", winrt::to_string(folder.Name())},
+                                    {"path", winrt::to_string(folder.Path())}
+                                });
+                                promise.Resolve(std::move(result));
+                            }
+                            else
+                            {
+                                promise.Reject("No folder was picked.");
+                            }
+                        }
+                        else
+                        {
+                            promise.Reject("Folder picker operation was not completed.");
+                        }
+                    }
+                    catch (const hresult_error& ex)
+                    {
+                        promise.Reject(winrt::to_string(ex.message()).c_str());
+                    }
+                });
+            }
+
+            // file picker
+            else
+            {
+                FileOpenPicker picker;
+                picker.ViewMode(PickerViewMode::Thumbnail);
+                picker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
+
+                if (!fileTypes.empty())
+                {
+                    for (const auto& fileType : fileTypes)
+                    {
+                        picker.FileTypeFilter().Append(fileType);
+                    }
+                }
+                else
+                {
+                    picker.FileTypeFilter().Append(L"*");
+                }
+
+                // single files
+                if (pickerType == "singleFile")
+                {
+                    picker.PickSingleFileAsync().Completed([promise = std::move(promise)](IAsyncOperation<StorageFile> const& operation, AsyncStatus const status) mutable {
+                        try
+                        {
+                            if (status == AsyncStatus::Completed)
+                            {
+                                StorageFile file = operation.GetResults();
+                                if (file)
+                                {
+                                    JSValueArray result;
+                                    result.push_back(winrt::to_string(file.Path()));
+                                    promise.Resolve(std::move(result));
+                                }
+                                else
+                                {
+                                    promise.Reject("No file was picked.");
+                                }
+                            }
+                            else
+                            {
+                                promise.Reject("File picker operation was not completed.");
+                            }
+                        }
+                        catch (const hresult_error& ex)
+                        {
+                            promise.Reject(winrt::to_string(ex.message()).c_str());
+                        }
+                    });
+                }
+
+                // multiple files
+                else if (pickerType == "multipleFiles")
+                {
+                    picker.PickMultipleFilesAsync().Completed([promise = std::move(promise)](IAsyncOperation<IVectorView<StorageFile>> const& operation, AsyncStatus const status) mutable {
+                        try
+                        {
+                            if (status == AsyncStatus::Completed)
+                            {
+                                auto files = operation.GetResults();
+                                if (files.Size() > 0)
+                                {
+                                    JSValueArray result;
+                                    for (const auto& file : files)
+                                    {
+                                        result.push_back(winrt::to_string(file.Path()));
+                                    }
+                                    promise.Resolve(std::move(result));
+                                }
+                                else
+                                {
+                                    promise.Reject("No files were picked.");
+                                }
+                            }
+                            else
+                            {
+                                promise.Reject("File picker operation was not completed.");
+                            }
+                        }
+                        catch (const hresult_error& ex)
+                        {
+                            promise.Reject(winrt::to_string(ex.message()).c_str());
+                        }
+                    });
+                }
+                else
+                {
+                    promise.Reject("Invalid pickerType option.");
+                }
+            }
+        }
+        catch (const hresult_error& ex)
+        {
+            promise.Reject(winrt::to_string(ex.message()).c_str());
+        }
+    });
 }

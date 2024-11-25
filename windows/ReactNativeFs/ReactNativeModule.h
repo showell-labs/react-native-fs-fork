@@ -161,6 +161,9 @@ struct ReactNativeModule
     REACT_EVENT(emitDownloadBegin, L"DownloadBegin");
     std::function<void(JSValue)> emitDownloadBegin;
 
+    REACT_METHOD(pickFile);
+    void pickFile(JSValueObject options, ReactPromise<JSValueArray> promise) noexcept;
+    
 private:
     void splitPath(const std::string& fullPath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept;
 
