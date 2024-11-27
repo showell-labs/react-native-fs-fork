@@ -14,7 +14,7 @@ import {
   type NativeDownloadFileOptionsT,
   type NativeReadDirResItemT,
   type NativeUploadFileOptionsT,
-  type PickFileOptionsT,
+  type PickFileOptionsT as BasePickFileOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
   type StatResultT,
@@ -225,6 +225,10 @@ export function moveFile(
     options,
   );
 }
+
+type PickFileOptionsT = BasePickFileOptionsT & {
+  pickerType: 'singleFile' | 'multipleFiles' | 'folder';
+};
 
 export function pickFile(
   options: Partial<PickFileOptionsT> = {},

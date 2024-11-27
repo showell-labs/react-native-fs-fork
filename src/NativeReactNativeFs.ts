@@ -48,10 +48,14 @@ export type PickFileOptionsT = {
    * - For more information, see [Common MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types). */
   mimeTypes: string[];
   /** **[Windows]**
-   * The type of objects to pick can be either a single file, multiple files or one folder.
+   * The type of objects to pick can be one of: `singleFile`, `multipleFiles`,
+   * or `folder`.
    * - Multiple folders are not supported by windows.
    * - Defaults to `'singleFile'` */
-  pickerType: 'singleFile' | 'multipleFiles' | 'folder';
+
+  // NOTE: For now, do not type it as 'singleFile' | 'multipleFiles' | 'folder'
+  // here, as the New Arch codegen does not support literal union types yet.
+  pickerType: string;
   /** **[Windows]** The file extensions to pick from.
    * - Only applies to `pickerType !== 'folder'`
    * - Defaults to `[]` (all file extensions) */
