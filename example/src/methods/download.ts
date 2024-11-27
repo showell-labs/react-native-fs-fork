@@ -140,7 +140,7 @@ export const downloadTests: TestMethods = {
   'stopDownload() should stop downloads': async () => {
     // prepare
     const url =
-      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/gööd-utf8.txt';
     const path = PATH('downloadFile-4');
     await tryUnlink(path);
 

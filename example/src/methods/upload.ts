@@ -81,7 +81,10 @@ export const uploadTests: TestMethods = {
 
       // test
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
-        console.log('MISMATCH', uploadedFile, UPLOAD_FILES_CONTROL);
+        console.log(
+          'MISMATCH:\nUploaded:\n',
+          uploadedFile,
+          '\nExpected:\n', UPLOAD_FILES_CONTROL);
       }
 
       return uploadedFile.includes(UPLOAD_FILES_CONTROL)

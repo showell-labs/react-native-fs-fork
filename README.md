@@ -841,6 +841,10 @@ is done natively and the data doesn't have to be copied or cross the bridge.
 **Note:** Overwrites existing file in Windows &mdash; To be verified, how does
 it behave on other systems, and whether it really overwrites items on Windows?
 
+**BEWARE:** On Android, if `from` is a folder, rather than moving entire folder
+with its content inside the `into` folder, it moves the content of `from` inside
+`into`.
+
 **BEWARE:** On Windows it currently does not allow moving folders with files,
 on other platforms it works fine.
 

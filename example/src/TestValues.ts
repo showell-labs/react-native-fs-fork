@@ -13,3 +13,7 @@ export const TEST_ASSET_UFT8 = 'gööd-utf8.txt'; // content === CONTENT
 export const TEST_ASSET_LATIN1 = 'gööd-latin1.txt';
 export const TEST_ASSET_UFT8_PATH = `test/${TEST_ASSET_UFT8}`;
 export const TEST_ASSET_LATIN1_PATH = `test/${TEST_ASSET_LATIN1}`;
+
+// NOTE: Android does not support special characters in resource names.
+export const TEST_ANDROID_RESOURCE_LATIN1 = 'good_latin1.txt';
+export const TEST_ANDROID_RESOURCE_UTF8 = 'good_utf8.txt';

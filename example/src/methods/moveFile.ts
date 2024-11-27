@@ -56,7 +56,7 @@ export const moveFileTests: TestMethods = {
       const sourcePath = PATH('moveFile-folder', 'source');
       const sourceFile = PATH('moveFile-folder', 'source', 'file.txt');
       const targetPath = PATH('moveFile-folder', 'target');
-      const targetFile = PATH('moveFile-folder', 'subPath', 'file.txt');
+      const targetFile = PATH('moveFile-folder', 'target', 'source', 'file.txt');
       await tryUnlink(sourcePath);
       await tryUnlink(targetPath);
       await mkdir(sourcePath);

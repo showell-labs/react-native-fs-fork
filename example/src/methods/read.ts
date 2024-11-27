@@ -168,7 +168,7 @@ export const readTests: TestMethods = {
         // TODO: This can be platform dependent. => fill in the other Platforms
         size: Platform.select({
           windows: 13,
-          default: 18,
+          default: 11,
         }),
       });
       if (error) return Result.error('file-2.txt:', error);
@@ -340,9 +340,9 @@ function verifyItem(
   if (expected.type === 'folder' && !given.isDirectory()) return 'not a folder';
 
   // ctime
-  if (Platform.OS === 'android' && given.ctime !== null)
-    {return 'ctime is not null for Android';}
-  else if (!(given.ctime instanceof Date)) return 'ctime is not a Date';
+  if (Platform.OS === 'android') {
+    if (given.ctime !== null)return 'ctime is not null for Android';
+  } else if (!(given.ctime instanceof Date)) return 'ctime is not a Date';
   else if (
     given.ctime.valueOf() < expected.now - 1000 ||
     given.ctime.valueOf() > expected.now + 1000

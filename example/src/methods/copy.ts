@@ -15,6 +15,7 @@ import {
   CONTENT,
   DUMMY_CONTENT,
   PATH,
+  TEST_ANDROID_RESOURCE_UTF8,
   TEST_ASSET_UFT8,
   TEST_ASSET_UFT8_PATH,
 } from '../TestValues';
@@ -258,7 +259,7 @@ export const copyTests: TestMethods = {
     try {
       if (await exists(target))
         {return Result.error(`${target} should not exist`);}
-      await copyFileRes(TEST_ASSET_UFT8, target);
+      await copyFileRes(TEST_ANDROID_RESOURCE_UTF8, target);
       const res = await readFile(target);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);
       return Result.success();

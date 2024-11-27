@@ -6,7 +6,7 @@ import {
 } from '@dr.pogodin/react-native-fs';
 import type { TestMethods } from '../TestTypes';
 import { notPlatform, Result, tryUnlink } from '../TestUtils';
-import { PATH, TEST_ASSET_UFT8, TEST_ASSET_UFT8_PATH } from '../TestValues';
+import { PATH, TEST_ANDROID_RESOURCE_UTF8, TEST_ASSET_UFT8_PATH } from '../TestValues';
 
 export const existsTests: TestMethods = {
   'exists() should verify that files exist': async () => {
@@ -40,7 +40,7 @@ export const existsTests: TestMethods = {
     if (notPlatform('android')) return Result.notAvailable('android');
 
     try {
-      if (!(await existsRes(TEST_ASSET_UFT8)))
+      if (!(await existsRes(TEST_ANDROID_RESOURCE_UTF8)))
         {return Result.error('file should exist');}
       if (await existsRes('non_existing.txt'))
         {return Result.error('file should not exist');}
