@@ -167,6 +167,9 @@ struct ReactNativeModule
     REACT_METHOD(removeListeners);
     void removeListeners(int count) noexcept;
 
+    REACT_METHOD(pickFile);
+    void pickFile(JSValueObject options, ReactPromise<JSValueArray> promise) noexcept;
+    
 private:
     void splitPath(const std::wstring& fullPath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept;
 

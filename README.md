@@ -872,10 +872,16 @@ For more information read the [Adding an App to an App Group](https://developer.
 ```ts
 function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 ```
-**SUPPORTED**: Android, iOS, macOS. **NOT YET SUPPORTED**: Windows.
+**SUPPORTED**: Android, iOS, macOS, Windows.
 
 Prompts the user to select file(s) using a platform-provided file picker UI,
 which also allows to access files outside the app sandbox.
+
+**BEWARE:** On **windows** the options differ from the other platform since the 
+native file piper doesn't support `mimeTypes` but `fileExtensions` and different
+picker types like `singleFile`, `multipleFIle` and `folder`. For more information
+see [PickFileOptionsT].
+
 
 **BEWARE:** On **macOS (Catalyst)** for this function to work you MUST go to
 _Signing & Capabilities_ settings of your project, and inside its _App Sandbox_
@@ -1404,14 +1410,25 @@ Type of extra options argument for [mkdir()].
 ```ts
 type PickFileOptionsT = {
   mimeTypes?: string[];
+  pickerType?: 'singleFile' | 'multipleFiles' | 'folder';
+  fileExtensions?: FileExtension[]
 };
 ```
 Optional parameters for [pickFile()] function.
 
-- `mimeTypes` &mdash; **string[]** &mdash; Optional. An array of
+- `mimeTypes` &mdash; **string[]** &mdash; *[Android - iOS - macOS]*  Optional. An array of
   [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
   of files user is allowed to select. Defaults to `['*/*']` allowing to select
   any file.
+- `pickerType` &mdash; **'singleFile' | 'multipleFiles' | 'folder'** &mdash;  *[Windows]* Optional.
+   The type of objects to pick can be either a single file, multiple files or one folder. 
+   - Multiple folders are not supported by windows.
+   - Defaults to `'singleFile'` */
+- `fileExtensions` &mdash; **FileExtension[]** &mdash; *[Windows]* Optional, The file extensions to pick from. 
+   - Only applies to `pickerType !== 'folder'`
+   - Defaults to `[]` (all file extensions) */
+   - `FileExtension = ´.${string}´` - e.g `'.bmp'`, `'.mp3'`
+
 
 ### ReadDirAssetsResItemT
 [ReadDirAssetsResItemT]: #readdirassetsresitemt
