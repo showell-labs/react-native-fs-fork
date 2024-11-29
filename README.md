@@ -27,6 +27,7 @@ and [old][Old Architecture] [RN][React Native] architectures.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/62384153?v=4&s=36" />](https://github.com/pcprinz)
 [<img width=36 src="https://avatars.githubusercontent.com/u/3824379?v=4&s=36" />](https://github.com/hsjoberg)
 [<img width=36 src="https://avatars.githubusercontent.com/u/12956672?v=4&s=36" />](https://github.com/christianchown)
 [<img width=36 src="https://avatars.githubusercontent.com/u/31921080?s=36" />](https://github.com/Yupeng-li)
@@ -73,7 +74,7 @@ and [old][Old Architecture] [RN][React Native] architectures.
       thumbnails.
     - [copyAssetsVideoIOS()] &mdash; Copies a video from the assets-library
       to the specified destination.
-    - [copyFile()] &mdash; Copies a file to a new destination.
+    - [copyFile()] &mdash; Copies a file (or a folder with files - except on Android/Windows) to a new destination.
     - [copyFileAssets()] &mdash; (Android only) Copies Android app's asset(s)
       to the specified destination.
     - [copyFileRes()] &mdash; (Android only) Copies specified resource to
@@ -96,7 +97,7 @@ and [old][Old Architecture] [RN][React Native] architectures.
     - [getFSInfo()] &mdash; Gets info on the free and total storage space
       on the device, and its external storage.
     - [mkdir()] &mdash; Creates folder(s) at the given path.
-    - [moveFile()] &mdash; Moves a file (or a folder with files) to a new location.
+    - [moveFile()] &mdash; Moves a file (or a folder with files - except on Windows) to a new location.
     - [pathForGroup()] &mdash; (iOS only) Returns the absolute path to
       the directory shared for all applications with the same security group
       identifier.
@@ -626,7 +627,7 @@ Copies a file to a new destination. Throws if called on a directory.
 already exists. On iOS an error will be thrown if the file already exists.
 &mdash; **beware**, this has not been verified yet.
 
-**BEWARE:** On Android [copyFile()] throws if called on a folder; on other
+**BEWARE:** On Android and Windows [copyFile()] throws if called on a folder; on other
 platforms it does not throw, but it has not been verified yet, if it actually
 copies a folder with all its content there.
 
@@ -840,6 +841,10 @@ is done natively and the data doesn't have to be copied or cross the bridge.
 **Note:** Overwrites existing file in Windows &mdash; To be verified, how does
 it behave on other systems, and whether it really overwrites items on Windows?
 
+**BEWARE:** On Android, if `from` is a folder, rather than moving entire folder
+with its content inside the `into` folder, it moves the content of `from` inside
+`into`.
+
 **BEWARE:** On Windows it currently does not allow moving folders with files,
 on other platforms it works fine.
 
@@ -871,10 +876,16 @@ For more information read the [Adding an App to an App Group](https://developer.
 ```ts
 function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 ```
-**SUPPORTED**: Android, iOS, macOS. **NOT YET SUPPORTED**: Windows.
+**SUPPORTED**: Android, iOS, macOS, Windows.
 
 Prompts the user to select file(s) using a platform-provided file picker UI,
 which also allows to access files outside the app sandbox.
+
+**BEWARE:** On **windows** the options differ from the other platform since the 
+native file piper doesn't support `mimeTypes` but `fileExtensions` and different
+picker types like `singleFile`, `multipleFIle` and `folder`. For more information
+see [PickFileOptionsT].
+
 
 **BEWARE:** On **macOS (Catalyst)** for this function to work you MUST go to
 _Signing & Capabilities_ settings of your project, and inside its _App Sandbox_
@@ -1174,9 +1185,7 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS, Windows \
-**BEWARE:** On Windows it seems to work differently from other platforms,
-throwing if attempting to write to a non-existing file.
+**VERIFIED:** Android, iOS, macOS, Windows 
 
 Writes content to a file at the given random access position.
 
@@ -1405,14 +1414,25 @@ Type of extra options argument for [mkdir()].
 ```ts
 type PickFileOptionsT = {
   mimeTypes?: string[];
+  pickerType?: 'singleFile' | 'multipleFiles' | 'folder';
+  fileExtensions?: FileExtension[]
 };
 ```
 Optional parameters for [pickFile()] function.
 
-- `mimeTypes` &mdash; **string[]** &mdash; Optional. An array of
+- `mimeTypes` &mdash; **string[]** &mdash; *[Android - iOS - macOS]*  Optional. An array of
   [MIME types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
   of files user is allowed to select. Defaults to `['*/*']` allowing to select
   any file.
+- `pickerType` &mdash; **'singleFile' | 'multipleFiles' | 'folder'** &mdash;  *[Windows]* Optional.
+   The type of objects to pick can be either a single file, multiple files or one folder. 
+   - Multiple folders are not supported by windows.
+   - Defaults to `'singleFile'` */
+- `fileExtensions` &mdash; **FileExtension[]** &mdash; *[Windows]* Optional, The file extensions to pick from. 
+   - Only applies to `pickerType !== 'folder'`
+   - Defaults to `[]` (all file extensions) */
+   - `FileExtension = ´.${string}´` - e.g `'.bmp'`, `'.mp3'`
+
 
 ### ReadDirAssetsResItemT
 [ReadDirAssetsResItemT]: #readdirassetsresitemt
