@@ -73,9 +73,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, headersFlat)
 
                 val contentEncoding = connection.getHeaderField("Content-Encoding")
-                Log.d("Downloader", "Content-Encoding: $contentEncoding")
 
-                // Usar GZIPInputStream si el contenido está comprimido
                 input = if ("gzip".equals(contentEncoding, ignoreCase = true)) {
                     Log.d("Downloader", "File compress with GZIP. Decompress...")
                     GZIPInputStream(connection.inputStream)
