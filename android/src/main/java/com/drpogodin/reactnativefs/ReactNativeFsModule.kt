@@ -172,9 +172,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             // If the queue has drained, it is success, we are done.
             if (queue.isEmpty()) return promise.resolve(null)
 
-            val next =
-              if (Build.VERSION.SDK_INT >= 35) queue.removeLast()
-              else queue.removeAt(queue.size - 1)
+            // NOTE: With SDK >= 35 it could be just queue.removeLast(), but as of 27.12.2024,
+            // that triggers Google.Play as an issue during app publication, thus we want to avoid
+            // it, at least for now. See: https://github.com/birdofpreyru/react-native-fs/issues/92
+            val next = queue.removeAt(queue.lastIndex)
 
             currentFrom = next.first
             currentInto = next.second
