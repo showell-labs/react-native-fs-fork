@@ -27,6 +27,7 @@ and [old][Old Architecture] [RN][React Native] architectures.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/11723093?v=4&s=36" />](https://github.com/Bengejd)
 [<img width=36 src="https://avatars.githubusercontent.com/u/48058861?v=4&s=36" />](https://github.com/meza-jhonathan)
 [<img width=36 src="https://avatars.githubusercontent.com/u/62384153?v=4&s=36" />](https://github.com/pcprinz)
 [<img width=36 src="https://avatars.githubusercontent.com/u/3824379?v=4&s=36" />](https://github.com/hsjoberg)
