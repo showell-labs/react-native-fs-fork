@@ -1,5 +1,4 @@
-import type { TurboModule } from 'react-native';
-import { TurboModuleRegistry } from 'react-native';
+import { type TurboModule, TurboModuleRegistry } from 'react-native';
 
 // Note: It would be better to have all these type definitions in a dedicated
 // module, however as of its current version RN's Codegen does not seem to handle
