@@ -1190,11 +1190,7 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 #endif
 
 RCT_EXPORT_METHOD(
-#ifdef RCT_NEW_ARCH_ENABLED
                   pickFile:(JS::NativeReactNativeFs::PickFileOptionsT &)options
-#else
-                  pickFile:(NSDictionary*)options
-#endif
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 ) {
@@ -1203,22 +1199,13 @@ RCT_EXPORT_METHOD(
   // the new, bridgeless architecture) it is correctly detained by the async
   // block below, not crushing the app.
   // See: https://github.com/birdofpreyru/react-native-fs/issues/44
-# ifdef RCT_NEW_ARCH_ENABLED
   JS::NativeReactNativeFs::PickFileOptionsT o = options;
-# else
-  NSDictionary* o = options;
-# endif
   dispatch_async(dispatch_get_main_queue(), ^() {
     @try {
       UIDocumentPickerViewController *picker;
 
-#   ifdef RCT_NEW_ARCH_ENABLED
       facebook::react::LazyVector<NSString*> mimeTypes = o.mimeTypes();
       int numMimeTypes = mimeTypes.size();
-#   else
-      NSArray<NSString*>* mimeTypes = o[@"mimeTypes"];
-      int numMimeTypes = mimeTypes.count;
-#   endif
 
       if (@available(iOS 14.0, *)) {
         NSMutableArray<UTType*> *types = [NSMutableArray arrayWithCapacity:numMimeTypes];
@@ -1310,12 +1297,10 @@ RCT_EXPORT_METHOD(
 }
 
 // Don't compile this code when we build for the old architecture.
-#ifdef RCT_NEW_ARCH_ENABLED
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
     return std::make_shared<facebook::react::NativeReactNativeFsSpecJSI>(params);
 }
-#endif
 
 @end

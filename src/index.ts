@@ -1,7 +1,7 @@
 import { getReasonPhrase } from 'http-status-codes';
 import { type EmitterSubscription, NativeEventEmitter } from 'react-native';
 
-import RNFS from './ReactNativeFs';
+import RNFS from './NativeReactNativeFs';
 
 import {
   type DownloadBeginCallbackResultT,
