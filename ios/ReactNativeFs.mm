@@ -1296,7 +1296,6 @@ RCT_EXPORT_METHOD(
   return NO;
 }
 
-// Don't compile this code when we build for the old architecture.
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {

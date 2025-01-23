@@ -1762,7 +1762,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  dr-pogodin-react-native-fs: 6e791be5f06fc385303d10afa0d2b492c2da404d
+  dr-pogodin-react-native-fs: df9d3c9da03d14598081ff5dde1129a1b9c0c0ab
   dr-pogodin-react-native-static-server: 8d450a9ca236e4922b5db5aaa132f0d809cc6d4a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 2bc03a5cf64e29c611bbc5d7eb9d9f7431f37ee6
