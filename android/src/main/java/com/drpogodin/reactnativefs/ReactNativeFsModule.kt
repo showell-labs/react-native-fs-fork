@@ -483,7 +483,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         var mimeTypes = emptyArray<String>()
         if (mimeTypesArray != null) {
           for (i in 0 until mimeTypesArray.size()) {
-            mimeTypes += mimeTypesArray.getString(i)
+            val type = mimeTypesArray.getString(i)
+            if (type != null) mimeTypes += type
           }
         }
 
@@ -744,7 +745,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             val fileList = ArrayList<ReadableMap>()
             val params = UploadParams()
             for (i in 0 until files!!.size()) {
-                fileList.add(files.getMap(i))
+              val map = files.getMap(i)
+              if (map != null) fileList.add(map)
             }
             params.src = url
             params.files = fileList
