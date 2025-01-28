@@ -22,10 +22,10 @@ class ReactNativeFsPackage : BaseReactPackage() {
       moduleInfos[ReactNativeFsModule.NAME] = ReactModuleInfo(
         ReactNativeFsModule.NAME,
         ReactNativeFsModule.NAME,
-        false,  // canOverrideExistingModule
-        false,  // needsEagerInit
-        false,  // isCxxModule
-        true // isTurboModule
+        canOverrideExistingModule = false,  // canOverrideExistingModule
+        needsEagerInit = false,  // needsEagerInit
+        isCxxModule = false,  // isCxxModule
+        isTurboModule = true // isTurboModule
       )
       moduleInfos
     }
