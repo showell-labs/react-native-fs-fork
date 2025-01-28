@@ -21,6 +21,8 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.annotations.ReactModule
+
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
@@ -41,8 +43,9 @@ import java.util.ArrayDeque
 //  Note: Some input files use or override a deprecated API.
 //  Note: Recompile with -Xlint:deprecation for details.
 // It should be taken care of later.
-class ReactNativeFsModule internal constructor(context: ReactApplicationContext) :
-  ReactNativeFsSpec(context) {
+@ReactModule(name = ReactNativeFsModule.NAME)
+class ReactNativeFsModule(reactContext: ReactApplicationContext) :
+  NativeReactNativeFsSpec(reactContext) {
     private val downloaders = SparseArray<Downloader>()
     private val uploaders = SparseArray<Uploader>()
     private val pendingPickFilePromises = ArrayDeque<Promise>()
@@ -480,7 +483,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         var mimeTypes = emptyArray<String>()
         if (mimeTypesArray != null) {
           for (i in 0 until mimeTypesArray.size()) {
-            mimeTypes += mimeTypesArray.getString(i)
+            val type = mimeTypesArray.getString(i)
+            if (type != null) mimeTypes += type
           }
         }
 
@@ -741,7 +745,8 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             val fileList = ArrayList<ReadableMap>()
             val params = UploadParams()
             for (i in 0 until files!!.size()) {
-                fileList.add(files.getMap(i))
+              val map = files.getMap(i)
+              if (map != null) fileList.add(map)
             }
             params.src = url
             params.files = fileList
@@ -1005,6 +1010,10 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
         emitter.emit(eventName, params)
     }
 
+    override fun getName(): String {
+        return NAME
+    }
+
     companion object {
         const val NAME = "ReactNativeFs"
 
@@ -1023,8 +1032,4 @@ class ReactNativeFsModule internal constructor(context: ReactApplicationContext)
             return bytesResult
         }
     }
-
-  override fun getName(): String {
-    return NAME
-  }
 }
