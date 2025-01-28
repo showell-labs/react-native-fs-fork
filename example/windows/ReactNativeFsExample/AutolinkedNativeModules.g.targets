@@ -4,7 +4,7 @@
   <ItemGroup>
     <!-- Projects from @dr.pogodin/react-native-fs -->
     <ProjectReference Include="$(ProjectDir)..\..\..\windows\ReactNativeFs\ReactNativeFs.vcxproj">
-      <Project>{8DD80475-5EEE-4C4C-B283-E4ABE56BE884}</Project>
+      <Project>{8f26d46b-7043-4fdb-a2fd-8a7b16eca729}</Project>
     </ProjectReference>
     <!-- Projects from @dr.pogodin/react-native-static-server -->
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\@dr.pogodin\react-native-static-server\windows\ReactNativeStaticServer\ReactNativeStaticServer.vcxproj">

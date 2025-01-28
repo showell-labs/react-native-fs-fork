@@ -7,6 +7,7 @@
  * by the TurboModule JS spec.
  */
 #pragma once
+// clang-format off
 
 #include <NativeModules.h>
 #include <tuple>
@@ -85,6 +86,8 @@ struct ReactNativeFsSpec_NativeUploadFileOptionsT {
 
 struct ReactNativeFsSpec_PickFileOptionsT {
     std::vector<std::string> mimeTypes;
+    std::string pickerType;
+    ::React::JSValueArray fileExtensions;
 };
 
 struct ReactNativeFsSpec_TouchOptions {
@@ -215,6 +218,8 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_N
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_PickFileOptionsT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"mimeTypes", &ReactNativeFsSpec_PickFileOptionsT::mimeTypes},
+        {L"pickerType", &ReactNativeFsSpec_PickFileOptionsT::pickerType},
+        {L"fileExtensions", &ReactNativeFsSpec_PickFileOptionsT::fileExtensions},
     };
     return fieldMap;
 }

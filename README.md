@@ -2,8 +2,6 @@
 
 <!-- Collection of hyperlinks. -->
 [Date]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date
-[New Architecture]: https://reactnative.dev/docs/the-new-architecture/landing-page
-[Old Architecture]: https://reactnative.dev/docs/native-modules-intro
 [React Native]: https://reactnative.dev/
 [react-native-fs]: https://github.com/itinance/react-native-fs
 <!-- End of hyperlinks collection. -->
@@ -17,8 +15,7 @@
 <!-- End of status badges section. -->
 
 File system access for [React Native] applications for Android, iOS,
-Mac (Catalyst), and Windows platforms. Supports both [new][New Architecture]
-and [old][Old Architecture] [RN][React Native] architectures.
+Mac (Catalyst), and Windows platforms.
 
 [![Sponsor](https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/.README/sponsor.svg)](https://github.com/sponsors/birdofpreyru)
 
@@ -174,9 +171,8 @@ npx react-native autolink-windows --sln "windows\ReactNativeFsExample.sln" --pro
 
 This project is a fork of the upstream [react-native-fs] library, which has been
 abandoned by its owners and maintainers. This forks aims to keep the library on
-par with the latest React Native standards, with support of the [New Architecture],
-backward compatibility with the [Old Architecture]; and to further develop
-the library according to the best industry practices.
+par with the latest React Native standards, and to further develop the library
+according to the best industry practices.
 
 To migrate from the legacy [react-native-fs] install this fork_
 ```bash
