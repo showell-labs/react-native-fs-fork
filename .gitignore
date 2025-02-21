@@ -28,7 +28,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
-.xcode.env.local
+**/.xcode.env.local
 
 # Android/IJ
 #
@@ -52,7 +52,6 @@ example/vendor/
 #
 node_modules/
 npm-debug.log
-package.tgz
 yarn-debug.log
 yarn-error.log
 
@@ -82,3 +81,6 @@ lib/
 # React Native Codegen
 ios/generated
 android/generated
+
+# React Native Nitro Modules
+nitrogen/
