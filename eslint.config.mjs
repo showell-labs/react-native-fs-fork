@@ -17,6 +17,7 @@ export default defineConfig([
   {
     extends: fixupConfigRules(compat.extends('@react-native')),
     rules: {
+      curly: ['error', 'multi-line'],
       'react/react-in-jsx-scope': 'off'
     },
   },
