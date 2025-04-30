@@ -1,6 +1,6 @@
 {
   "name": "@dr.pogodin/react-native-fs",
-  "version": "2.33.0",
+  "version": "2.33.1",
   "description": "Native filesystem access for React Native",
   "source": "./src/index.ts",
   "main": "./lib/module/index.js",
