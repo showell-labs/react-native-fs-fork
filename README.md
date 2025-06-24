@@ -174,7 +174,9 @@ abandoned by its owners and maintainers. This forks aims to keep the library on
 par with the latest React Native standards, and to further develop the library
 according to the best industry practices.
 
-To migrate from the legacy [react-native-fs] install this fork_
+We use [The Common Sense Versioning](https://github.com/birdofpreyru/js-utils/blob/master/docs/common-sense-versioning.md) for this project.
+
+To migrate from the legacy [react-native-fs] install this fork
 ```bash
 npm install --save @dr.pogodin/react-native-fs
 ```
