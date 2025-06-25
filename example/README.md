@@ -30,20 +30,18 @@ to install NPM dependencies in the parent folder as well._
    ```
 
 -  For **iOS** target:
-   -  Install Pods, executing inside `example/ios` folder the command
+   -  Install Pods, executing inside the codebase root the command
       ```sh
-      RCT_NEW_ARCH_ENABLED=1 RN_STATIC_SERVER_WEBDAV=1 pod install
+      RN_STATIC_SERVER_WEBDAV=1 yarn example ios --force-pods
       ```
-      **Note**: Omit `RCT_NEW_ARCH_ENABED` variable to build for old RN architecture.
 
    -  Open, build, and run example workspace in Xcode.
 
 -  For **macOS (Catalyst)** target:
-   -  Install Pods, executing inside `example/ios` folder the command
+   -  Install Pods, executing inside the codebase root the command
       ```sh
-      MAC_CATALYST=1 RCT_NEW_ARCH_ENABLED=1 RN_STATIC_SERVER_WEBDAV=1 pod install
+      MAC_CATALYST=1 RN_STATIC_SERVER_WEBDAV=1 yarn example ios --force-pods
       ```
-      **Note**: Omit `RCT_NEW_ARCH_ENABED` variable to build for old RN architecture.
 
    -  Open, build, and run example workspace in Xcode.
 
