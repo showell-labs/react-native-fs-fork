@@ -1033,7 +1033,9 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
 {
     try
     {
-        winrt::hstring boundary{ L"-----" };
+        auto guid = winrt::Windows::Foundation::GuidHelper::CreateNewGuid();
+        auto boundary = winrt::to_hstring(guid);
+
         std::string toUrl{ options["toUrl"].AsString() };
         std::wstring URLForURI(toUrl.begin(), toUrl.end());
         Uri uri{ URLForURI };
@@ -1051,15 +1053,15 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             }
         }
 
-        auto const& fields{ options["fields"].AsObject() }; // placed in the header
-        std::stringstream attempt;
-        attempt << "form-data";
-        for (auto const& field : fields)
-        {
-            attempt << "; " << field.first << "=" << field.second.AsString();
+        if (options["fields"]) {
+          auto const& fields{ options["fields"].AsObject() };
+          for (auto const& kv : fields) {
+            auto name = winrt::to_hstring(kv.first);
+            auto value = winrt::to_hstring(kv.second.AsString());
+            Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
+            requestContent.Add(part, name);
+          }
         }
-
-        requestContent.Headers().ContentDisposition(Headers::HttpContentDispositionHeaderValue::Parse(winrt::to_hstring(attempt.str())));
 
         m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
             JSValueObject{
