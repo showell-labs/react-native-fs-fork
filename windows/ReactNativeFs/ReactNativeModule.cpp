@@ -806,17 +806,10 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
             winrt::hstring directoryPath, fileName;
             splitPath(wFilePath, directoryPath, fileName);
 
-            try
-            {
-                StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-                StorageFile file{ co_await folder.GetFileAsync(fileName) };
-                auto fileProperties{ co_await file.GetBasicPropertiesAsync() };
-                totalUploadSize += fileProperties.Size();
-            }
-            catch (...)
-            {
-                continue;
-            }
+            StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+            StorageFile file{ co_await folder.GetFileAsync(fileName) };
+            auto fileProperties{ co_await file.GetBasicPropertiesAsync() };
+            totalUploadSize += fileProperties.Size();
         }
         if (totalUploadSize <= 0)
         {
@@ -1081,29 +1074,22 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             // Convert std::string to std::wstring
             std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
 
-            try
-            {
-                winrt::hstring directoryPath, fileName;
-                splitPath(wFilePath, directoryPath, fileName);
-                StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-                StorageFile file{ co_await folder.GetFileAsync(fileName) };
-                auto properties{ co_await file.GetBasicPropertiesAsync() };
+            winrt::hstring directoryPath, fileName;
+            splitPath(wFilePath, directoryPath, fileName);
+            StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+            StorageFile file{ co_await folder.GetFileAsync(fileName) };
+            auto properties{ co_await file.GetBasicPropertiesAsync() };
 
-                HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
-                requestContent.Add(entry, name, filename);
+            HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
+            requestContent.Add(entry, name, filename);
 
-                totalUploaded += properties.Size();
-                m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
-                    JSValueObject{
-                        { "jobId", jobId },
-                        { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
-                        { "totalBytesSent", totalUploaded },
-                    });
-            }
-            catch (...)
-            {
-                continue;
-            }
+            totalUploaded += properties.Size();
+            m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
+                JSValueObject{
+                    { "jobId", jobId },
+                    { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
+                    { "totalBytesSent", totalUploaded },
+                });
         }
 
         requestMessage.Content(requestContent);
