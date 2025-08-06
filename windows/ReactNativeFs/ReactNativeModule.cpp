@@ -1033,8 +1033,12 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
 {
     try
     {
-        auto guid = winrt::Windows::Foundation::GuidHelper::CreateNewGuid();
-        auto boundary = winrt::to_hstring(guid);
+        auto guid = winrt::to_hstring(winrt::Windows::Foundation::GuidHelper::CreateNewGuid());
+        std::wstring guidStr(guid.c_str());
+        if (!guidStr.empty() && guidStr.size() > 2) {
+          guidStr = guidStr.substr(1, guidStr.size() - 2); // remove first and last chars from {SOME_GUID}
+        }
+        auto boundary = L"-----" + guidStr;
 
         std::string toUrl{ options["toUrl"].AsString() };
         std::wstring URLForURI(toUrl.begin(), toUrl.end());
@@ -1053,14 +1057,13 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             }
         }
 
-        if (options["fields"]) {
-          auto const& fields{ options["fields"].AsObject() };
-          for (auto const& kv : fields) {
-            auto name = winrt::to_hstring(kv.first);
-            auto value = winrt::to_hstring(kv.second.AsString());
-            Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
-            requestContent.Add(part, name);
-          }
+        auto const& fields{ options["fields"].AsObject() };
+        for (auto const& kv : fields)
+        {
+          auto name = winrt::to_hstring(kv.first);
+          auto value = winrt::to_hstring(kv.second.AsString());
+          Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
+          requestContent.Add(part, name);
         }
 
         m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
