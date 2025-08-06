@@ -16,6 +16,8 @@
     -->
     <UseHermes>true</UseHermes>
 
+    <RnwNewArch>false</RnwNewArch>
+
     <!--
       Changes compilation to assume use of Microsoft.ReactNative NuGet packages
       instead of building the framework from source.
