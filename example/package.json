@@ -16,7 +16,8 @@
     "@dr.pogodin/react-native-static-server": "^0.21.0",
     "lodash": "^4.17.21",
     "react": "19.1.0",
-    "react-native": "0.80.0"
+    "react-native": "0.80.0",
+    "react-native-windows": "0.79.0"
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",
