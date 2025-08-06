@@ -1040,9 +1040,7 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         }
         auto boundary = L"-----" + guidStr;
 
-        std::string toUrl{ options["toUrl"].AsString() };
-        std::wstring URLForURI(toUrl.begin(), toUrl.end());
-        Uri uri{ URLForURI };
+        auto uri = winrt::Windows::Foundation::Uri(winrt::to_hstring(options["toUrl"].AsString()));
 
         winrt::Windows::Web::Http::HttpRequestMessage requestMessage{ httpMethod, uri };
         winrt::Windows::Web::Http::HttpMultipartFormDataContent requestContent{ boundary };
