@@ -29,12 +29,13 @@ GÖÖÐ
 
 `;
 
-const UPLOAD_FILES_CONTROL_WINDOWS = `-------
+const UPLOAD_FILES_CONTROL_WINDOWS = `boundary
 Content-Length: 8
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
 
 GÖÖÐ
 
+boundary
 `;
 
 // TODO: Why these messages are different I am not sure. Perhaps WebDAV module
@@ -80,11 +81,16 @@ export const uploadTests: TestMethods = {
       uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
 
       // test
+      if (Platform.OS === 'windows') {
+        uploadedFile = uploadedFile.replace(/-------[a-f0-9-]+/g, 'boundary'); // replace random boundary with "boundary"
+      }
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
         console.log(
           'MISMATCH:\nUploaded:\n',
           uploadedFile,
-          '\nExpected:\n', UPLOAD_FILES_CONTROL);
+          '\nExpected:\n',
+          UPLOAD_FILES_CONTROL
+        );
       }
 
       return uploadedFile.includes(UPLOAD_FILES_CONTROL)
