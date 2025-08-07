@@ -1735,7 +1735,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.27.6":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.27.1, @babel/runtime@npm:^7.27.6":
   version: 7.28.2
   resolution: "@babel/runtime@npm:7.28.2"
   checksum: 10/a0965fbdd6aaa40709290923bbe05e1c4314021f0cef608eb1d69f04f717c41829e50a53d79c4a0f461512b4be9b3c0190dc19387b219bcdaacdd793b2fe1b8a
@@ -1832,10 +1832,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dr.pogodin/js-utils@npm:^0.0.17":
-  version: 0.0.17
-  resolution: "@dr.pogodin/js-utils@npm:0.0.17"
-  checksum: 10/453d0d6c8a9abbff9ec7a262219c17d383f4318bc31c938950d71dcc2690129d75bb39c10db12eaa9dc14a8175a83ee4f149aa3398e1b169c6e7973b79c153b2
+"@dr.pogodin/js-utils@npm:^0.0.18":
+  version: 0.0.18
+  resolution: "@dr.pogodin/js-utils@npm:0.0.18"
+  dependencies:
+    "@babel/runtime": "npm:^7.27.1"
+  checksum: 10/da6f5b2351d7f9804db9b30b5ad65ceb06793de53ad52efb21ec9eedfc8dc8b77950db3f72ef4123521c8cc117edef0371d2a3f7d529308eaabc7d52e661925d
   languageName: node
   linkType: hard
 
@@ -1846,7 +1848,7 @@ __metadata:
     "@babel/core": "npm:^7.27.4"
     "@babel/preset-env": "npm:^7.27.2"
     "@babel/runtime": "npm:^7.27.6"
-    "@dr.pogodin/react-native-static-server": "npm:^0.21.0"
+    "@dr.pogodin/react-native-static-server": "npm:^0.22.0"
     "@react-native-community/cli": "npm:18.0.0"
     "@react-native-community/cli-platform-android": "npm:18.0.0"
     "@react-native-community/cli-platform-ios": "npm:18.0.0"
@@ -1894,17 +1896,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.21.0":
-  version: 0.21.0
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.21.0"
+"@dr.pogodin/react-native-static-server@npm:^0.22.0":
+  version: 0.22.0
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.22.0"
   dependencies:
-    "@dr.pogodin/js-utils": "npm:^0.0.17"
+    "@dr.pogodin/js-utils": "npm:^0.0.18"
   peerDependencies:
     "@dr.pogodin/react-native-fs": ">= 2.22.0"
     react: "*"
     react-native: "*"
-    react-native-windows: "*"
-  checksum: 10/88f7c980aea698018bd757c2ab697bf602eafff3efc25f6ea68eb817ca72abf80bcc15fe094aebc2dee858c3ed300abbbc57c986d65763260ae66b194792abb8
+  checksum: 10/b35047fbe699793436dfed8d73d505470b37d8bcf652315f47976a986900df2a925f6f7506f1c0d98966ead5e433be1295f104d4628c76de254f22e01da23ee5
   languageName: node
   linkType: hard
 

@@ -1678,7 +1678,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ReactNativeStaticServer (0.21.0):
+  - ReactNativeStaticServer (0.22.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2003,7 +2003,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 4d001cd4fa72b876bbff500bbb3811e458bb3c72
   ReactCommon: 41137f7e87cf7fd1c041a7124dfa3d0d48aa43f3
   ReactNativeFs: 738a7620d60912c5a8e224cdec99b7264ee1432b
-  ReactNativeStaticServer: 611e7f09d3b6a57a8afc9ede303108f91eaaa65e
+  ReactNativeStaticServer: d553ba5e5b363c89524de537ffa1dc444de9225c
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: adb397651e1c00672c12e9495babca70777e411e
 
