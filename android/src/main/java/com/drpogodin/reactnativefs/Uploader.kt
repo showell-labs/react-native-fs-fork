@@ -43,7 +43,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         var request: DataOutputStream? = null
         val crlf = "\r\n"
         val twoHyphens = "--"
-        String boundary = UUID.randomUUID().toString()
+        String boundary = "-------"+UUID.randomUUID().toString()
         String tail = twoHyphens + boundary + twoHyphens + crlf
         var metaData = ""
         var stringData = ""
