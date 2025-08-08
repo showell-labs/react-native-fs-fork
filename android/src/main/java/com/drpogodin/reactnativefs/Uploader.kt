@@ -44,7 +44,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         val crlf = "\r\n"
         val twoHyphens = "--"
         val boundary = "-------"+UUID.randomUUID().toString()
-        val tail = twoHyphens + boundary + twoHyphens + crlf
+        String tail = twoHyphens + boundary + twoHyphens + crlf
         var metaData = ""
         var stringData = ""
         val fileHeader: Array<String?>
