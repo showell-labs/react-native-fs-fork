@@ -30,6 +30,12 @@ GÖÖÐ
 `;
 
 const UPLOAD_FILES_CONTROL_WINDOWS = `boundary
+Content-Length: 1
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: form-data; name="a"
+
+b
+boundary
 Content-Length: 8
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
 
@@ -67,6 +73,9 @@ export const uploadTests: TestMethods = {
       const res = uploadFiles({
         toUrl: `${server?.origin!}/dav/${uploadFileName}`,
         method: 'PUT',
+        fields: {
+          a: 'b',
+        },
         files: [
           {
             name: 'upload-files-source-file',
