@@ -768,7 +768,7 @@ winrt::fire_and_forget ReactNativeModule::downloadFile(JSValueObject options, Re
         // "Failed to download file." 
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
-    m_tasks.Cancel(jobId);
+    // NOTE: Do not cancel here; allow stopDownload() to cancel if requested.
 }
 
 
@@ -831,7 +831,7 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
         // "Failed to upload file."
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
-    m_tasks.Cancel(jobId);
+    // NOTE: Do not cancel here; allow stopUpload() to cancel if requested.
 }
 
 
@@ -1039,28 +1039,35 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         Uri uri{ URLForURI };
 
         winrt::Windows::Web::Http::HttpRequestMessage requestMessage{ httpMethod, uri };
-        winrt::Windows::Web::Http::HttpMultipartFormDataContent requestContent{ boundary };
+
+        // Determine whether to stream raw binary or multipart form data
+        bool binaryStreamOnly{
+            options.find("binaryStreamOnly") != options.end() && options["binaryStreamOnly"].AsBoolean()
+        };
+
+        // Prepare the request content object accordingly
+        winrt::Windows::Web::Http::IHttpContent requestContent{ nullptr };
+        winrt::Windows::Web::Http::HttpMultipartFormDataContent multipartContent{ boundary };
 
         auto const& headers{ options["headers"].AsObject() };
         
         for (auto const& entry : headers)
         {
-            if (!requestMessage.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString())))
+            // Apply headers either to the message or the content depending on validation
+            if (requestContent)
             {
-                requestContent.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString()));
+                if (!requestMessage.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString())))
+                {
+                    requestContent.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString()));
+                }
+            }
+            else
+            {
+                requestMessage.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString()));
             }
         }
 
-        auto const& fields{ options["fields"].AsObject() }; // placed in the header
-        std::stringstream attempt;
-        attempt << "form-data";
-        for (auto const& field : fields)
-        {
-            attempt << "; " << field.first << "=" << field.second.AsString();
-        }
-
-        requestContent.Headers().ContentDisposition(Headers::HttpContentDispositionHeaderValue::Parse(winrt::to_hstring(attempt.str())));
-
+        // Emit begin event early
         m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
             JSValueObject{
                 { "jobId", jobId },
@@ -1068,53 +1075,112 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
 
         uint64_t totalUploaded{ 0 };
 
-        for (const auto& fileInfo : files)
+        if (binaryStreamOnly)
         {
-            auto const& fileObj{ fileInfo.AsObject() };
-            auto name{ winrt::to_hstring(fileObj["name"].AsString()) }; // name to be sent via http request
-            auto filename{ winrt::to_hstring(fileObj["filename"].AsString()) }; // filename to be sent via http request
-            auto filePath{ fileObj["filepath"].AsString()}; // accessing the file
-                        
-            // Convert std::string to std::wstring
-            std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
-
-            try
+            // Stream only the first file as raw request body
+            if (files.Size() == 0)
             {
-                winrt::hstring directoryPath, fileName;
-                splitPath(wFilePath, directoryPath, fileName);
-                StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-                StorageFile file{ co_await folder.GetFileAsync(fileName) };
-                auto properties{ co_await file.GetBasicPropertiesAsync() };
-
-                HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
-                requestContent.Add(entry, name, filename);
-
-                totalUploaded += properties.Size();
-                m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
-                    JSValueObject{
-                        { "jobId", jobId },
-                        { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
-                        { "totalBytesSent", totalUploaded },
-                    });
+                promise.Reject("No files to upload");
+                co_return;
             }
-            catch (...)
+
+            auto const& firstFileObj{ files.GetAt(0).AsObject() };
+            auto firstFilePath{ firstFileObj["filepath"].AsString() };
+            std::wstring wFilePath = winrt::to_hstring(firstFilePath).c_str();
+
+            winrt::hstring directoryPath, fileName;
+            splitPath(wFilePath, directoryPath, fileName);
+            StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+            StorageFile file{ co_await folder.GetFileAsync(fileName) };
+
+            auto properties{ co_await file.GetBasicPropertiesAsync() };
+            auto buffer{ co_await FileIO::ReadBufferAsync(file) };
+
+            HttpBufferContent binaryContent{ buffer };
+            // Default to octet-stream if caller did not set Content-Type in headers
+            binaryContent.Headers().TryAppendWithoutValidation(L"Content-Type", L"application/octet-stream");
+
+            requestMessage.Content(binaryContent);
+
+            // Emit a final progress snapshot
+            totalUploaded = properties.Size();
+            m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
+                JSValueObject{
+                    { "jobId", jobId },
+                    { "totalBytesExpectedToSend", totalUploadSize },
+                    { "totalBytesSent", totalUploaded },
+                });
+        }
+        else
+        {
+            // Multipart: add any form fields as individual parts
+            auto const& fields{ options["fields"].AsObject() };
+            for (auto const& field : fields)
             {
-                continue;
+                winrt::Windows::Web::Http::HttpStringContent fieldContent{ winrt::to_hstring(field.second.AsString()) };
+                multipartContent.Add(fieldContent, winrt::to_hstring(field.first));
             }
+
+            // Add file parts
+            for (const auto& fileInfo : files)
+            {
+                auto const& fileObj{ fileInfo.AsObject() };
+                auto name{ winrt::to_hstring(fileObj["name"].AsString()) };
+                auto filename{ winrt::to_hstring(fileObj["filename"].AsString()) };
+                auto filePath{ fileObj["filepath"].AsString()};
+
+                std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
+
+                try
+                {
+                    winrt::hstring directoryPath, fileName;
+                    splitPath(wFilePath, directoryPath, fileName);
+                    StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+                    StorageFile file{ co_await folder.GetFileAsync(fileName) };
+                    auto properties{ co_await file.GetBasicPropertiesAsync() };
+
+                    HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
+                    multipartContent.Add(entry, name, filename);
+
+                    totalUploaded += properties.Size();
+                    m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
+                        JSValueObject{
+                            { "jobId", jobId },
+                            { "totalBytesExpectedToSend", totalUploadSize },
+                            { "totalBytesSent", totalUploaded },
+                        });
+                }
+                catch (...)
+                {
+                    continue;
+                }
+            }
+
+            requestContent = multipartContent;
+            requestMessage.Content(requestContent);
         }
 
-        requestMessage.Content(requestContent);
         HttpResponseMessage response = co_await m_httpClient.SendRequestAsync(requestMessage, HttpCompletionOption::ResponseHeadersRead);
 
         auto statusCode{ std::to_string(int(response.StatusCode())) };
-        auto resultHeaders{ winrt::to_string(response.Headers().ToString()) };
         auto resultContent{ winrt::to_string(co_await response.Content().ReadAsStringAsync()) };
+
+        // Build a headers map similar to download implementation
+        JSValueObject headersMap;
+        for (auto const& header : response.Headers())
+        {
+            headersMap[to_string(header.Key())] = to_string(header.Value());
+        }
+        for (auto const& header : response.Content().Headers())
+        {
+            headersMap[to_string(header.Key())] = to_string(header.Value());
+        }
 
         promise.Resolve(JSValueObject
             {
                 { "jobId", jobId },
                 { "statusCode", std::stoi(statusCode) },
-                { "headers", resultHeaders},
+                { "headers", std::move(headersMap)},
                 { "body", resultContent},
             });
     }

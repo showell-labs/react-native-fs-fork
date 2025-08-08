@@ -115,6 +115,9 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
           }
           byteSentTotal = 0
           for (map in params.files!!) {
+            if (mAbort.get()) {
+              throw Exception("Upload cancelled")
+            }
             if (!binaryStreamOnly) {
               request.writeBytes(fileHeader[fileCount])
             }
@@ -125,6 +128,10 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             val fileStream = FileInputStream(file)
             val fileChannel = fileStream.channel
             while (bytesRead < fileLength) {
+              if (mAbort.get()) {
+                fileStream.close()
+                throw Exception("Upload cancelled")
+              }
               val transferredBytes = fileChannel.transferTo(bytesRead, bufferSize, requestChannel)
               bytesRead += transferredBytes
               byteSentTotal += transferredBytes.toInt()

@@ -700,6 +700,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     override fun stopUpload(jobId: Double) {
         val uploader = uploaders[jobId.toInt()]
         uploader?.stop()
+        // Remove reference so future jobs can reuse id safely
+        uploaders.remove(jobId.toInt())
     }
 
     @ReactMethod

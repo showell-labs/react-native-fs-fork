@@ -101,7 +101,7 @@ struct ReactNativeModule
     REACT_METHOD(stopDownload); // DOWNLOADER
     void stopDownload(int jobID) noexcept;
 
-    REACT_METHOD(stopUpload); // DOWNLOADER
+    REACT_METHOD(stopUpload); // UPLOADER
     void stopUpload(int jobID) noexcept;
 
     REACT_METHOD(readDir); // Implemented
