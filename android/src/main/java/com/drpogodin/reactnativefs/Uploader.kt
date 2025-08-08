@@ -10,8 +10,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.nio.channels.Channels
 import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.ceil
 
@@ -42,8 +45,9 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         var request: DataOutputStream? = null
         val crlf = "\r\n"
         val twoHyphens = "--"
-        val boundary = "*****"
-        val tail = crlf + twoHyphens + boundary + twoHyphens + crlf
+        val boundary = "----RNFSFormBoundary" + UUID.randomUUID().toString().replace("-", "")
+        // Tail must NOT prepend extra CRLF, since we already terminate last part with CRLF
+        val tail = twoHyphens + boundary + twoHyphens + crlf
         var metaData = ""
         var stringData = ""
         val fileHeader: Array<String?>
@@ -87,8 +91,13 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             val fileLength = file.length()
             totalFileLength += fileLength
             if (!binaryStreamOnly) {
+              val asciiOnly = filename.matches(Regex("^[\\x00-\\x7F]+")).also { /* no-op */ }
+              val encodedFilename = try {
+                URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+              } catch (e: Exception) { filename }
+              val filenameStar = if (!asciiOnly) "; filename*=UTF-8''$encodedFilename" else ""
               val fileHeaderType = twoHyphens + boundary + crlf +
-                "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + crlf +
+                "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + filenameStar + crlf +
                 "Content-Type: " + filetype + crlf
               if (files.size - 1 == fileCount) {
                 totalFileLength += tail.length.toLong()
