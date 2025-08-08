@@ -44,7 +44,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         val crlf = "\r\n"
         val twoHyphens = "--"
         val boundary = "-------"+UUID.randomUUID().toString()
-        String tail = twoHyphens + boundary + twoHyphens + crlf
+        val tail = twoHyphens + boundary + twoHyphens + crlf
         var metaData = ""
         var stringData = ""
         val fileHeader: Array<String?>
@@ -92,7 +92,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + crlf +
                 "Content-Type: " + filetype + crlf
               if (files.size - 1 == fileCount) {
-                totalFileLength += tail.getBytes().length
+                totalFileLength += tail.toByteArray().size
               }
               val fileLengthHeader = "Content-length: $fileLength$crlf"
               fileHeader[fileCount] = fileHeaderType + fileLengthHeader + crlf
@@ -104,7 +104,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
           mParams!!.onUploadBegin?.onUploadBegin()
           if (!binaryStreamOnly) {
             var requestLength = totalFileLength
-            requestLength += stringData.getBytes().length + files.length * crlf.getBytes().length
+            requestLength += stringData.toByteArray().size + files.size * crlf.toByteArray().size
             connection.setRequestProperty("Content-length", "" + requestLength.toInt())
             connection.setFixedLengthStreamingMode(requestLength.toInt())
           }
