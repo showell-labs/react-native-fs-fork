@@ -10,15 +10,18 @@ import type { TestMethods } from '../TestTypes';
 import { notPlatform, Result, tryUnlink } from '../TestUtils';
 import { CONTENT, PATH } from '../TestValues';
 
-const UPLOAD_FILES_CONTROL_ANDROID = `--*****
+const UPLOAD_FILES_CONTROL_ANDROID = `boundary
+Content-Disposition: form-data; name="a"
+
+b
+boundary
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
-Content-Type: text/plain
+Content-Type: */*
 Content-length: 8
 
 GÖÖÐ
 
-
---*****--
+boundary
 `;
 
 const UPLOAD_FILES_CONTROL_IOS = `Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
@@ -90,7 +93,7 @@ export const uploadTests: TestMethods = {
       uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
 
       // test
-      if (Platform.OS === 'windows') {
+      if (Platform.OS === 'windows' || Platform.OS === 'android') {
         uploadedFile = uploadedFile.replace(/-------[a-f0-9-]+/g, 'boundary'); // replace random boundary with "boundary"
       }
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
