@@ -77,6 +77,9 @@
     "react": "*",
     "react-native": "*"
   },
+  "workspaces": [
+    "example"
+  ],
   "packageManager": "yarn@4.9.2",
   "jest": {
     "preset": "react-native",
