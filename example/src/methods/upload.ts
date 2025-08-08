@@ -72,13 +72,19 @@ export const uploadTests: TestMethods = {
 
       await tryUnlink(targetDevicePath);
 
+      const fields = Platform.select({
+        ios: undefined,
+        macos: undefined,
+        default: {
+          a: 'b',
+        },
+      });
+
       // execute
       const res = uploadFiles({
         toUrl: `${server?.origin!}/dav/${uploadFileName}`,
         method: 'PUT',
-        fields: {
-          a: 'b',
-        },
+        fields,
         files: [
           {
             name: 'upload-files-source-file',
