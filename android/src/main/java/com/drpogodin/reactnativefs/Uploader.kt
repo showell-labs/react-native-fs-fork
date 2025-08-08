@@ -107,6 +107,13 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             connection.setRequestProperty("Content-length", "" + requestLength.toInt())
             connection.setFixedLengthStreamingMode(requestLength.toInt())
           }
+          // For binary stream, precompute first file size and set fixed length
+          else if (files.isNotEmpty()) {
+            val first = params.files!![0]
+            val firstFile = File(first.getString("filepath")!!)
+            val len = firstFile.length().toInt()
+            connection.setFixedLengthStreamingMode(len)
+          }
           connection.connect()
           request = DataOutputStream(connection.outputStream)
           val requestChannel = Channels.newChannel(request)
@@ -114,9 +121,33 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             request.writeBytes(metaData)
           }
           byteSentTotal = 0
+          // Upload payload
+          var handledFirstBinary = false
           for (map in params.files!!) {
             if (mAbort.get()) {
               throw Exception("Upload cancelled")
+            }
+            // In binary mode, stream only the first file and break
+            if (binaryStreamOnly) {
+              val file = File(map.getString("filepath")!!)
+              val fileLength = file.length()
+              val bufferSize = ceil((fileLength / 100f).toDouble()).toLong()
+              var bytesRead: Long = 0
+              val fileStream = FileInputStream(file)
+              val fileChannel = fileStream.channel
+              while (bytesRead < fileLength) {
+                if (mAbort.get()) {
+                  fileStream.close()
+                  throw Exception("Upload cancelled")
+                }
+                val transferredBytes = fileChannel.transferTo(bytesRead, bufferSize, requestChannel)
+                bytesRead += transferredBytes
+                byteSentTotal += transferredBytes.toInt()
+                mParams!!.onUploadProgress?.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
+              }
+              fileStream.close()
+              handledFirstBinary = true
+              break
             }
             if (!binaryStreamOnly) {
               request.writeBytes(fileHeader[fileCount])
@@ -137,9 +168,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
               byteSentTotal += transferredBytes.toInt()
               mParams!!.onUploadProgress?.onUploadProgress(totalFileLength.toInt(), byteSentTotal)
             }
-            if (!binaryStreamOnly) {
-              request.writeBytes(crlf)
-            }
+            request.writeBytes(crlf)
             fileCount++
             fileStream.close()
           }
