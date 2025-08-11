@@ -1031,7 +1031,7 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         if (!guidStr.empty() && guidStr.size() > 2) {
           guidStr = guidStr.substr(1, guidStr.size() - 2); // remove first and last chars from {SOME_GUID}
         }
-        auto boundary = L"-----" + guidStr;
+        auto boundary = L"----" + guidStr;
 
         auto uri = winrt::Windows::Foundation::Uri(winrt::to_hstring(options["toUrl"].AsString()));
 
