@@ -16,6 +16,7 @@
     -->
     <UseHermes>true</UseHermes>
 
+    <!-- Builds on RNW 0.80.0-preview.1 -->
     <RnwNewArch>false</RnwNewArch>
 
     <!--
