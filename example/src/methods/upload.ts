@@ -13,7 +13,7 @@ import { CONTENT, PATH } from '../TestValues';
 const UPLOAD_FILES_CONTROL_ANDROID = `boundary
 Content-Disposition: form-data; name="a"
 
-b
+mock value
 boundary
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
 Content-Type: */*
@@ -33,11 +33,11 @@ GÖÖÐ
 `;
 
 const UPLOAD_FILES_CONTROL_WINDOWS = `boundary
-Content-Length: 1
+Content-Length: 10
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: form-data; name="a"
 
-b
+mock value
 boundary
 Content-Length: 8
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
@@ -76,7 +76,7 @@ export const uploadTests: TestMethods = {
         ios: undefined,
         macos: undefined,
         default: {
-          a: 'b',
+          a: 'mock value',
         },
       });
 
