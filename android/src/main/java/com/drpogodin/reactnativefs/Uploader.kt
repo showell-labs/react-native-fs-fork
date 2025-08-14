@@ -181,20 +181,13 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
 
     private fun getMimeType(path: String?): String {
         var type: String? = null
-        var extension = MimeTypeMap.getFileExtensionFromUrl(path)
-        
-        if (extension.isNotEmpty()) {
-            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase(Locale.getDefault()))
-        } else if (path != null) {
-            // If that fails, extract manually
-            val fileName = path.substringAfterLast('/', "")
-            extension = fileName.substringAfterLast('.', "")
+        var extension = path?.substringAfterLast('.', "")
+        if (extension != null) {
             extension = extension.lowercase(Locale.getDefault())
             if (extension.isNotEmpty()) {
                 type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
             }
         }
-
         if (type == null) {
             type = "*/*"
         }
