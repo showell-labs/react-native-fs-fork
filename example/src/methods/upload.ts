@@ -16,7 +16,7 @@ Content-Disposition: form-data; name="a"
 mock value
 boundary
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
-Content-Type: */*
+Content-Type: text/plain
 Content-length: 8
 
 GÖÖÐ
